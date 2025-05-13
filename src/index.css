@@ -1,3 +1,6 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -96,6 +99,28 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-opensans;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-montserrat font-bold;
+  }
+}
+
+@layer components {
+  .heading-gradient {
+    @apply bg-gradient-to-r from-nil-navy to-nil-orange bg-clip-text text-transparent;
+  }
+  
+  .container-custom {
+    @apply container mx-auto px-4 md:px-8;
+  }
+  
+  .btn-primary {
+    @apply bg-nil-orange text-white font-semibold py-3 px-6 rounded-md hover:opacity-90 transition-all duration-300;
+  }
+  
+  .btn-secondary {
+    @apply bg-white text-nil-navy border border-nil-navy font-semibold py-3 px-6 rounded-md hover:bg-nil-light-blue transition-all duration-300;
   }
 }
