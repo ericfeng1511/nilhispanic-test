@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 
 const AthleteCard = ({ name, sport, school, quote }: { name: string; sport: string; school: string; quote: string }) => {
@@ -20,30 +19,30 @@ const AthleteCard = ({ name, sport, school, quote }: { name: string; sport: stri
 const AthleteSpotlight = () => {
   const athletes = [
     {
-      name: "Maria Rodriguez",
-      sport: "Soccer",
-      school: "University of Texas",
-      quote: "NIL Hispanic has helped me build my personal brand while staying true to my cultural roots."
+      name: "test name 1",
+      sport: "test sport 1",
+      school: "test school 1",
+      quote: "test quote 1"
     },
     {
-      name: "Carlos Mendez",
-      sport: "Basketball",
-      school: "Arizona State",
-      quote: "Through NIL Hispanic, I've connected with brands that share my values and speak to my community."
+      name: "test name 2",
+      sport: "test sport 2",
+      school: "test school 2",
+      quote: "test quote 2"
     },
     {
-      name: "Sofia Hernandez",
-      sport: "Volleyball",
-      school: "UCLA",
-      quote: "Being part of NIL Hispanic means using my platform to inspire the next generation of Hispanic athletes."
+      name: "test name 3",
+      sport: "test sport 3",
+      school: "test school 3",
+      quote: "test quote 3"
     }
-  ];
+  ]
 
   return (
-    <section id="athletes" className="py-20 bg-nil-light-blue">
+    <section id="athletes" className="py-20 bg-gradient-to-br from-nil-light-blue via-nil-orange/20 to-nil-navy/30">
       <div className="container-custom">
         <div className="text-center mb-14">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 heading-gradient">Athlete Spotlight</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 heading-gradient">ATHLETE SPOTLIGHT</h2>
           <p className="text-nil-dark-gray max-w-3xl mx-auto text-lg">
             Meet some of the outstanding Hispanic student-athletes in our network who are making an impact both in their sports and communities.
           </p>

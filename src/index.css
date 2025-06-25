@@ -1,5 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -94,16 +94,20 @@
 }
 
 @layer base {
+  html {
+    @apply scroll-smooth;
+  }
+
   * {
     @apply border-border;
   }
 
   body {
-    @apply bg-background text-foreground font-opensans;
+    @apply bg-background text-foreground font-spacemono;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-montserrat font-bold;
+    @apply font-inter font-bold;
   }
 }
 
@@ -111,16 +115,31 @@
   .heading-gradient {
     @apply bg-gradient-to-r from-nil-navy to-nil-orange bg-clip-text text-transparent;
   }
+
+  .heading-gradient-light {
+    @apply bg-gradient-to-r from-nil-light-blue to-nil-orange bg-clip-text text-transparent;
+  }
   
   .container-custom {
     @apply container mx-auto px-4 md:px-8;
   }
   
   .btn-primary {
-    @apply bg-nil-orange text-white font-semibold py-3 px-6 rounded-md hover:opacity-90 transition-all duration-300;
+    @apply bg-nil-orange text-white font-semibold py-3 px-6 rounded-md hover:!bg-nil-orange hover:text-nil-navy;
   }
   
   .btn-secondary {
-    @apply bg-white text-nil-navy border border-nil-navy font-semibold py-3 px-6 rounded-md hover:bg-nil-light-blue transition-all duration-300;
+    @apply bg-white text-nil-navy border border-nil-navy font-semibold py-3 px-6 rounded-md hover:!bg-nil-orange hover:text-nil-navy hover:border-nil-orange;
+  }
+
+  .blotchy-gradient-nil {
+    background-color: #FFFFFF; /* White background */
+    background-image:
+      radial-gradient(circle at 20% 25%, rgba(56, 189, 248, 0.15) 0%, transparent 45%),  /* nil-light-blue blotch, softer for white bg */
+      radial-gradient(circle at 75% 30%, rgba(249, 115, 22, 0.1) 0%, transparent 100%),  /* nil-orange blotch, softer for white bg */
+      radial-gradient(circle at 50% 70%, rgba(23, 37, 84, 0.12) 0%, transparent 50%),    /* nil-navy blotch, softer for white bg */
+      radial-gradient(circle at 30% 80%, rgba(56, 189, 248, 0.1) 0%, transparent 55%); /* another nil-light-blue, very soft */
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
   }
 }

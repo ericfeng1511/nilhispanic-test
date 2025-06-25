@@ -1,11 +1,13 @@
 
+import { Link } from 'react-router-dom';
+
 const Footer = () => {
   return (
     <footer className="bg-nil-navy text-white pt-12 pb-6">
       <div className="container-custom">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
           <div>
-            <h3 className="text-2xl font-bold mb-4">NIL<span className="text-nil-orange">Hispanic</span></h3>
+            <h3 className="text-2xl font-bold mb-4">ÑIL<span className="text-nil-orange">Hispanic</span></h3>
             <p className="text-gray-300 mb-4">
               Empowering Hispanic student-athletes to maximize their NIL opportunities while connecting brands with an untapped demographic.
             </p>
@@ -70,9 +72,11 @@ const Footer = () => {
             <ul className="space-y-2">
               <li><a href="#about" className="text-gray-300 hover:text-nil-orange">About Us</a></li>
               <li><a href="#how-it-works" className="text-gray-300 hover:text-nil-orange">How It Works</a></li>
-              <li><a href="#athletes" className="text-gray-300 hover:text-nil-orange">Athletes</a></li>
-              <li><a href="#brands" className="text-gray-300 hover:text-nil-orange">For Brands</a></li>
-              <li><a href="#contact" className="text-gray-300 hover:text-nil-orange">Contact Us</a></li>
+                            <li><Link to="/for-athletes" className="text-gray-300 hover:text-nil-orange">For Athletes</Link></li>
+                            <li><Link to="/for-brands" className="text-gray-300 hover:text-nil-orange">For Brands</Link></li>
+                            <li><a href="#contact" className="text-gray-300 hover:text-nil-orange">Contact Us</a></li>
+                                          <li><Link to="/whats-nil" className="text-gray-300 hover:text-nil-orange">What's NIL?</Link></li>
+              <li><Link to="/initiatives" className="text-gray-300 hover:text-nil-orange">Initiatives</Link></li>
             </ul>
           </div>
           
@@ -94,7 +98,7 @@ const Footer = () => {
         <div className="border-t border-gray-700 pt-6">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400 text-sm mb-4 md:mb-0">
-              © {new Date().getFullYear()} NIL Hispanic. All rights reserved.
+              © {new Date().getFullYear()} ÑIL Hispanic. All rights reserved.
             </p>
             <div className="flex space-x-6">
               <a href="#" className="text-gray-400 text-sm hover:text-nil-orange">Privacy Policy</a>

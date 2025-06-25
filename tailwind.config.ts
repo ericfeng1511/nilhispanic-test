@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -77,8 +76,8 @@ export default {
 				sm: 'calc(var(--radius) - 4px)'
 			},
 			fontFamily: {
-				montserrat: ['Montserrat', 'sans-serif'],
-				opensans: ['Open Sans', 'sans-serif'],
+				inter: ['Inter', 'sans-serif'],
+				spacemono: ['Space Mono', 'monospace'],
 			},
 			keyframes: {
 				'accordion-down': {

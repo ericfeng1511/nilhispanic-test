@@ -1,44 +1,14 @@
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { toast } from "sonner";
+import { ContactForm } from "./ContactForm";
 
 const ContactSection = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    title: "",
-    message: "",
-  });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Form submitted:", formData);
-    toast.success("Thank you for your message. We'll be in touch soon!");
-    setFormData({
-      name: "",
-      email: "",
-      phone: "",
-      title: "",
-      message: "",
-    });
-  };
 
   return (
     <section id="contact" className="py-20 bg-white">
       <div className="container-custom">
         <div className="text-center mb-14">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 heading-gradient">Get In Touch</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 heading-gradient">GET IN TOUCH</h2>
           <p className="text-nil-dark-gray max-w-3xl mx-auto text-lg">
             Ready to learn more about how NIL Hispanic can help your brand connect with Hispanic student-athletes? Let's start a conversation.
           </p>
@@ -124,83 +94,7 @@ const ContactSection = () => {
           
           <div>
             <h3 className="text-2xl font-bold mb-6 text-nil-navy">Send Us a Message</h3>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label htmlFor="name" className="block mb-2 text-nil-navy font-semibold">
-                  Name <span className="text-nil-orange">*</span>
-                </label>
-                <Input
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="Your name"
-                  required
-                  className="w-full"
-                />
-              </div>
-              
-              <div>
-                <label htmlFor="email" className="block mb-2 text-nil-navy font-semibold">
-                  Email <span className="text-nil-orange">*</span>
-                </label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="Your email address"
-                  required
-                  className="w-full"
-                />
-              </div>
-              
-              <div>
-                <label htmlFor="phone" className="block mb-2 text-nil-navy font-semibold">
-                  Phone (Optional)
-                </label>
-                <Input
-                  id="phone"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  placeholder="Your phone number"
-                  className="w-full"
-                />
-              </div>
-              
-              <div>
-                <label htmlFor="title" className="block mb-2 text-nil-navy font-semibold">
-                  Title/Company (Optional)
-                </label>
-                <Input
-                  id="title"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleChange}
-                  placeholder="Your job title and company"
-                  className="w-full"
-                />
-              </div>
-              
-              <div>
-                <label htmlFor="message" className="block mb-2 text-nil-navy font-semibold">
-                  Message (Optional)
-                </label>
-                <Textarea
-                  id="message"
-                  name="message"
-                  value={formData.message}
-                  onChange={handleChange}
-                  placeholder="How can we help you?"
-                  className="w-full"
-                  rows={4}
-                />
-              </div>
-              
-              <Button type="submit" className="btn-primary">Send Message</Button>
-            </form>
+            <ContactForm />
           </div>
         </div>
       </div>
