@@ -84,7 +84,7 @@ const SoccerPage = () => {
         />
 
         {/* Intro Section */}
-        <section className="py-16 md:py-24 bg-gradient-to-br from-nil-light-blue via-nil-orange/10 to-white">
+        <section className="py-16 md:py-24 bg-gradient-to-br from-nil-light-blue via-nil-orange/30 to-white bg-gradient-with-image">
           <div className="container-custom">
             <div className="text-center">
               <h2 className="text-3xl md:text-4xl font-bold heading-gradient mb-12">
@@ -97,7 +97,7 @@ const SoccerPage = () => {
               </div>
               <div className="text-left">
                 <p className="text-lg md:text-xl text-gray-700 leading-relaxed">
-                  With the Men's World Cup (2026), Women's World Cup (2027), and LA28 Olympics on the horizon, the time is now to position your brand as a champion of soccer’s growth in the U.S. Women’s soccer, led by the NWSL and fueled by role models on and off the field, is exploding in popularity. Associating with ÑIL programs showcases your commitment to equality, representation, and empowerment.
+                  With the Men's World Cup (2026), Women's World Cup (2027), and LA28 Olympics on the horizon, the time is now to position your brand as a champion of soccer’s growth in the U.S. Women’s soccer, led by the NWSL and fueled by role models on and off the field, is exploding in popularity. Associating with ÑIL Hispanic programs showcases your commitment to equality, representation, and empowerment.
                 </p>
               </div>
             </div>
@@ -120,7 +120,7 @@ const SoccerPage = () => {
         </section>
 
         {/* Statistics Section */}
-        <section className="py-16 md:py-24 bg-gradient-to-br from-nil-light-blue via-nil-orange/10 to-white">
+        <section className="py-16 md:py-24 bg-gradient-to-br from-nil-light-blue via-nil-orange/30 to-white bg-gradient-with-image">
           <div className="container-custom">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold heading-gradient">
@@ -165,10 +165,11 @@ const SoccerPage = () => {
         </section>
 
         {/* Call to Action Section */}
-        <section className="py-16 md:py-24 bg-gradient-to-br from-nil-light-blue via-nil-orange/20 to-white">
-          <div className="container-custom text-center">
-            <h2 className="text-3xl md:text-4xl font-bold heading-gradient mb-6">JOIN THE MOVEMENT</h2>
-            <div className="max-w-3xl mx-auto space-y-6 text-gray-700 text-lg">
+        <section className="relative py-16 md:py-24 bg-[url('/images/background-img-1.png')] bg-cover bg-center bg-no-repeat bg-fixed">
+          <div className="absolute inset-0 bg-gradient-to-br from-nil-navy/85 via-nil-navy/50 to-nil-orange/45 z-0"></div>
+          <div className="relative z-10 container-custom text-center text-white">
+            <h2 className="text-3xl md:text-4xl font-bold heading-gradient-light mb-6">JOIN THE MOVEMENT</h2>
+            <div className="max-w-3xl mx-auto space-y-6 text-gray-200 text-lg">
                 <p className="leading-relaxed">
                     Partner with ÑIL Hispanic Soccer and connect with a passionate, loyal, and growing audience. Let's build the future of soccer together.
                 </p>

@@ -10,7 +10,7 @@ const ContactSection = () => {
         <div className="text-center mb-14">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 heading-gradient">GET IN TOUCH</h2>
           <p className="text-nil-dark-gray max-w-3xl mx-auto text-lg">
-            Ready to learn more about how NIL Hispanic can help your brand connect with Hispanic student-athletes? Let's start a conversation.
+            Ready to learn more about how ÑIL Hispanic can help your brand connect with Hispanic student-athletes? Let's start a conversation.
           </p>
         </div>
         
@@ -28,13 +28,13 @@ const ContactSection = () => {
               </div>
               <div>
                 <p className="font-semibold text-nil-orange mb-1">Follow Us</p>
-                <div className="flex space-x-4 mt-2">
-                  <a href="#" className="text-white hover:text-nil-orange">
+                <div className="flex items-center space-x-4 mt-2">
+                  <a href="https://www.instagram.com/NILHISPANIC" target="_blank" rel="noopener noreferrer" className="text-white hover:text-nil-orange">
                     <span className="sr-only">Instagram</span>
                     <svg 
                       xmlns="http://www.w3.org/2000/svg" 
-                      width="24" 
-                      height="24" 
+                      width="20" 
+                      height="20" 
                       viewBox="0 0 24 24" 
                       fill="none" 
                       stroke="currentColor" 
@@ -47,28 +47,24 @@ const ContactSection = () => {
                       <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line>
                     </svg>
                   </a>
-                  <a href="#" className="text-white hover:text-nil-orange">
-                    <span className="sr-only">Twitter</span>
+                  <a href="https://www.tiktok.com/@NILHISPANIC" target="_blank" rel="noopener noreferrer" className="text-white hover:text-nil-orange">
+                    <span className="sr-only">TikTok</span>
                     <svg 
-                      xmlns="http://www.w3.org/2000/svg" 
+                      xmlns="http://www.w3.org/2000/svg"
                       width="24" 
                       height="24" 
                       viewBox="0 0 24 24" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      strokeWidth="2" 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round" 
+                      fill="currentColor"
                     >
-                      <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path>
+                      <path fillRule="evenodd" clipRule="evenodd" d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22ZM16.9723 10.8705C17.0707 10.8698 17.1692 10.8648 17.2676 10.8554L17.269 10.8547V8.85796C15.7233 8.7452 14.4807 7.54139 14.3184 6H12.5996L12.5816 14.3771C12.5816 15.4049 11.6737 16.2144 10.6459 16.2144C9.61878 16.2144 8.7856 15.3819 8.7856 14.3541C8.7856 13.327 9.61806 12.4938 10.6459 12.4938C10.701 12.4938 10.7545 12.5012 10.808 12.5085C10.8291 12.5114 10.8502 12.5143 10.8714 12.5168V10.7197C10.8503 10.7185 10.8292 10.717 10.808 10.7156C10.7543 10.7119 10.7005 10.7082 10.6459 10.7082C8.63189 10.7082 7 12.3401 7 14.3541C7 16.3681 8.63189 18 10.6459 18C12.6599 18 14.2918 16.3674 14.2918 14.3541V9.4218C14.8844 10.3261 15.8921 10.8705 16.9723 10.8705Z"></path>
                     </svg>
                   </a>
-                  <a href="#" className="text-white hover:text-nil-orange">
+                  <a href="https://www.linkedin.com/company/nil-hispanic/?viewAsMember=true" target="_blank" rel="noopener noreferrer" className="text-white hover:text-nil-orange">
                     <span className="sr-only">LinkedIn</span>
                     <svg 
                       xmlns="http://www.w3.org/2000/svg" 
-                      width="24" 
-                      height="24" 
+                      width="20" 
+                      height="20" 
                       viewBox="0 0 24 24" 
                       fill="none" 
                       stroke="currentColor" 
@@ -87,7 +83,7 @@ const ContactSection = () => {
             
             <div className="mt-10">
               <h4 className="text-xl font-bold mb-4">Schedule a Meeting</h4>
-              <p className="mb-4">Interested in learning more? Schedule a virtual consultation with our team to discuss how NIL Hispanic can help your brand.</p>
+              <p className="mb-4">Interested in learning more? Schedule a virtual consultation with our team to discuss how ÑIL Hispanic can help your brand.</p>
               <Button className="bg-nil-orange hover:bg-opacity-90 text-white">Book Meeting</Button>
             </div>
           </div>

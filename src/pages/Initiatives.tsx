@@ -14,7 +14,7 @@ const InitiativesPage = () => {
     },
     {
       title: 'HOLA Houses',
-      description: 'Providing safe, supportive, and culturally-affirming housing for student-athletes.',
+      description: 'On-campus community spaces across U.S. universities specifically designed for Hispanic student-athletes.',
       icon: Home,
       href: '/initiatives/hola-houses',
     },
@@ -37,13 +37,13 @@ const InitiativesPage = () => {
       <main className="flex-grow">
         <HeroSection
           title={<>OUR <span className="heading-gradient-light">INITIATIVES</span></>}
-          subtitle="Discover the programs and projects we're championing to uplift and support the Hispanic athletic community."
+          subtitle="Discover the programs and projects we're championing to uplift and support the Hispanic student-athlete community."
           backgroundImageUrl="/images/athlete-test-img-15.jpg"
           backgroundPosition="right"
           className="pb-96"
         />
 
-        <section className="py-16 md:py-24 bg-gradient-to-br from-nil-light-blue via-nil-orange/10 to-white">
+        <section className="py-16 md:py-24 bg-gradient-to-br from-nil-light-blue via-nil-orange/30 to-white bg-gradient-with-image">
           <div className="container-custom">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold heading-gradient">

@@ -31,18 +31,7 @@ const Header = () => {
         
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-8">
-                    <HoverCard openDelay={200} closeDelay={100}>
-            <HoverCardTrigger asChild>
-              <Link to="/" className="flex items-center text-nil-navy hover:text-nil-orange transition-colors">
-                About <ChevronDown className="ml-1 h-4 w-4" />
-              </Link>
-            </HoverCardTrigger>
-            <HoverCardContent className="w-40 p-1">
-              <a href="#how-it-works" className="block px-2 py-1.5 text-sm rounded-sm hover:bg-gray-100">Our Mission</a>
-              <a href="#brands" className="block px-2 py-1.5 text-sm rounded-sm hover:bg-gray-100">Why Us</a>
-                            <a href="#athletes" className="block px-2 py-1.5 text-sm rounded-sm hover:bg-gray-100">Athlete Spotlight</a>
-            </HoverCardContent>
-          </HoverCard>
+                    <Link to="/" className="text-nil-navy hover:text-nil-orange transition-colors">About</Link>
           <Link to="/for-brands" className="text-nil-navy hover:text-nil-orange transition-colors">For Brands</Link>
           <Link to="/for-athletes" className="text-nil-navy hover:text-nil-orange transition-colors">For Athletes</Link>
           <HoverCard openDelay={200} closeDelay={100}>
@@ -52,9 +41,9 @@ const Header = () => {
               </Link>
             </HoverCardTrigger>
             <HoverCardContent className="w-48 p-1">
-              <Link to="/initiatives/collective" className="block px-2 py-1.5 text-sm rounded-sm hover:bg-gray-100">Collective</Link>
+              <Link to="/initiatives/collective" className="block px-2 py-1.5 text-sm rounded-sm hover:bg-gray-100">ÑILH Collective</Link>
               <Link to="/initiatives/hola-houses" className="block px-2 py-1.5 text-sm rounded-sm hover:bg-gray-100">HOLA Houses</Link>
-              <Link to="/initiatives/soccer" className="block px-2 py-1.5 text-sm rounded-sm hover:bg-gray-100">Soccer</Link>
+              <Link to="/initiatives/soccer" className="block px-2 py-1.5 text-sm rounded-sm hover:bg-gray-100">ÑILH Soccer</Link>
               <Link to="/initiatives/influencer-staffers" className="block px-2 py-1.5 text-sm rounded-sm hover:bg-gray-100">Influencer Staffers</Link>
             </HoverCardContent>
           </HoverCard>
@@ -88,15 +77,13 @@ const Header = () => {
       {mobileMenuOpen && (
         <div className="md:hidden bg-white shadow-md mt-2 animate-fade-in">
           <nav className="flex flex-col py-4">
-            <a href="#how-it-works" className="px-8 py-3 hover:bg-nil-light-gray">Our Mission</a>
-            <a href="#brands" className="px-8 py-3 hover:bg-nil-light-gray">Why Us</a>
-            <a href="#athletes" className="px-8 py-3 hover:bg-nil-light-gray">Athlete Spotlight</a>
+            <Link to="/" className="px-8 py-3 hover:bg-nil-light-gray">About</Link>
             <Link to="/for-brands" className="px-8 py-3 hover:bg-nil-light-gray">For Brands</Link>
             <Link to="/for-athletes" className="px-8 py-3 hover:bg-nil-light-gray">For Athletes</Link>
             <Link to="/initiatives" className="px-8 py-3 hover:bg-nil-light-gray">Initiatives</Link>
-            <Link to="/initiatives/collective" className="pl-12 pr-8 py-3 hover:bg-nil-light-gray text-sm">Collective</Link>
+            <Link to="/initiatives/collective" className="pl-12 pr-8 py-3 hover:bg-nil-light-gray text-sm">ÑILH Collective</Link>
             <Link to="/initiatives/hola-houses" className="pl-12 pr-8 py-3 hover:bg-nil-light-gray text-sm">HOLA Houses</Link>
-            <Link to="/initiatives/soccer" className="pl-12 pr-8 py-3 hover:bg-nil-light-gray text-sm">Soccer</Link>
+            <Link to="/initiatives/soccer" className="pl-12 pr-8 py-3 hover:bg-nil-light-gray text-sm">ÑILH Soccer</Link>
             <Link to="/initiatives/influencer-staffers" className="pl-12 pr-8 py-3 hover:bg-nil-light-gray text-sm">Influencer Staffers</Link>
             <Link to="/work-with-us" className="px-8 py-3 hover:bg-nil-light-gray">Work With Us</Link>
             <div className="px-8 py-3">

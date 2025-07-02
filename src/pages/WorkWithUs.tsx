@@ -43,16 +43,16 @@ const WorkWithUsPage = () => {
         <HeroSection
           title={<><span className="heading-gradient-light">WORK WITH US</span></>}
           subtitle="Let's build the future of Hispanic student-athlete empowerment together."
-          backgroundImageUrl="/images/athlete-test-img-18.jpg"
+          backgroundImageUrl="/images/athlete-test-img-19.jpg"
           backgroundPosition="center"
           className="pb-96"
         />
 
-        <section className="py-16 md:py-24 bg-gradient-to-br from-nil-light-blue via-nil-orange/10 to-white">
+        <section className="py-16 md:py-24 bg-gradient-to-br from-nil-light-blue via-nil-orange/30 to-white bg-gradient-with-image">
           <div className="container-custom">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold heading-gradient">
-                Opportunities to Collaborate
+                OPPORTUNITIES TO COLLABORATE
               </h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

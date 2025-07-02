@@ -14,7 +14,7 @@ const HowItWorksSection = () => {
     {
       number: "02",
       title: "Match with Athletes",
-      description: "We connect you with student-athletes whose personal brand and audience align with your company values and target market.",
+      description: "We connect you with student-athletes whose personal brand and audience align with your company values and objectives.",
       color: "bg-nil-light-gray"
     },
 
@@ -34,7 +34,7 @@ const HowItWorksSection = () => {
   ];
 
   return (
-    <section id="how-it-works" className="py-20 bg-gradient-to-br from-nil-light-blue via-nil-orange/20 to-nil-navy/30">
+    <section id="how-it-works" className="py-20 bg-gradient-to-br from-nil-light-blue via-nil-orange/40 to-nil-navy/50 bg-gradient-with-image">
       <div className="container-custom">
         <div className="text-center mb-14">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 heading-gradient">OUR MISSION</h2>
@@ -59,7 +59,7 @@ const HowItWorksSection = () => {
         </div>
         
         <div className="mt-12 text-center">
-          <Link to="/initiatives/collective" className="inline-flex items-center text-nil-orange font-semibold hover:underline">
+                    <Link to="/for-brands" className="inline-flex items-center text-nil-orange font-semibold hover:underline">
             Learn more <ArrowRight className="ml-2" size={18} />
           </Link>
         </div>

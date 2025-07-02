@@ -3,7 +3,8 @@ import Footer from "@/components/Footer";
 import HeroSection from '@/components/HeroSection';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Megaphone, DollarSign, Users, BookOpen, Mic, BarChart2, Heart } from 'lucide-react';
+import { ShieldCheck, Megaphone, Users, BarChart2 } from 'lucide-react';
+import InstagramPost from '@/components/InstagramPost';
 
 const ForAthletesPage = () => {
   const empowermentPoints = [
@@ -18,9 +19,9 @@ const ForAthletesPage = () => {
       description: "Your story is your brand. We help you identify your unique value, build a powerful personal narrative, and create a brand that resonates with fans and sponsors."
     },
     {
-      icon: DollarSign,
-      title: "Financial Literacy",
-      description: "Learn how to manage your earnings responsibly. Our workshops cover budgeting, taxes, and smart investment strategies to set you up for long-term financial success."
+      icon: BarChart2,
+      title: "Career Development",
+      description: "Prepare for life beyond sports with career planning resources, internship opportunities, and professional development workshops that help you transition successfully."
     },
     {
       icon: Users,
@@ -29,27 +30,11 @@ const ForAthletesPage = () => {
     }
   ];
 
-  const playbookTips = [
-    {
-      icon: Mic,
-      title: "Define Your Brand Voice",
-      description: "What are your core values? What makes you unique? Your content should consistently reflect who you are."
-    },
-    {
-      icon: BarChart2,
-      title: "Know Your Audience",
-      description: "Engage with your followers. Understand what they care about and create content that provides value to them."
-    },
-    {
-      icon: Heart,
-      title: "Authenticity is Key",
-      description: "Be genuine. Fans and brands are drawn to athletes who are real and relatable. Share your journey—the wins and the challenges."
-    },
-    {
-      icon: BookOpen,
-      title: "Content is King",
-      description: "Plan your content. Mix in behind-the-scenes footage, training clips, community involvement, and personal interests to create a well-rounded profile."
-    }
+  // TODO: Replace these placeholder URLs with the actual URLs of the Instagram posts you want to feature.
+  const instagramUrls = [
+    "https://www.instagram.com/p/DKAdmUkSN2z/?utm_source=ig_web_copy_link&igsh=ZTA4NHVrOGYxM3Rz",
+    "https://www.instagram.com/p/DJubjn-Sz4Y/?utm_source=ig_web_copy_link&igsh=MThqMHN1Z3Mwbm16Yw==",
+    "https://www.instagram.com/p/DJcZsi1yNU3/?utm_source=ig_web_copy_link&igsh=eDdybXNiN3h3OHZ0"
   ];
 
   return (
@@ -64,7 +49,7 @@ const ForAthletesPage = () => {
           className="pb-96"
         />
 
-        <section className="py-16 md:py-24 bg-white">
+        <section className="py-16 md:py-24 bg-gradient-to-br from-nil-light-blue via-nil-orange/30 to-white bg-gradient-with-image">
           <div className="container-custom">
             <div className="text-center">
               <h2 className="text-3xl md:text-4xl font-bold heading-gradient mb-12">EMPOWERING THE NEXT GENERATION OF HISPANIC ATHLETES</h2>
@@ -75,7 +60,7 @@ const ForAthletesPage = () => {
               </div>
               <div className="text-left">
                 <p className="text-lg md:text-xl text-gray-700 leading-relaxed">
-                  At ÑIL Hispanic, we believe in your potential. The world of Name, Image, and Likeness (NIL) has opened up incredible opportunities, and we are here to provide the resources, guidance, and community you need to thrive. Our programs are designed to help you build a successful brand, make smart financial decisions, and prepare for a prosperous life beyond sports.
+                  At ÑIL Hispanic, we believe in your potential. The world of Name, Image, and Likeness (NIL) has opened incredible opportunities, and we are here to provide the resources, guidance, and community you need to thrive. Our programs are designed to help you build a successful brand and prepare for a prosperous life beyond sports.
                 </p>
               </div>
             </div>
@@ -102,29 +87,27 @@ const ForAthletesPage = () => {
           </div>
         </section>
 
-        <section className="py-16 md:py-24 bg-white">
+        <section className="py-16 md:py-24 bg-gradient-to-br from-nil-light-blue via-nil-orange/30 to-white bg-gradient-with-image">
           <div className="container-custom">
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold heading-gradient">YOUR NIL PLAYBOOK: TIPS FOR SUCCESS</h2>
+              <h2 className="text-3xl md:text-4xl font-bold heading-gradient">ATHLETE SPOTLIGHTS</h2>
+              <p className="text-nil-dark-gray max-w-3xl mx-auto text-lg mt-4">
+                Stay up to date with the latest from the ÑIL Hispanic community.
+              </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {playbookTips.map((tip, index) => (
-                <div key={index} className="bg-gray-50 border border-gray-200 p-6 rounded-lg shadow-md text-center hover:shadow-xl transition-shadow">
-                  <div className="flex justify-center mb-4">
-                    <tip.icon className="w-10 h-10 text-nil-orange" />
-                  </div>
-                  <h3 className="text-xl font-bold text-nil-navy mb-2">{tip.title}</h3>
-                  <p className="text-gray-600">{tip.description}</p>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">
+              {instagramUrls.map((url, index) => (
+                <InstagramPost key={index} url={url} />
               ))}
             </div>
           </div>
         </section>
 
-        <section className="py-16 md:py-24 bg-gradient-to-br from-nil-light-blue via-nil-orange/20 to-white">
-          <div className="container-custom text-center">
-            <h2 className="text-3xl md:text-4xl font-bold heading-gradient mb-6">JOIN OUR COMMUNITY</h2>
-            <div className="max-w-3xl mx-auto space-y-6 text-gray-700 text-lg">
+        <section className="relative py-16 md:py-24 bg-[url('/images/background-img-1.png')] bg-cover bg-center bg-no-repeat bg-fixed">
+          <div className="absolute inset-0 bg-gradient-to-br from-nil-navy/85 via-nil-navy/50 to-nil-orange/45 z-0"></div>
+          <div className="relative z-10 container-custom text-center text-white">
+            <h2 className="text-3xl md:text-4xl font-bold heading-gradient-light mb-6">JOIN OUR COMMUNITY</h2>
+            <div className="max-w-3xl mx-auto space-y-6 text-gray-200 text-lg">
               <p className="leading-relaxed">
                 You are not alone on this journey. Connect with fellow Hispanic athletes who share your drive and ambition. Get involved, ask questions, and grow with us.
               </p>

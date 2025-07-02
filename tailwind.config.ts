@@ -76,8 +76,8 @@ export default {
 				sm: 'calc(var(--radius) - 4px)'
 			},
 			fontFamily: {
-				inter: ['Inter', 'sans-serif'],
-				spacemono: ['Space Mono', 'monospace'],
+				grotesk: ['Space Grotesk', 'sans-serif'],
+				roboto: ['Roboto', 'sans-serif'],
 			},
 			keyframes: {
 				'accordion-down': {

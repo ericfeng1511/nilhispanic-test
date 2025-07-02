@@ -19,7 +19,7 @@ const CollectivePage = () => {
         />
 
         {/* Welcome Section */}
-        <section className="py-16 md:py-24 bg-gradient-to-br from-nil-light-blue via-nil-orange/10 to-white">
+        <section className="py-16 md:py-24 bg-gradient-to-br from-nil-light-blue via-nil-orange/30 to-white bg-gradient-with-image">
           <div className="container-custom">
             <div className="text-center">
               <h2 className="text-3xl md:text-4xl font-bold heading-gradient mb-12">EMPOWERING HISPANIC STUDENT-ATHLETES NATIONWIDE</h2>
@@ -53,7 +53,7 @@ const CollectivePage = () => {
         </section>
 
         {/* Our Vision Section */}
-        <section className="py-16 md:py-24 bg-gradient-to-br from-nil-light-blue via-nil-orange/20 to-nil-navy/30">
+        <section className="py-16 md:py-24 bg-gradient-to-br from-nil-light-blue via-nil-orange/40 to-nil-navy/50 bg-gradient-with-image">
           <div className="container-custom">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold heading-gradient mb-4">OUR VISION</h2>
@@ -91,7 +91,7 @@ const CollectivePage = () => {
                   title: "Financial Support",
                   points: [
                     "Immediate funding goals to alleviate financial stress.",
-                    "Long-term growth in NIL opportunities for Hispanic athletes."
+                    "Long-term growth in NIL opportunities for Hispanic student-athletes."
                   ]
                 },{
                   title: "Networking Opportunities",
@@ -126,14 +126,15 @@ const CollectivePage = () => {
         </section>
 
         {/* Be Part of the Movement Section */}
-        <section className="py-16 md:py-24 bg-gradient-to-br from-nil-light-blue via-nil-orange/20 to-white">
-          <div className="container-custom text-center">
-            <h2 className="text-3xl md:text-4xl font-bold heading-gradient mb-6">BE PART OF THE MOVEMENT</h2>
-            <div className="max-w-3xl mx-auto space-y-6 text-gray-700 text-lg">
+        <section className="relative py-16 md:py-24 bg-[url('/images/background-img-1.png')] bg-cover bg-center bg-no-repeat bg-fixed">
+          <div className="absolute inset-0 bg-gradient-to-br from-nil-navy/85 via-nil-navy/50 to-nil-orange/45 z-0"></div>
+          <div className="relative z-10 container-custom text-center text-white">
+            <h2 className="text-3xl md:text-4xl font-bold heading-gradient-light mb-6">BE PART OF THE MOVEMENT</h2>
+            <div className="max-w-3xl mx-auto space-y-6 text-gray-200 text-lg">
               <p className="leading-relaxed">
                 Brands, companies, professional athletes, entertainers, and business leaders—we invite you to join us in making history. Together, we can empower the next generation of Hispanic student-athletes to reach their full potential and redefine the future of college sports.
               </p>
-              <p className="font-semibold text-nil-navy leading-relaxed">
+              <p className="font-semibold text-white leading-relaxed">
                 Student-Athletes: This is your home, your collective, your community. We are here to support you, uplift you, and show the world what Hispanic talent can achieve when given the resources to succeed.
               </p>
             </div>
@@ -142,7 +143,7 @@ const CollectivePage = () => {
                 <Link to="/contact">Learn More & Get Involved</Link>
               </Button>
             </div>
-            <p className="mt-8 text-xl font-semibold text-nil-navy">
+            <p className="mt-8 text-xl font-semibold text-white">
               ÑILH Collective: Inspiring Excellence, Building Community, Changing Lives.
             </p>
           </div>

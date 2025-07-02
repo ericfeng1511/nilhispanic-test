@@ -39,7 +39,7 @@ const AthleteSpotlight = () => {
   ]
 
   return (
-    <section id="athletes" className="py-20 bg-gradient-to-br from-nil-light-blue via-nil-orange/20 to-nil-navy/30">
+    <section id="athletes" className="py-20 bg-gradient-to-br from-nil-light-blue via-nil-orange/40 to-nil-navy/50 bg-gradient-with-image">
       <div className="container-custom">
         <div className="text-center mb-14">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 heading-gradient">ATHLETE SPOTLIGHT</h2>
