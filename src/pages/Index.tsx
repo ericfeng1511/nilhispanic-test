@@ -12,7 +12,7 @@ const Index = () => {
       <Header />
       <main>
         <HeroSection 
-          title={<>WE EMPOWER <span className="heading-gradient-light">HISPANIC STUDENT ATHLETES.</span></>}
+          title={<>WE EMPOWER <span className="heading-gradient-light">HISPANIC STUDENT-ATHLETES.</span></>}
           subtitle="Unlocking opportunities for the next generation of leaders, on and off the field."
           backgroundImageUrl="/images/athlete-test-img-1.png"
           buttons={[
