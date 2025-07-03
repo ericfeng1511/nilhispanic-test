@@ -192,12 +192,9 @@ const HolaHousesPage = () => {
                 Join us in creating spaces where Hispanic student-athletes can thrive, connect, and build the foundations for lifelong success.
               </p>
             </div>
-            <div className="mt-10 space-y-4 sm:space-y-0 sm:space-x-4 sm:flex sm:justify-center">
+            <div className="mt-10 flex justify-center">
               <Button asChild size="lg" className="btn-primary hover:bg-nil-orange/90 transition-colors text-lg px-10 py-6">
                 <Link to="/contact">Become a Founding Partner</Link>
-              </Button>
-              <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-nil-navy transition-colors text-lg px-10 py-6">
-                <Link to="/contact">Learn More</Link>
               </Button>
             </div>
             <p className="mt-8 text-xl font-semibold text-white">

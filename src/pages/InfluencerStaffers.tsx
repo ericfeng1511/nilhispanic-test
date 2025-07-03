@@ -156,23 +156,32 @@ const InfluencerStaffersPage = () => {
                 <p className="text-lg text-gray-200 leading-relaxed mb-6">
                   By hiring these student-athletes, you're investing in the fastest-growing, most influential Gen Z demographic: <span className="font-bold text-nil-orange">17-24 year-old Hispanics!</span>
                 </p>
-                <div className="grid md:grid-cols-3 gap-6 mt-8">
+                {/* <div className="grid md:grid-cols-3 gap-6 mt-8">
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-nil-orange mb-2">62M+</div>
-                    <div className="text-sm text-gray-300">Hispanic Americans</div>
+                    <div className="text-3xl font-bold text-nil-orange mb-2">18M+</div>
+                    <div className="text-sm text-gray-300">Hispanic Gen Z (17-24)</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-nil-orange mb-2">$2.8T</div>
-                    <div className="text-sm text-gray-300">Buying Power</div>
+                    <div className="text-3xl font-bold text-nil-orange mb-2">3.2x</div>
+                    <div className="text-sm text-gray-300">Higher Social Engagement</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-nil-orange mb-2">25%</div>
-                    <div className="text-sm text-gray-300">Gen Z Growth Rate</div>
+                    <div className="text-3xl font-bold text-nil-orange mb-2">85%</div>
+                    <div className="text-sm text-gray-300">Trust Peer Recommendations</div>
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
+        </section>
+
+        {/* Influencer Staffer Flyer Section */}
+        <section>
+          <img 
+            src="/images/influencer-staffers-flyer.jpg" 
+            alt="Influencer Staffer Services Flyers" 
+            className="w-full h-auto"
+          />
         </section>
 
         {/* CTA Section */}
@@ -188,12 +197,9 @@ const InfluencerStaffersPage = () => {
                 Connect with the Hispanic community through trusted voices and authentic storytelling.
               </p>
             </div>
-            <div className="mt-10 space-y-4 sm:space-y-0 sm:space-x-4 sm:flex sm:justify-center">
+            <div className="mt-10 flex justify-center">
               <Button asChild size="lg" className="btn-primary hover:bg-nil-orange/90 transition-colors text-lg px-10 py-6">
                 <Link to="/contact">Hire Influencer-Staffers</Link>
-              </Button>
-              <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-nil-navy transition-colors text-lg px-10 py-6">
-                <Link to="/contact">Learn More</Link>
               </Button>
             </div>
             <p className="mt-8 text-xl font-semibold text-white">

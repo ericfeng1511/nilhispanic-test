@@ -43,7 +43,7 @@ const WorkWithUsPage = () => {
         <HeroSection
           title={<><span className="heading-gradient-light">WORK WITH US</span></>}
           subtitle="Let's build the future of Hispanic student-athlete empowerment together."
-          backgroundImageUrl="/images/athlete-test-img-19.jpg"
+          backgroundImageUrl="/images/athlete-test-img-18.jpg"
           backgroundPosition="center"
           className="pb-96"
         />
