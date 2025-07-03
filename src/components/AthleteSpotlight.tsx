@@ -74,7 +74,7 @@ const AthleteSpotlight = () => {
             title="For Brands"
             description="Connect with the fastest-growing demographic in sports and unlock authentic partnerships that drive real results."
             features={[
-              "Access to 62M+ Hispanic Americans with $2.8T buying power",
+              "Access to 71M+ Hispanics with $2.6T buying power",
               "Authentic cultural connections and brand loyalty",
               "Comprehensive athlete network and event staffing",
               "Data-driven campaigns with measurable ROI"

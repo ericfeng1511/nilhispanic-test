@@ -45,7 +45,7 @@ const ForBrandsPage = () => {
           <AboutSection />
         </section>
 
-        <section className="relative py-32 bg-[url('/images/athlete-test-img-16.png')] bg-cover bg-center bg-no-repeat bg-fixed">
+        <section className="relative py-32 bg-[url('/images/athlete-test-img-23.jpg')] bg-cover bg-center bg-no-repeat bg-fixed">
           <div className="absolute inset-0 bg-gradient-to-br from-nil-navy/85 via-nil-navy/50 to-nil-orange/45 z-0"></div>
           <div className="relative z-10 container-custom">
             <div className="text-center mb-14">

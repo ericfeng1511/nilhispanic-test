@@ -77,17 +77,17 @@ const BrandsSection = () => {
           </div>
         </div>
         
-        <div className="mt-16">
+        {/* <div className="mt-16">
           <h3 className="text-2xl font-bold mb-8 text-center">Trusted By</h3>
           <div className="flex flex-wrap justify-center items-center gap-8">
             {/* Placeholder for partner logos - replace with actual logos */}
-            {[1, 2, 3, 4, 5].map((logo) => (
+            {/* {[1, 2, 3, 4, 5].map((logo) => (
               <div key={logo} className="w-32 h-12 bg-nil-light-gray flex items-center justify-center rounded">
                 <span className="text-nil-dark-gray font-semibold">Partner {logo}</span>
               </div>
-            ))}
-          </div>
-        </div>
+            ))} */}
+          {/* </div>
+        </div> */}
       </div>
     </section>
   );

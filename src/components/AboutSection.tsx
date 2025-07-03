@@ -13,7 +13,7 @@ const AboutSection = () => {
         <div className="flex flex-col md:flex-row gap-10 items-center">
           <div className="md:w-1/2">
             <img 
-              src="/images/athlete-test-img-5.jpg" 
+              src="/images/athlete-test-img-19.jpg" 
               alt="Hispanic athletes in action" 
               className="rounded-lg shadow-xl max-w-full h-auto object-cover"
             />
