@@ -76,7 +76,7 @@ const HolaHousesPage = () => {
         <HeroSection
           title={<><span className="font-bold">HOLA</span> <span className="heading-gradient-light">HOUSES</span></>}
           subtitle="The House of LatinX Athletes - Creating cultural and social hubs on campuses nationwide."
-          backgroundImageUrl="/images/athlete-test-img-22.jpg"
+          backgroundImageUrl="/images/hola-houses.png"
           backgroundPosition="center"
           className="pb-96"
         />
