@@ -1,5 +1,6 @@
-
 import { Button } from "@/components/ui/button";
+import { Mail, Phone, MapPin } from 'lucide-react';
+import { SchedulingModal } from "./SchedulingModal";
 import { ContactForm } from "./ContactForm";
 
 const ContactSection = () => {
@@ -84,7 +85,12 @@ const ContactSection = () => {
             <div className="mt-10">
               <h4 className="text-xl font-bold mb-4">Schedule a Meeting</h4>
               <p className="mb-4">Interested in learning more? Schedule a virtual consultation with our team to discuss how ÑIL Hispanic can help your brand.</p>
-              <Button className="bg-nil-orange hover:bg-opacity-90 text-white">Book Meeting</Button>
+              <SchedulingModal 
+                title="Schedule a Consultation"
+                description="Let's discuss how ÑIL Hispanic can help your brand connect with Hispanic student-athletes."
+              >
+                <Button className="bg-nil-orange hover:bg-opacity-90 text-white">Book Meeting</Button>
+              </SchedulingModal>
             </div>
           </div>
           

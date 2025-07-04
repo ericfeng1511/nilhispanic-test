@@ -3,6 +3,7 @@ import Footer from "@/components/Footer";
 import HeroSection from '@/components/HeroSection';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { SchedulingModal } from '../components/SchedulingModal';
 import { ShieldCheck, Megaphone, Users, BarChart2 } from 'lucide-react';
 import InstagramPost from '@/components/InstagramPost';
 
@@ -113,9 +114,14 @@ const ForAthletesPage = () => {
               </p>
             </div>
             <div className="mt-10">
-              <Button asChild size="lg" className="btn-primary hover:bg-nil-orange/90 transition-colors text-lg px-10 py-6">
-                <Link to="/contact">Get Involved</Link>
-              </Button>
+              <SchedulingModal 
+                title="Get Involved with ÑIL Hispanic"
+                description="Schedule a call to learn more about opportunities for Hispanic student-athletes and how to join our community."
+              >
+                <Button size="lg" className="btn-primary hover:bg-nil-orange/90 transition-colors text-lg px-10 py-6">
+                  Get Involved
+                </Button>
+              </SchedulingModal>
             </div>
           </div>
         </section>

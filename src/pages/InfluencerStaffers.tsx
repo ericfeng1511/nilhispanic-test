@@ -3,6 +3,7 @@ import Footer from '@/components/Footer';
 import HeroSection from '@/components/HeroSection';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { SchedulingModal } from '../components/SchedulingModal';
 import { Users, Shield, Heart, Star, TrendingUp, Handshake } from 'lucide-react';
 
 const InfluencerStaffersPage = () => {
@@ -198,13 +199,15 @@ const InfluencerStaffersPage = () => {
               </p>
             </div>
             <div className="mt-10 flex justify-center">
-              <Button asChild size="lg" className="btn-primary hover:bg-nil-orange/90 transition-colors text-lg px-10 py-6">
-                <Link to="/contact">Hire Influencer-Staffers</Link>
-              </Button>
+              <SchedulingModal 
+                title="Hire Influencer-Staffers"
+                description="Let's discuss how our Hispanic student-athletes can provide professional staffing and authentic promotional support for your events and brand activations."
+              >
+                <Button size="lg" className="btn-primary hover:bg-nil-orange/90 transition-colors text-lg px-10 py-6">
+                  Hire Influencer-Staffers
+                </Button>
+              </SchedulingModal>
             </div>
-            <p className="mt-8 text-xl font-semibold text-white">
-              Influencer-Staffers: Where Professional Meets Promotional.
-            </p>
           </div>
         </section>
 

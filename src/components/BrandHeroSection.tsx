@@ -13,11 +13,7 @@ const BrandHeroSection = () => {
           <p className="text-gray-300 text-lg md:text-xl mb-8 max-w-xl">
             Tap into a powerful and authentic demographic by partnering with the next generation of Hispanic leaders and influencers.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Link to="/contact">
-              <Button className="btn-primary transition-colors duration-500 w-full">Get Started</Button>
-            </Link>
-          </div>
+
         </div>
         <div className="md:w-1/2 flex justify-center">
           {/* Optional: You can add an image or graphic here if needed */}

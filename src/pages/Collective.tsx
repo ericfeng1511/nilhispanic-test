@@ -3,6 +3,7 @@ import Footer from '@/components/Footer';
 import HeroSection from '@/components/HeroSection'; // Assuming HeroSection is in @/components
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom'; // For CTA button
+import { SchedulingModal } from '../components/SchedulingModal';
 import FactCard from '@/components/FactCard';
 
 const CollectivePage = () => {
@@ -139,13 +140,15 @@ const CollectivePage = () => {
               </p>
             </div>
             <div className="mt-10">
-              <Button asChild size="lg" className="btn-primary hover:bg-nil-orange/90 transition-colors text-lg px-10 py-6">
-                <Link to="/contact">Learn More & Get Involved</Link>
-              </Button>
+              <SchedulingModal 
+                title="Join the ÑILH Collective"
+                description="Learn more about our collective and how you can get involved in championing Hispanic student-athletes nationwide."
+              >
+                <Button size="lg" className="btn-primary hover:bg-nil-orange/90 transition-colors text-lg px-10 py-6">
+                  Learn More & Get Involved
+                </Button>
+              </SchedulingModal>
             </div>
-            <p className="mt-8 text-xl font-semibold text-white">
-              ÑILH Collective: Inspiring Excellence, Building Community, Changing Lives.
-            </p>
           </div>
         </section>
 

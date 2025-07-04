@@ -1,5 +1,6 @@
 
 import { Button } from '@/components/ui/button';
+import { SchedulingModal } from './SchedulingModal';
 
 const BrandsSection = () => {
   const benefits = [
@@ -43,7 +44,12 @@ const BrandsSection = () => {
             </div>
             
             <div className="mt-8">
-              <Button className="btn-primary">Schedule Brand Consultation</Button>
+              <SchedulingModal 
+                title="Schedule Brand Consultation"
+                description="Let's discuss partnership opportunities and how we can help your brand connect with Hispanic student-athletes."
+              >
+                <Button className="btn-primary">Schedule Brand Consultation</Button>
+              </SchedulingModal>
             </div>
           </div>
           

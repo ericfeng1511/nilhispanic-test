@@ -6,6 +6,7 @@ import { BarChart, Globe, Heart, Smartphone, Tv, Users } from 'lucide-react';
 import type { LucideProps } from 'lucide-react';
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { SchedulingModal } from '../components/SchedulingModal';
 
 const SoccerPage = () => {
   const stats = [
@@ -175,9 +176,14 @@ const SoccerPage = () => {
                 </p>
             </div>
             <div className="mt-10">
-              <Button asChild size="lg" className="btn-primary hover:bg-nil-orange/90 transition-colors text-lg px-10 py-6">
-                <Link to="/for-brands">Partner With Us</Link>
-              </Button>
+              <SchedulingModal 
+                title="Partner with ÑILH Soccer"
+                description="Let's discuss how your brand can connect with Hispanic soccer fans and student-athletes through our soccer initiatives."
+              >
+                <Button size="lg" className="btn-primary hover:bg-nil-orange/90 transition-colors text-lg px-10 py-6">
+                  Partner With Us
+                </Button>
+              </SchedulingModal>
             </div>
           </div>
         </section>
