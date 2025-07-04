@@ -135,9 +135,6 @@ const CollectivePage = () => {
               <p className="leading-relaxed">
                 Brands, companies, professional athletes, entertainers, and business leaders—we invite you to join us in making history. Together, we can empower the next generation of Hispanic student-athletes to reach their full potential and redefine the future of college sports.
               </p>
-              <p className="font-semibold text-white leading-relaxed">
-                Student-Athletes: This is your home, your collective, your community. We are here to support you, uplift you, and show the world what Hispanic talent can achieve when given the resources to succeed.
-              </p>
             </div>
             <div className="mt-10">
               <SchedulingModal 
