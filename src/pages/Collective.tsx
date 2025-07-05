@@ -140,6 +140,7 @@ const CollectivePage = () => {
               <SchedulingModal 
                 title="Join the ÑILH Collective"
                 description="Learn more about our collective and how you can get involved in championing Hispanic student-athletes nationwide."
+                source="NILH Collective Initiative Page - Learn More & Get Involved Button"
               >
                 <Button size="lg" className="btn-primary hover:bg-nil-orange/90 transition-colors text-lg px-10 py-6">
                   Learn More & Get Involved

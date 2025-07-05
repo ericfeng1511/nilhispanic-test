@@ -15,13 +15,15 @@ interface SchedulingModalProps {
   title?: string;
   description?: string;
   calUsername?: string;
+  source?: string; // To track which page/button initiated the booking
 }
 
 export const SchedulingModal = ({ 
   children, 
   title = "Schedule a Meeting",
   description = "Choose a time that works best for you and we'll connect to discuss your needs.",
-  calUsername = "ericfeng1511" // Default Cal.com username
+  calUsername = "ericfeng1511", // Default Cal.com username
+  source = "website" // Default source identifier
 }: SchedulingModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -56,7 +58,7 @@ export const SchedulingModal = ({
             </div>
           )}
           <iframe
-            src={`https://cal.com/${calUsername}?embed=true&theme=light`}
+            src={`https://cal.com/${calUsername}?embed=true&theme=light#source=${encodeURIComponent(source)}`}
             width="100%"
             height="500"
             frameBorder="0"
@@ -70,7 +72,7 @@ export const SchedulingModal = ({
           <Button 
             variant="outline" 
             size="sm"
-            onClick={() => window.open(`https://cal.com/${calUsername}`, '_blank')}
+            onClick={() => window.open(`https://cal.com/${calUsername}#source=${encodeURIComponent(source)}`, '_blank')}
             className="text-nil-orange border-nil-orange hover:bg-nil-orange hover:text-white"
           >
             <ExternalLink className="h-4 w-4 mr-2" />

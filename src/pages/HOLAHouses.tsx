@@ -197,6 +197,7 @@ const HolaHousesPage = () => {
               <SchedulingModal 
                 title="Become a HOLA Houses Founding Partner"
                 description="Join us in creating cultural hubs for Hispanic student-athletes. Let's discuss founding partnership opportunities launching in 2026."
+                source="HOLA Houses Initiative Page - Become a Founding Partner Button"
               >
                 <Button size="lg" className="btn-primary hover:bg-nil-orange/90 transition-colors text-lg px-10 py-6">
                   Become a Founding Partner

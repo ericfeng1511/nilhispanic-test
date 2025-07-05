@@ -202,6 +202,7 @@ const InfluencerStaffersPage = () => {
               <SchedulingModal 
                 title="Hire Influencer-Staffers"
                 description="Let's discuss how our Hispanic student-athletes can provide professional staffing and authentic promotional support for your events and brand activations."
+                source="Influencer Staffers Initiative Page - Hire Influencer-Staffers Button"
               >
                 <Button size="lg" className="btn-primary hover:bg-nil-orange/90 transition-colors text-lg px-10 py-6">
                   Hire Influencer-Staffers

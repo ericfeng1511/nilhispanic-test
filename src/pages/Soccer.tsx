@@ -179,6 +179,7 @@ const SoccerPage = () => {
               <SchedulingModal 
                 title="Partner with ÑILH Soccer"
                 description="Let's discuss how your brand can connect with Hispanic soccer fans and student-athletes through our soccer initiatives."
+                source="Soccer Initiative Page - Partner With Us Button"
               >
                 <Button size="lg" className="btn-primary hover:bg-nil-orange/90 transition-colors text-lg px-10 py-6">
                   Partner With Us

@@ -46,7 +46,8 @@ const BrandsSection = () => {
             <div className="mt-8">
               <SchedulingModal 
                 title="Schedule Brand Consultation"
-                description="Let's discuss partnership opportunities and how we can help your brand connect with Hispanic student-athletes."
+                description="Let's discuss how your brand can connect with Hispanic student-athletes and tap into this powerful demographic."
+                source="For Brands Page - Schedule Brand Consultation Button"
               >
                 <Button className="btn-primary">Schedule Brand Consultation</Button>
               </SchedulingModal>

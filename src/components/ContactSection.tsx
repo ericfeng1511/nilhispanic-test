@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Mail, Phone, MapPin } from 'lucide-react';
+import { Mail, /* Phone, */ MapPin } from 'lucide-react';
 import { SchedulingModal } from "./SchedulingModal";
 import { ContactForm } from "./ContactForm";
 
@@ -23,10 +23,10 @@ const ContactSection = () => {
                 <p className="font-semibold text-nil-orange mb-1">Email</p>
                 <p>contact@nilhispanic.com</p>
               </div>
-              <div>
+              {/* <div>
                 <p className="font-semibold text-nil-orange mb-1">Phone</p>
                 <p>(555) 123-4567</p>
-              </div>
+              </div> */}
               <div>
                 <p className="font-semibold text-nil-orange mb-1">Follow Us</p>
                 <div className="flex items-center space-x-4 mt-2">
@@ -86,8 +86,9 @@ const ContactSection = () => {
               <h4 className="text-xl font-bold mb-4">Schedule a Meeting</h4>
               <p className="mb-4">Interested in learning more? Schedule a virtual consultation with our team to discuss how ÑIL Hispanic can help your brand.</p>
               <SchedulingModal 
-                title="Schedule a Consultation"
-                description="Let's discuss how ÑIL Hispanic can help your brand connect with Hispanic student-athletes."
+                title="Book a Meeting"
+                description="Let's discuss how ÑIL Hispanic can help you connect with Hispanic student-athletes and grow your brand."
+                source="About Page - Book Meeting Button"
               >
                 <Button className="bg-nil-orange hover:bg-opacity-90 text-white">Book Meeting</Button>
               </SchedulingModal>

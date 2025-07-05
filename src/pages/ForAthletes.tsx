@@ -116,7 +116,8 @@ const ForAthletesPage = () => {
             <div className="mt-10">
               <SchedulingModal 
                 title="Get Involved with ÑIL Hispanic"
-                description="Schedule a call to learn more about opportunities for Hispanic student-athletes and how to join our community."
+                description="Ready to join our community? Let's discuss how you can get involved and benefit from our programs and opportunities."
+                source="For Athletes Page - Get Involved Button"
               >
                 <Button size="lg" className="btn-primary hover:bg-nil-orange/90 transition-colors text-lg px-10 py-6">
                   Get Involved
