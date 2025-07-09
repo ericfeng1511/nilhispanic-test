@@ -1,7 +1,7 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BrandHeroSection from '@/components/BrandHeroSection';
-import BrandWelcomePopup from '@/components/BrandWelcomePopup';
+import InitiativePopup from '@/components/InitiativePopup';
 import FactCard from '@/components/FactCard';
 import AboutSection from '@/components/AboutSection';
 import BrandsSection from '@/components/BrandsSection';
@@ -113,7 +113,7 @@ const ForBrandsPage = () => {
         </section>
       </main>
       <Footer />
-      <BrandWelcomePopup />
+      <InitiativePopup />
     </div>
   );
 };
