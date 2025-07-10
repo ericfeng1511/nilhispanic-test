@@ -106,7 +106,7 @@ const SoccerPage = () => {
         </section>
 
         {/* Host Cities Section */}
-        <section className="relative py-16 md:py-24 bg-[url('/images/athlete-test-img-6.jpg')] bg-cover bg-center bg-no-repeat bg-fixed">
+        <section className="relative py-16 md:py-24 bg-[url('/images/athlete-test-img-6.jpg')] bg-cover bg-center bg-no-repeat md:bg-fixed">
           <div className="absolute inset-0 bg-gradient-to-br from-nil-navy/90 via-nil-navy/70 to-nil-orange/60 z-0"></div>
           <div className="relative z-10 container-custom text-white text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-6 heading-gradient-light">WORLD CUP 2026 U.S. HOST CITIES</h2>
@@ -146,7 +146,7 @@ const SoccerPage = () => {
         </section>
 
         {/* Rationale for Sponsorship Section */}
-        <section className="relative py-16 md:py-24 bg-[url('/images/athlete-test-img-14.jpg')] bg-cover bg-center bg-no-repeat bg-fixed">
+        <section className="relative py-16 md:py-24 bg-[url('/images/athlete-test-img-14.jpg')] bg-cover bg-center bg-no-repeat md:bg-fixed">
           <div className="absolute inset-0 bg-gradient-to-br from-nil-orange/70 via-nil-navy/80 to-nil-navy/90 z-0"></div>
           <div className="relative z-10 container-custom text-white">
             <div className="text-center mb-12">
@@ -166,7 +166,7 @@ const SoccerPage = () => {
         </section>
 
         {/* Call to Action Section */}
-        <section className="relative py-16 md:py-24 bg-[url('/images/background-img-1.png')] bg-cover bg-center bg-no-repeat bg-fixed">
+        <section className="relative py-16 md:py-24 bg-[url('/images/background-img-1.png')] bg-cover bg-center bg-no-repeat md:bg-fixed">
           <div className="absolute inset-0 bg-gradient-to-br from-nil-navy/85 via-nil-navy/50 to-nil-orange/45 z-0"></div>
           <div className="relative z-10 container-custom text-center text-white">
             <h2 className="text-3xl md:text-4xl font-bold heading-gradient-light mb-6">JOIN THE MOVEMENT</h2>

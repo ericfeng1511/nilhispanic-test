@@ -45,7 +45,7 @@ const ForBrandsPage = () => {
           <AboutSection />
         </section>
 
-        <section className="relative py-32 bg-[url('/images/athlete-test-img-23.jpg')] bg-cover bg-center bg-no-repeat bg-fixed">
+        <section className="relative py-32 bg-[url('/images/athlete-test-img-23.jpg')] bg-cover bg-center bg-no-repeat md:bg-fixed">
           <div className="absolute inset-0 bg-gradient-to-br from-nil-navy/85 via-nil-navy/50 to-nil-orange/45 z-0"></div>
           <div className="relative z-10 container-custom">
             <div className="text-center mb-14">
@@ -85,7 +85,7 @@ const ForBrandsPage = () => {
           <BrandsSection />
         </section>
 
-        <section className="relative py-20 bg-[url('/images/background-img-1.png')] bg-cover bg-center bg-no-repeat bg-fixed">
+        <section className="relative py-20 bg-[url('/images/background-img-1.png')] bg-cover bg-center bg-no-repeat md:bg-fixed">
           <div className="absolute inset-0 bg-gradient-to-br from-nil-navy/85 via-nil-navy/50 to-nil-orange/45 z-0"></div>
           <div className="relative z-10 container-custom">
             <div className="text-center pt-0 pb-14 md:pt-8 md:pb-20"> {/* Adjusted padding for better placement within section */} 

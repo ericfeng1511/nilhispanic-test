@@ -6,7 +6,7 @@ const WhatsNILPage = () => {
     <div className="min-h-screen flex flex-col bg-nil-navy">
       <Header />
       <main className="flex-grow">
-        <section className="relative pt-28 pb-48 bg-[url('/images/athlete-test-img-2.png')] bg-cover bg-center bg-no-repeat">
+        <section className="relative pt-28 pb-48 bg-[url('/images/athlete-test-img-2.png')] bg-cover bg-center bg-no-repeat md:bg-fixed">
           <div className="absolute inset-0 bg-gradient-to-br from-nil-navy/85 via-nil-navy/50 to-nil-orange/45 z-0"></div>
           <div className="relative z-10 container-custom flex flex-col items-center text-center">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mt-40 mb-8 text-gray-100">

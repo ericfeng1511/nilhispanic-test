@@ -127,6 +127,30 @@
     opacity: 0.0; /* You can adjust this value */
     z-index: -1;
   }
+
+  /* Mobile-optimized background images */
+  .bg-mobile-optimized {
+    background-attachment: scroll;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
+  @media (min-width: 768px) {
+    .bg-mobile-optimized {
+      background-attachment: fixed;
+    }
+  }
+
+  /* Prevent background zoom on mobile */
+  @media (max-width: 767px) {
+    .bg-mobile-optimized {
+      background-size: cover;
+      background-position: center center;
+      transform: translateZ(0); /* Force hardware acceleration */
+      -webkit-transform: translateZ(0);
+    }
+  }
 }
 
 @layer components {

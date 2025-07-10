@@ -30,8 +30,12 @@ const HeroSection: React.FC<HeroSectionProps> = ({
 }) => {
   return (
     <section
-      className={`relative pt-28 pb-48 bg-cover bg-no-repeat bg-fixed ${className}`}
-      style={{ backgroundImage: `url(${backgroundImageUrl})`, backgroundPosition }}
+      className={`relative pt-28 pb-48 bg-cover bg-no-repeat md:bg-fixed ${className}`}
+      style={{ 
+        backgroundImage: `url(${backgroundImageUrl})`, 
+        backgroundPosition: backgroundPosition,
+        backgroundSize: 'cover'
+      }}
     >
       <div className="absolute inset-0 bg-gradient-to-br from-nil-navy/85 via-nil-navy/50 to-nil-orange/45 z-0"></div>
       <div className="relative z-10 container-custom flex flex-col md:flex-row items-center">

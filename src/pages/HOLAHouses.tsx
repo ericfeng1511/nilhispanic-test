@@ -106,7 +106,7 @@ const HolaHousesPage = () => {
         </section>
 
         {/* Purpose & Impact Section */}
-        <section className="relative py-16 md:py-24 bg-[url('/images/athlete-test-img-20.jpeg')] bg-cover bg-center bg-no-repeat bg-fixed">
+        <section className="relative py-16 md:py-24 bg-[url('/images/athlete-test-img-20.jpeg')] bg-cover bg-center bg-no-repeat md:bg-fixed">
           <div className="absolute inset-0 bg-gradient-to-br from-nil-navy/90 via-nil-navy/70 to-nil-orange/60 z-0"></div>
           <div className="relative z-10 container-custom text-white">
             <div className="text-center mb-12">
@@ -154,7 +154,7 @@ const HolaHousesPage = () => {
         </section>
 
         {/* What's In It for Sponsors */}
-        <section className="relative py-16 md:py-24 bg-[url('/images/athlete-test-img-21.jpg')] bg-cover bg-center bg-no-repeat bg-fixed">
+        <section className="relative py-16 md:py-24 bg-[url('/images/athlete-test-img-21.jpg')] bg-cover bg-center bg-no-repeat md:bg-fixed">
           <div className="absolute inset-0 bg-gradient-to-br from-nil-orange/70 via-nil-navy/80 to-nil-navy/90 z-0"></div>
           <div className="relative z-10 container-custom text-white">
             <div className="text-center mb-12">
@@ -181,7 +181,7 @@ const HolaHousesPage = () => {
         </section>
 
         {/* Coming 2026 Section */}
-        <section className="relative py-16 md:py-24 bg-[url('/images/background-img-1.png')] bg-cover bg-center bg-no-repeat bg-fixed">
+        <section className="relative py-16 md:py-24 bg-[url('/images/background-img-1.png')] bg-cover bg-center bg-no-repeat md:bg-fixed">
           <div className="absolute inset-0 bg-gradient-to-br from-nil-navy/85 via-nil-navy/50 to-nil-orange/45 z-0"></div>
           <div className="relative z-10 container-custom text-center text-white">
             <h2 className="text-3xl md:text-4xl font-bold heading-gradient-light mb-6">COMING 2026 — BE A FOUNDING PARTNER</h2>
