@@ -15,8 +15,8 @@ const ContactSection = () => {
           </p>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          <div className="bg-nil-navy rounded-lg p-8 text-white">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+          <div className="bg-nil-navy rounded-lg p-6 md:p-8 text-white">
             <h3 className="text-2xl font-bold mb-6">Contact Information</h3>
             <div className="space-y-6">
               <div>
@@ -90,14 +90,16 @@ const ContactSection = () => {
                 description="Let's discuss how ÑIL Hispanic can help you connect with Hispanic student-athletes and grow your brand."
                 source="About Page - Book Meeting Button"
               >
-                <Button className="bg-nil-orange hover:bg-opacity-90 text-white">Book Meeting</Button>
+                <Button className="bg-nil-orange hover:bg-opacity-90 text-white w-full h-12 touch-manipulation">Book Meeting</Button>
               </SchedulingModal>
             </div>
           </div>
           
-          <div>
+          <div className="w-full">
             <h3 className="text-2xl font-bold mb-6 text-nil-navy">Send Us a Message</h3>
-            <ContactForm />
+            <div className="w-full">
+              <ContactForm />
+            </div>
           </div>
         </div>
       </div>

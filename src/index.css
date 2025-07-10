@@ -151,6 +151,35 @@
       -webkit-transform: translateZ(0);
     }
   }
+
+  /* Mobile form optimizations */
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+
+  /* Prevent zoom on input focus for iOS */
+  @media screen and (max-width: 767px) {
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    textarea {
+      font-size: 16px !important;
+      transform: translateZ(0);
+      -webkit-appearance: none;
+      appearance: none;
+      border-radius: 0;
+    }
+  }
+
+  /* Improve touch targets on mobile */
+  @media (max-width: 767px) {
+    button,
+    input,
+    textarea,
+    select {
+      min-height: 44px;
+    }
+  }
 }
 
 @layer components {

@@ -80,7 +80,7 @@ export const ContactForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6 w-full">
       <div>
         <label htmlFor="name" className="block mb-2 text-nil-navy font-semibold">
           Name <span className="text-nil-orange">*</span>
@@ -92,7 +92,8 @@ export const ContactForm = () => {
           onChange={handleChange}
           placeholder="Your name"
           required
-          className="w-full"
+          className="w-full h-12 text-base md:text-sm"
+          autoComplete="name"
         />
       </div>
       
@@ -108,7 +109,8 @@ export const ContactForm = () => {
           onChange={handleChange}
           placeholder="Your email address"
           required
-          className="w-full"
+          className="w-full h-12 text-base md:text-sm"
+          autoComplete="email"
         />
       </div>
       
@@ -119,10 +121,12 @@ export const ContactForm = () => {
         <Input
           id="phone"
           name="phone"
+          type="tel"
           value={formData.phone}
           onChange={handleChange}
           placeholder="Your phone number"
-          className="w-full"
+          className="w-full h-12 text-base md:text-sm"
+          autoComplete="tel"
         />
       </div>
       
@@ -136,7 +140,8 @@ export const ContactForm = () => {
           value={formData.title}
           onChange={handleChange}
           placeholder="Your job title and company"
-          className="w-full"
+          className="w-full h-12 text-base md:text-sm"
+          autoComplete="organization-title"
         />
       </div>
       
@@ -150,7 +155,7 @@ export const ContactForm = () => {
           value={formData.message}
           onChange={handleChange}
           placeholder="How can we help you?"
-          className="w-full"
+          className="w-full min-h-[120px] text-base md:text-sm resize-none"
           rows={4}
         />
       </div>
@@ -205,7 +210,11 @@ export const ContactForm = () => {
         </div>
       </div> */}
       
-      <Button type="submit" className="btn-primary" disabled={isSubmitting}>
+      <Button 
+        type="submit" 
+        className="btn-primary w-full h-12 text-base font-semibold touch-manipulation" 
+        disabled={isSubmitting}
+      >
         {isSubmitting ? 'Sending...' : 'Send Message'}
       </Button>
     </form>
