@@ -19,12 +19,6 @@ import {
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [contactDialogOpen, setContactDialogOpen] = useState(false);
-
-  const handleContactDialogOpen = () => {
-    setContactDialogOpen(true);
-    setMobileMenuOpen(false); // Close mobile menu when dialog opens
-  };
 
   return (
     <header className="py-4 bg-white fixed w-full z-50 shadow-md">
@@ -93,12 +87,9 @@ const Header = () => {
             <Link to="/initiatives/influencer-staffers" className="pl-12 pr-8 py-3 hover:bg-nil-light-gray text-sm">Influencer Staffers</Link>
             <Link to="/work-with-us" className="px-8 py-3 hover:bg-nil-light-gray">Work With Us</Link>
             <div className="px-8 py-3">
-              <Dialog open={contactDialogOpen} onOpenChange={setContactDialogOpen}>
+              <Dialog>
                 <DialogTrigger asChild>
-                  <Button 
-                    className="btn-primary w-full h-12 touch-manipulation" 
-                    onClick={handleContactDialogOpen}
-                  >
+                  <Button className="btn-primary w-full h-12 touch-manipulation">
                     Contact Us
                   </Button>
                 </DialogTrigger>
