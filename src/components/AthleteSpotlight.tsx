@@ -65,7 +65,7 @@ const AthleteSpotlight = () => {
             DISCOVER YOUR <span className="heading-gradient-light">OPPORTUNITIES</span>
           </h2>
           <p className="text-gray-200 max-w-4xl mx-auto text-xl leading-relaxed">
-            Whether you're a brand looking to connect with Hispanic student-athletes or an athlete ready to unlock your potential, we have the perfect path for you.
+            Whether you're a brand aiming to win with the Hispanic market—or an athlete ready to unlock your potential—we’ll help you thrive at the intersection of culture and influence.
           </p>
         </div>
         
