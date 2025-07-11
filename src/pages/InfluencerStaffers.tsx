@@ -1,12 +1,40 @@
+import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import HeroSection from '@/components/HeroSection';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { SchedulingModal } from '../components/SchedulingModal';
-import { Users, Shield, Heart, Star, TrendingUp, Handshake } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Users, Shield, Heart, Star, TrendingUp, Handshake, X } from 'lucide-react';
+
+const FLYER_SEEN_KEY = 'hasSeenInfluencerStaffersFlyerPopup';
 
 const InfluencerStaffersPage = () => {
+  const [showFlyerModal, setShowFlyerModal] = useState(false);
+
+  // Show the flyer popup only if it hasn't been seen in this browser session
+  useEffect(() => {
+    const hasSeenFlyer = localStorage.getItem(FLYER_SEEN_KEY);
+    if (!hasSeenFlyer) {
+      // Show popup after a short delay for better UX
+      const timer = setTimeout(() => {
+        setShowFlyerModal(true);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const handleCloseFlyerModal = () => {
+    setShowFlyerModal(false);
+    localStorage.setItem(FLYER_SEEN_KEY, 'true');
+  };
+
   const benefits = [
     {
       icon: Shield,
@@ -176,15 +204,6 @@ const InfluencerStaffersPage = () => {
           </div>
         </section>
 
-        {/* Influencer Staffer Flyer Section */}
-        <section>
-          <img 
-            src="/images/influencer-staffers-flyer.jpg" 
-            alt="Influencer Staffer Services Flyers" 
-            className="w-full h-auto"
-          />
-        </section>
-
         {/* CTA Section */}
         <section className="relative py-16 md:py-24 bg-[url('/images/background-img-1.png')] bg-cover bg-center bg-no-repeat md:bg-fixed">
           <div className="absolute inset-0 bg-gradient-to-br from-nil-navy/85 via-nil-navy/50 to-nil-orange/45 z-0"></div>
@@ -214,6 +233,29 @@ const InfluencerStaffersPage = () => {
 
       </main>
       <Footer />
+      
+      {/* Flyer Popup Modal */}
+      <Dialog open={showFlyerModal} onOpenChange={handleCloseFlyerModal}>
+        <DialogContent className="max-w-2xl w-full mx-4 p-0 bg-transparent border-0 shadow-none">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Influencer Staffers Flyer</DialogTitle>
+          </DialogHeader>
+          <div className="relative">
+            <button
+              onClick={handleCloseFlyerModal}
+              className="absolute -top-4 -right-4 z-50 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors"
+              aria-label="Close flyer"
+            >
+              <X className="h-6 w-6 text-gray-600" />
+            </button>
+            <img 
+              src="/images/influencer-staffers-flyer.jpg" 
+              alt="Influencer Staffer Services Flyers" 
+              className="w-full h-auto rounded-lg shadow-2xl"
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
