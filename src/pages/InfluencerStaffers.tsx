@@ -4,12 +4,14 @@ import Footer from '@/components/Footer';
 import HeroSection from '@/components/HeroSection';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { SchedulingModal } from '../components/SchedulingModal';
+import { ContactForm } from '@/components/ContactForm';
 import {
   Dialog,
+  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Users, Shield, Heart, Star, TrendingUp, Handshake, X } from 'lucide-react';
 
@@ -218,15 +220,22 @@ const InfluencerStaffersPage = () => {
               </p>
             </div>
             <div className="mt-10 flex justify-center">
-              <SchedulingModal 
-                title="Hire Influencer-Staffers"
-                description="Let's discuss how our Hispanic student-athletes can provide professional staffing and authentic promotional support for your events and brand activations."
-                source="Influencer Staffers Initiative Page - Hire Influencer-Staffers Button"
-              >
-                <Button size="lg" className="btn-primary hover:bg-nil-orange/90 transition-colors text-lg px-10 py-6">
-                  Hire Influencer-Staffers
-                </Button>
-              </SchedulingModal>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button size="lg" className="btn-primary hover:bg-nil-orange/90 transition-colors text-lg px-10 py-6">
+                    Hire Influencer-Staffers
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px] mx-4 max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Hire Influencer-Staffers</DialogTitle>
+                    <DialogDescription>
+                      Let's discuss how our Hispanic student-athletes can provide professional staffing and authentic promotional support for your events and brand activations.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <ContactForm />
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
         </section>

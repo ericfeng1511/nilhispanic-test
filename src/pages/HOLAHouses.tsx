@@ -3,7 +3,15 @@ import Footer from '@/components/Footer';
 import HeroSection from '@/components/HeroSection';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { SchedulingModal } from '../components/SchedulingModal';
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { ContactForm } from '@/components/ContactForm';
 import { Home, Users, Calendar, Network, Trophy, Gamepad2, Music, Coffee, Briefcase, Gift } from 'lucide-react';
 
 const HolaHousesPage = () => {
@@ -194,15 +202,22 @@ const HolaHousesPage = () => {
               </p>
             </div>
             <div className="mt-10 flex justify-center">
-              <SchedulingModal 
-                title="Become a HOLA Houses Founding Partner"
-                description="Join us in creating cultural hubs for Hispanic student-athletes. Let's discuss founding partnership opportunities launching in 2026."
-                source="HOLA Houses Initiative Page - Become a Founding Partner Button"
-              >
-                <Button size="lg" className="btn-primary hover:bg-nil-orange/90 transition-colors text-lg px-10 py-6">
-                  Become a Founding Partner
-                </Button>
-              </SchedulingModal>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button size="lg" className="btn-primary hover:bg-nil-orange/90 transition-colors text-lg px-10 py-6">
+                    Become a Founding Partner
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px] mx-4 max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Become a HOLA Houses Founding Partner</DialogTitle>
+                    <DialogDescription>
+                      Join us in creating cultural hubs for Hispanic student-athletes. Let's discuss founding partnership opportunities launching in 2026.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <ContactForm />
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
         </section>

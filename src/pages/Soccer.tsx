@@ -6,7 +6,15 @@ import { BarChart, Globe, Heart, Smartphone, Tv, Users } from 'lucide-react';
 import type { LucideProps } from 'lucide-react';
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { SchedulingModal } from '../components/SchedulingModal';
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { ContactForm } from '@/components/ContactForm';
 
 const SoccerPage = () => {
   const stats = [
@@ -176,15 +184,22 @@ const SoccerPage = () => {
                 </p>
             </div>
             <div className="mt-10">
-              <SchedulingModal 
-                title="Partner with ÑILH Soccer"
-                description="Let's discuss how your brand can connect with Hispanic soccer fans and student-athletes through our soccer initiatives."
-                source="Soccer Initiative Page - Partner With Us Button"
-              >
-                <Button size="lg" className="btn-primary hover:bg-nil-orange/90 transition-colors text-lg px-10 py-6">
-                  Partner With Us
-                </Button>
-              </SchedulingModal>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button size="lg" className="btn-primary hover:bg-nil-orange/90 transition-colors text-lg px-10 py-6">
+                    Partner With Us
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px] mx-4 max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Partner with ÑILH Soccer</DialogTitle>
+                    <DialogDescription>
+                      Let's discuss how your brand can connect with Hispanic soccer fans and student-athletes through our soccer initiatives.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <ContactForm />
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
         </section>

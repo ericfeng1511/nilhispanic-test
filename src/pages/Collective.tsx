@@ -3,7 +3,15 @@ import Footer from '@/components/Footer';
 import HeroSection from '@/components/HeroSection'; // Assuming HeroSection is in @/components
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom'; // For CTA button
-import { SchedulingModal } from '../components/SchedulingModal';
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { ContactForm } from '@/components/ContactForm';
 import FactCard from '@/components/FactCard';
 
 const CollectivePage = () => {
@@ -137,15 +145,22 @@ const CollectivePage = () => {
               </p>
             </div>
             <div className="mt-10">
-              <SchedulingModal 
-                title="Join the ÑILH Collective"
-                description="Learn more about our collective and how you can get involved in championing Hispanic student-athletes nationwide."
-                source="NILH Collective Initiative Page - Learn More & Get Involved Button"
-              >
-                <Button size="lg" className="btn-primary hover:bg-nil-orange/90 transition-colors text-lg px-10 py-6">
-                  Learn More & Get Involved
-                </Button>
-              </SchedulingModal>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button size="lg" className="btn-primary hover:bg-nil-orange/90 transition-colors text-lg px-10 py-6">
+                    Learn More & Get Involved
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px] mx-4 max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Join the ÑILH Collective</DialogTitle>
+                    <DialogDescription>
+                      Learn more about our collective and how you can get involved in championing Hispanic student-athletes nationwide.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <ContactForm />
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
         </section>
