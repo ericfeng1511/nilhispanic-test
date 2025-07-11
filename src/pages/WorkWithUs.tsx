@@ -1,6 +1,16 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import HeroSection from "@/components/HeroSection";
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { ContactForm } from '@/components/ContactForm';
 import { Palette, Share2, Code, PenTool, Briefcase, Megaphone } from 'lucide-react';
 
 const WorkWithUsPage = () => {
@@ -71,6 +81,37 @@ const WorkWithUsPage = () => {
                   </div>
                 );
               })}
+            </div>
+          </div>
+        </section>
+
+        {/* Call to Action Section */}
+        <section className="relative py-16 md:py-24 bg-[url('/images/background-img-1.png')] bg-cover bg-center bg-no-repeat md:bg-fixed">
+          <div className="absolute inset-0 bg-gradient-to-br from-nil-navy/85 via-nil-navy/50 to-nil-orange/45 z-0"></div>
+          <div className="relative z-10 container-custom text-center text-white">
+            <h2 className="text-3xl md:text-4xl font-bold heading-gradient-light mb-6">READY TO JOIN OUR TEAM?</h2>
+            <div className="max-w-3xl mx-auto space-y-6 text-gray-200 text-lg">
+              <p className="leading-relaxed">
+                Let's work together to empower Hispanic student-athletes and build something meaningful.
+              </p>
+            </div>
+            <div className="mt-10">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button size="lg" className="btn-primary hover:bg-nil-orange/90 transition-colors text-lg px-10 py-6">
+                    Get Started Today
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px] mx-4 max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Join Our Team</DialogTitle>
+                    <DialogDescription>
+                      Tell us about your skills and interests, and we'll connect you with the right opportunities to contribute to the ÑIL Hispanic mission.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <ContactForm />
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
         </section>
