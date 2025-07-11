@@ -3,10 +3,12 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
 interface HeroButtonProps {
-  text: string;
+  text: string | React.ReactNode;
   link: string;
   variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
   className?: string;
+  onClick?: () => void;
+  size?: 'sm' | 'default' | 'lg';
 }
 
 interface HeroSectionProps {
@@ -49,14 +51,35 @@ const HeroSection: React.FC<HeroSectionProps> = ({
             </p>
           )}
           {buttons && buttons.length > 0 && (
-            <div className="flex flex-col sm:flex-row gap-4">
-              {buttons.map((button, index) => (
-                <Link to={button.link} key={index}>
-                  <Button variant={button.variant || 'default'} className={`transition-colors duration-500 w-full ${button.className || ''}`}>
-                    {button.text}
-                  </Button>
-                </Link>
-              ))}
+            <div className="flex flex-col sm:flex-row gap-4 sm:justify-start">
+              {buttons.map((button, index) => {
+                const buttonClasses = `transition-colors duration-500 ${button.size ? '' : 'w-full'} ${button.className || ''}`;
+                if (button.onClick) {
+                  return (
+                    <Button 
+                      key={index}
+                      variant={button.variant || 'default'} 
+                      size={button.size || 'default'}
+                      className={buttonClasses}
+                      onClick={button.onClick}
+                    >
+                      {button.text}
+                    </Button>
+                  );
+                } else {
+                  return (
+                    <Link to={button.link} key={index}>
+                      <Button 
+                        variant={button.variant || 'default'} 
+                        size={button.size || 'default'}
+                        className={buttonClasses}
+                      >
+                        {button.text}
+                      </Button>
+                    </Link>
+                  );
+                }
+              })}
             </div>
           )}
         </div>

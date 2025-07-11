@@ -13,7 +13,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Users, Shield, Heart, Star, TrendingUp, Handshake, X } from 'lucide-react';
+import { Users, Shield, Heart, Star, TrendingUp, Handshake, X, Download } from 'lucide-react';
 
 const FLYER_SEEN_KEY = 'hasSeenInfluencerStaffersFlyerPopup';
 
@@ -89,9 +89,30 @@ const InfluencerStaffersPage = () => {
           backgroundImageUrl="/images/athlete-test-img-14.jpg"
           backgroundPosition="center"
           className="pb-96"
+          buttons={[
+            {
+              text: (
+                <>
+                  <Download className="h-4 w-4 mr-2" />
+                  Download Flyer
+                </>
+              ),
+              link: "#",
+              className: "btn-primary",
+              size: "sm",
+              onClick: () => {
+                const link = document.createElement('a');
+                link.href = '/images/influencer-staffers-flyer.jpg';
+                link.download = 'influencer-staffers-flyer.jpg';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+              }
+            }
+          ]}
         />
 
-        {/* Main Value Proposition */}
+{/* Main Value Proposition */}
         <section className="py-16 md:py-24 bg-gradient-to-br from-nil-light-blue via-nil-orange/30 to-white bg-gradient-with-image">
           <div className="container-custom">
             <div className="text-center mb-12">
