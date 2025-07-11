@@ -3,7 +3,15 @@ import Footer from "@/components/Footer";
 import HeroSection from '@/components/HeroSection';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { SchedulingModal } from '../components/SchedulingModal';
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription
+} from "@/components/ui/dialog";
+import { ContactForm } from "../components/ContactForm";
 import { ShieldCheck, Megaphone, Users, BarChart2 } from 'lucide-react';
 import InstagramPost from '@/components/InstagramPost';
 
@@ -114,15 +122,22 @@ const ForAthletesPage = () => {
               </p>
             </div>
             <div className="mt-10">
-              <SchedulingModal 
-                title="Get Involved with ÑIL Hispanic"
-                description="Ready to join our community? Let's discuss how you can get involved and benefit from our programs and opportunities."
-                source="For Athletes Page - Get Involved Button"
-              >
-                <Button size="lg" className="btn-primary hover:bg-nil-orange/90 transition-colors text-lg px-10 py-6">
-                  Get Involved
-                </Button>
-              </SchedulingModal>
+              <Dialog>
+  <DialogTrigger asChild>
+    <Button size="lg" className="btn-primary hover:bg-nil-orange/90 transition-colors text-lg px-10 py-6">
+      Get Involved
+    </Button>
+  </DialogTrigger>
+  <DialogContent className="sm:max-w-[425px] mx-4 max-h-[90vh] overflow-y-auto">
+    <DialogHeader>
+      <DialogTitle>Contact Us</DialogTitle>
+      <DialogDescription>
+        Fill out the form below and we'll get back to you as soon as possible.
+      </DialogDescription>
+    </DialogHeader>
+    <ContactForm />
+  </DialogContent>
+</Dialog>
             </div>
           </div>
         </section>
