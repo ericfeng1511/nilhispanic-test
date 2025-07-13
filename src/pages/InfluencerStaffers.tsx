@@ -86,7 +86,7 @@ const InfluencerStaffersPage = () => {
         <HeroSection
           title={<><span className="font-bold">INFLUENCER</span> <span className="heading-gradient-light">STAFFERS</span></>}
           subtitle="Staff camps, clinics, or activations with Hispanic college student athletes who can also promote to their followers."
-          backgroundImageUrl="/images/athlete-test-img-14.jpg"
+          backgroundImageUrl="/images/athlete-test-img-24.png"
           backgroundPosition="center"
           className="pb-96"
           buttons={[
