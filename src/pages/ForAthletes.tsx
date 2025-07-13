@@ -53,7 +53,7 @@ const ForAthletesPage = () => {
         <HeroSection
           title={<><span className="font-bold">YOUR TIME</span> <span className="heading-gradient-light">IS NOW</span></>}
           subtitle="Unlock your potential, build your legacy. We're here to help you succeed."
-          backgroundImageUrl="/images/athlete-test-img-19.jpg"
+          backgroundImageUrl="/images/athlete-test-img-1.png"
           backgroundPosition="center"
           className="pb-96"
         />

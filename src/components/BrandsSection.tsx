@@ -1,6 +1,15 @@
 
 import { Button } from '@/components/ui/button';
-import { SchedulingModal } from './SchedulingModal';
+// import { SchedulingModal } from './SchedulingModal';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { ContactForm } from "./ContactForm";
 
 const BrandsSection = () => {
   const benefits = [
@@ -44,13 +53,27 @@ const BrandsSection = () => {
             </div>
             
             <div className="mt-8">
-              <SchedulingModal 
+              {/* <SchedulingModal 
                 title="Schedule Brand Consultation"
                 description="Let's discuss how your brand can connect with Hispanic student-athletes and tap into this powerful demographic."
                 source="For Brands Page - Schedule Brand Consultation Button"
               >
                 <Button className="btn-primary">Schedule Brand Consultation</Button>
-              </SchedulingModal>
+              </SchedulingModal> */}
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button className="btn-primary">Schedule Brand Consultation</Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px] mx-4 max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Contact Us</DialogTitle>
+                    <DialogDescription>
+                      Fill out the form below and we'll get back to you as soon as possible.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <ContactForm />
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
           

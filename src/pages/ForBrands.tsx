@@ -30,7 +30,7 @@ const ForBrandsPage = () => {
     },
     {
       title: 'Influencer Staffers',
-      description: 'Connecting student-athletes with brands for authentic influencer marketing campaigns.',
+      description: 'Staff camps, clinics, or activations with Hispanic student athletes who can also promote to their followers.',
       icon: Handshake,
       href: '/initiatives/influencer-staffers',
     },

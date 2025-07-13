@@ -83,8 +83,9 @@ const HolaHousesPage = () => {
       <Header />
       <main className="flex-grow">
         <HeroSection
-          title={<><span className="font-bold">HOLA</span> <span className="heading-gradient-light">HOUSES</span></>}
-          subtitle="The House of LatinX Athletes - Creating cultural and social hubs on campuses nationwide."
+          title=""
+          // title={<><span className="font-bold">HOLA</span> <span className="heading-gradient-light">HOUSES</span></>}
+          // subtitle="The House of LatinX Athletes - Creating cultural and social hubs on campuses nationwide."
           backgroundImageUrl="/images/hola-houses.png"
           backgroundPosition="center"
           className="pb-96"

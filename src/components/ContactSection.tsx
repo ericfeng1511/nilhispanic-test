@@ -1,6 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { Mail, /* Phone, */ MapPin } from 'lucide-react';
-import { SchedulingModal } from "./SchedulingModal";
+// import { SchedulingModal } from "./SchedulingModal";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { ContactForm } from "./ContactForm";
 
 const ContactSection = () => {
@@ -85,13 +93,27 @@ const ContactSection = () => {
             <div className="mt-10">
               <h4 className="text-xl font-bold mb-4">Schedule a Meeting</h4>
               <p className="mb-4">Interested in learning more? Schedule a virtual consultation with our team to discuss how ÑIL Hispanic can help your brand.</p>
-              <SchedulingModal 
+              {/* <SchedulingModal 
                 title="Book a Meeting"
                 description="Let's discuss how ÑIL Hispanic can help you connect with Hispanic student-athletes and grow your brand."
                 source="About Page - Book Meeting Button"
               >
                 <Button className="bg-nil-orange hover:bg-opacity-90 text-white w-full h-12 touch-manipulation">Book Meeting</Button>
-              </SchedulingModal>
+              </SchedulingModal> */}
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button className="bg-nil-orange hover:bg-opacity-90 text-white w-full h-12 touch-manipulation">Book Meeting</Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px] mx-4 max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Contact Us</DialogTitle>
+                    <DialogDescription>
+                      Fill out the form below and we'll get back to you as soon as possible.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <ContactForm />
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
           
