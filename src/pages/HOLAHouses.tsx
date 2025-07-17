@@ -115,7 +115,7 @@ const HolaHousesPage = () => {
         </section>
 
         {/* Purpose & Impact Section */}
-        <section className="relative py-16 md:py-24 bg-[url('/images/athlete-test-img-20.jpeg')] bg-cover bg-center bg-no-repeat md:bg-fixed">
+        <section className="relative py-16 md:py-24 bg-[url('/images/athlete-test-img-20.png')] bg-cover bg-center bg-no-repeat md:bg-fixed">
           <div className="absolute inset-0 bg-gradient-to-br from-nil-navy/90 via-nil-navy/70 to-nil-orange/60 z-0"></div>
           <div className="relative z-10 container-custom text-white">
             <div className="text-center mb-12">
