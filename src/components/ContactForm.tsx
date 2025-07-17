@@ -147,7 +147,7 @@ export const ContactForm = () => {
       
       <div>
         <label htmlFor="message" className="block mb-2 text-nil-navy font-semibold">
-          Message
+          Message <span className="text-nil-orange">*</span>
         </label>
         <Textarea
           id="message"
@@ -155,6 +155,7 @@ export const ContactForm = () => {
           value={formData.message}
           onChange={handleChange}
           placeholder="How can we help you?"
+          required
           className="w-full min-h-[120px] text-base md:text-sm resize-none"
           rows={4}
         />
