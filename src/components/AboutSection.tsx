@@ -11,14 +11,14 @@ const AboutSection = () => {
         </div>
         
         <div className="flex flex-col md:flex-row gap-10 items-center">
-          <div className="md:w-1/2">
+          <div className="w-full md:w-3/5">
             <img 
-              src="/images/athlete-test-img-26.png" 
+              src="/images/athlete-test-img-27.jpg" 
               alt="Hispanic athletes in action" 
-              className="rounded-lg shadow-xl max-w-full h-auto object-cover"
+              className="rounded-lg shadow-xl w-full h-auto object-cover max-h-[400px] md:max-h-[500px]"
             />
           </div>
-          <div className="md:w-1/2">
+          <div className="w-full md:w-2/5">
             <h3 className="text-2xl md:text-3xl font-bold mb-4 text-nil-navy">WHAT SETS US APART</h3>
             
             <div className="mb-6">
