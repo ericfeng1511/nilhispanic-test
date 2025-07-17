@@ -55,7 +55,7 @@ const AthleteSpotlight = () => {
     <section 
       id="opportunities" 
       className="relative py-20 bg-cover bg-center bg-no-repeat bg-fixed"
-      style={{ backgroundImage: 'url(/images/athlete-test-img-21.jpeg)' }}
+      style={{ backgroundImage: 'url(/images/athlete-test-img-28.jpg)' }}
     >
       <div className="absolute inset-0 bg-gradient-to-br from-nil-navy/90 via-nil-navy/75 to-nil-orange/60 z-0"></div>
       

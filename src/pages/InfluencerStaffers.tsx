@@ -123,7 +123,7 @@ const InfluencerStaffersPage = () => {
             </div>
             <div className="grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
               <div>
-                <img src="/images/athlete-test-img-9.jpg" alt="Student-athletes at event" className="rounded-lg shadow-xl w-full" />
+                <img src="/images/athlete-test-img-21.jpeg" alt="Student-athletes at event" className="rounded-lg shadow-xl w-full" />
               </div>
               <div className="text-left">
                 <h3 className="text-2xl font-bold text-nil-navy mb-4">Why Choose Influencer-Staffers?</h3>
