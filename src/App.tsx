@@ -14,6 +14,7 @@ import HolaHousesPage from "./pages/HOLAHouses";
 import SoccerPage from "./pages/Soccer";
 import InfluencerStaffersPage from "./pages/InfluencerStaffers";
 import WorkWithUsPage from "./pages/WorkWithUs";
+import AdminDashboard from "./pages/AdminDashboard";
 import ScrollToTop from "./components/ScrollToTop";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
           <Route path="/initiatives/soccer" element={<SoccerPage />} />
           <Route path="/initiatives/influencer-staffers" element={<InfluencerStaffersPage />} />
           <Route path="/work-with-us" element={<WorkWithUsPage />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

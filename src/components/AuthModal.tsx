@@ -1,0 +1,297 @@
+import React, { useState } from 'react';
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useAuth } from '@/contexts/AuthContext';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
+
+interface AuthModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
+  const [isLogin, setIsLogin] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [verificationSent, setVerificationSent] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+  
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    fullName: '',
+    role: 'athlete' as 'athlete' | 'brand'
+  });
+
+  const { signIn, signUp, resendVerification } = useAuth();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      let result;
+      
+      console.log('Attempting', isLogin ? 'sign in' : 'sign up', 'with email:', formData.email);
+      
+      if (isLogin) {
+        result = await signIn(formData.email, formData.password);
+      } else {
+        result = await signUp(formData.email, formData.password, formData.fullName, formData.role);
+      }
+
+      console.log('Auth result:', result);
+
+      if (result.error) {
+        console.error('Auth error:', result.error);
+        if (result.needsVerification) {
+          setError('Please check your email and click the verification link before signing in.');
+          setPendingEmail(formData.email);
+        } else {
+          setError(result.error.message || 'An error occurred');
+        }
+      } else if (result.needsVerification) {
+        // Signup successful but needs verification
+        console.log('Signup successful, verification needed');
+        setVerificationSent(true);
+        setPendingEmail(formData.email);
+        setError(null);
+      } else {
+        // Success - close modal and hard refresh page
+        console.log('Auth successful, refreshing page...');
+        onClose();
+        setFormData({ email: '', password: '', fullName: '', role: 'athlete' });
+        setError(null);
+        setVerificationSent(false);
+        setPendingEmail(null);
+        
+        // Hard refresh to eliminate any state management issues
+        window.location.reload();
+      }
+    } catch (err) {
+      console.error('Unexpected auth error:', err);
+      setError('An unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const resetForm = () => {
+    setFormData({ email: '', password: '', fullName: '', role: 'athlete' });
+    setError(null);
+    setShowPassword(false);
+    setVerificationSent(false);
+    setPendingEmail(null);
+  };
+
+  const switchMode = () => {
+    setIsLogin(!isLogin);
+    resetForm();
+  };
+
+  const handleResendVerification = async () => {
+    if (!pendingEmail) return;
+    
+    setLoading(true);
+    const result = await resendVerification(pendingEmail);
+    
+    if (result.error) {
+      setError(result.error.message || 'Failed to resend verification email');
+    } else {
+      setError(null);
+      alert('Verification email sent! Please check your inbox.');
+    }
+    
+    setLoading(false);
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[425px] mx-4">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-bold text-nil-navy">
+            {verificationSent ? 'Check Your Email' : (isLogin ? 'Welcome Back' : 'Create Account')}
+          </DialogTitle>
+          <DialogDescription>
+            {verificationSent 
+              ? 'We sent a verification link to your email. Please click the link to activate your account.' 
+              : (isLogin 
+                ? 'Sign in to access your dashboard and opportunities.' 
+                : 'Join our community of Hispanic student-athletes and brands.'
+              )
+            }
+          </DialogDescription>
+        </DialogHeader>
+
+        {verificationSent ? (
+          <div className="space-y-4">
+            <div className="p-4 bg-green-50 border border-green-200 rounded-md">
+              <p className="text-sm text-green-800">
+                Account created successfully! Please check your email ({pendingEmail}) and click the verification link.
+              </p>
+            </div>
+            
+            <div className="text-center space-y-3">
+              <p className="text-sm text-gray-600">
+                Didn't receive the email? Check your spam folder or:
+              </p>
+              <Button
+                type="button"
+                onClick={handleResendVerification}
+                disabled={loading}
+                className="bg-nil-orange text-white hover:bg-nil-navy transition-colors"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  'Resend Verification Email'
+                )}
+              </Button>
+            </div>
+            
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setVerificationSent(false);
+                  setPendingEmail(null);
+                  setIsLogin(true);
+                  resetForm();
+                }}
+                className="text-nil-navy hover:text-nil-orange transition-colors font-medium"
+              >
+                Back to Sign In
+              </button>
+            </div>
+          </div>
+        ) : (
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {!isLogin && (
+            <div className="space-y-2">
+              <Label htmlFor="fullName">Full Name</Label>
+              <Input
+                id="fullName"
+                name="fullName"
+                type="text"
+                value={formData.fullName}
+                onChange={handleInputChange}
+                required
+                className="h-12 text-base"
+                placeholder="Enter your full name"
+              />
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              required
+              className="h-12 text-base"
+              placeholder="Enter your email"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <div className="relative">
+              <Input
+                id="password"
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                value={formData.password}
+                onChange={handleInputChange}
+                required
+                className="h-12 text-base pr-12"
+                placeholder="Enter your password"
+                minLength={6}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+          </div>
+
+          {!isLogin && (
+            <div className="space-y-2">
+              <Label htmlFor="role">I am a...</Label>
+              <select
+                id="role"
+                name="role"
+                value={formData.role}
+                onChange={handleInputChange}
+                className="w-full h-12 px-3 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-nil-orange focus:border-transparent"
+              >
+                <option value="athlete">Student-Athlete</option>
+                <option value="brand">Brand Representative</option>
+              </select>
+            </div>
+          )}
+
+          {error && (
+            <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+              {error}
+            </div>
+          )}
+
+          <Button
+            type="submit"
+            disabled={loading}
+            className="w-full h-12 bg-nil-orange text-white hover:bg-nil-navy transition-colors font-medium"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {isLogin ? 'Signing In...' : 'Creating Account...'}
+              </>
+            ) : (
+              isLogin ? 'Sign In' : 'Create Account'
+            )}
+          </Button>
+
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={switchMode}
+              className="text-nil-navy hover:text-nil-orange transition-colors font-medium"
+            >
+              {isLogin 
+                ? "Don't have an account? Sign up" 
+                : "Already have an account? Sign in"
+              }
+            </button>
+          </div>
+        </form>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+};

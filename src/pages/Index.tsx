@@ -1,10 +1,10 @@
-
 import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
 import HowItWorksSection from "@/components/HowItWorksSection";
 import AthleteSpotlight from "@/components/AthleteSpotlight";
 import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/Footer";
+import { useEffect } from "react";
 
 const Index = () => {
   return (
