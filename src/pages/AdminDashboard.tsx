@@ -1,187 +1,537 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { useStudentAthletes } from '@/hooks/useStudentAthletes';
+import { useSchoolContacts } from '@/hooks/useSchoolContacts';
+import { useColleges } from '@/hooks/useColleges';
+import { StudentAthlete } from '@/types/studentAthlete';
+import { SchoolContact } from '@/types/schoolContact';
+import { AthleteCard } from '@/components/admin/AthleteCard';
+import { ContactCard } from '@/components/admin/ContactCard';
+import { AthleteDetailModal } from '@/components/admin/AthleteDetailModal';
+import CollegeMap from '@/components/admin/CollegeMap';
+import { GeocodingPanel } from '@/components/admin/GeocodingPanel';
+import { AthleteFilters } from '@/components/admin/AthleteFilters';
+import { ContactFilters } from '@/components/admin/ContactFilters';
+import { AthletePagination } from '@/components/admin/AthletePagination';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Loader2, Users, Database, RefreshCw, AlertCircle, Shield, GraduationCap, Building2, ArrowLeft } from 'lucide-react';
 
-import { useQuery, QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useState, useMemo } from 'react';
-import { supabase } from '../lib/supabaseClient';
-import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
-
-interface Athlete {
-  name: string;
-  sport: string;
-  college: string;
-  photo: string | null;
-}
-
-const PAGE_SIZE = 100;
-
-// Fetch all athletes with timeout & abortController (single bulk fetch)
-async function fetchAllAthletes(): Promise<Athlete[]> {
-  console.debug('[Athletes] Fetching ALL rows');
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000); // 15-s guard
-  try {
-    const { data, error } = await supabase
-      .from('student_athletes')
-      .select('name,sport,college,photo')
-      .abortSignal(controller.signal);
-    if (error) throw error;
-    return data as Athlete[];
-  } catch (err) {
-    if ((err as Error).name === 'AbortError') {
-      console.warn('[Athletes] Bulk fetch aborted');
-    } else {
-      console.error('[Athletes] Bulk fetch error', err);
-      throw err;
-    }
-    return [];
-  } finally {
-    clearTimeout(timeout);
-  }
-}
-
-// (legacy paged fetch kept below but unused) 
-// Fetcher with timeout & abortController
-async function fetchAthletes(page: number): Promise<{ data: Athlete[]; count: number }> {
-  console.debug(`[Athletes] Fetching page ${page}`);
-
-    const controller = new AbortController();
-  // Use a longer timeout (12 s) and defer if tab is hidden to avoid premature aborts
-  const delay = document.visibilityState === 'visible' ? 12000 : 0;
-  const timeout = delay ? setTimeout(() => controller.abort(), delay) : undefined;
-
-  try {
-    const from = page * PAGE_SIZE;
-    const to = from + PAGE_SIZE - 1;
-
-    const { data, count, error } = await supabase
-      .from('student_athletes')
-      .select('name,sport,college,photo', { count: 'exact' })
-      .range(from, to)
-      .abortSignal(controller.signal);
-
-    if (error) throw error;
-    return { data: data as Athlete[], count: count ?? 0 };
-  } catch (err) {
-    if ((err as Error).name === 'AbortError') {
-      console.warn('[Athletes] Fetch aborted');
-    } else {
-      console.error('[Athletes] Fetch error', err);
-      throw err;
-    }
-  } finally {
-    if (timeout) clearTimeout(timeout);
-  }
-}
-
-const queryClient = new QueryClient();
+type TabType = 'athletes' | 'contacts' | 'brand-reps' | 'colleges';
 
 const AdminDashboard: React.FC = () => {
-  const [page, setPage] = useState(0);
+  const { profile, loading: authLoading } = useAuth();
+  const [activeTab, setActiveTab] = useState<TabType>('athletes');
+  const [selectedAthlete, setSelectedAthlete] = useState<StudentAthlete | null>(null);
+  const [selectedContact, setSelectedContact] = useState<SchoolContact | null>(null);
+  const [isAthleteModalOpen, setIsAthleteModalOpen] = useState(false);
+  const {
+    athletes,
+    allAthletes,
+    totalAthletes,
+    currentPage: athletesCurrentPage,
+    totalPages: athletesTotalPages,
+    uniqueSports,
+    uniqueColleges,
+    uniqueGenders,
+    uniqueYears,
+    uniqueTotalSmRanges,
+    filters: athleteFilters,
+    isLoading: athletesLoading,
+    isError: athletesError,
+    error: athletesErrorMsg,
+    goToPage: athletesGoToPage,
+    updateFilters: updateAthleteFilters,
+    clearFilters: clearAthleteFilters,
+    refetch: refetchAthletes,
+    hasNextPage: athletesHasNextPage,
+    hasPreviousPage: athletesHasPreviousPage,
+  } = useStudentAthletes();
 
   const {
-    data,
-    isLoading,
-    isError
-  } = useQuery<Athlete[], Error>({
-    queryKey: ['athletes-all'],
-    queryFn: fetchAllAthletes,
-    staleTime: Infinity,
-    gcTime: 1000 * 60 * 60 * 24, // keep in cache for 24h
-    retry: 2,
-    refetchOnWindowFocus: false
-  });
+    contacts,
+    allContacts,
+    totalContacts,
+    currentPage: contactsCurrentPage,
+    totalPages: contactsTotalPages,
+    uniqueColleges: contactUniqueColleges,
+    uniqueTitles: contactUniqueTitles,
+    filters: contactFilters,
+    isLoading: contactsLoading,
+    isError: contactsError,
+    error: contactsErrorMsg,
+    goToPage: contactsGoToPage,
+    updateFilters: updateContactFilters,
+    clearFilters: clearContactFilters,
+    refetch: refetchContacts,
+    hasNextPage: contactsHasNextPage,
+    hasPreviousPage: contactsHasPreviousPage,
+  } = useSchoolContacts();
 
-  const athletes: Athlete[] = data ?? [];
+  const {
+    allColleges,
+    isLoading: collegesLoading,
+    isError: collegesError,
+    error: collegesErrorMsg,
+    stats: collegeStats,
+    refetch: refetchColleges,
+  } = useColleges();
 
-  const totalPages = useMemo(() => {
-    return Math.max(1, Math.ceil(athletes.length / PAGE_SIZE));
-  }, [athletes]);
+  // Check if user is admin
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="flex items-center gap-2 text-gray-600">
+          <Loader2 className="w-5 h-5 animate-spin" />
+          <span>Loading...</span>
+        </div>
+      </div>
+    );
+  }
 
-  const pageSlice = useMemo(() => {
-    const start = page * PAGE_SIZE;
-    return athletes.slice(start, start + PAGE_SIZE);
-  }, [athletes, page]);
+  if (!profile || profile.role !== 'admin') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="max-w-md mx-auto">
+          <CardContent className="p-6 text-center">
+            <Shield className="w-12 h-12 text-red-500 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Access Denied</h2>
+            <p className="text-gray-600">
+              You need admin privileges to access this dashboard.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
-  const canPrev = page > 0;
-  const canNext = page + 1 < totalPages;
+  // Get current tab data
+  const isLoading = activeTab === 'athletes' ? athletesLoading : 
+                   activeTab === 'contacts' ? contactsLoading : 
+                   activeTab === 'colleges' ? collegesLoading : false;
+  const isError = activeTab === 'athletes' ? athletesError : 
+                 activeTab === 'contacts' ? contactsError : 
+                 activeTab === 'colleges' ? collegesError : false;
+  const error = activeTab === 'athletes' ? athletesErrorMsg : 
+               activeTab === 'contacts' ? contactsErrorMsg : 
+               activeTab === 'colleges' ? collegesErrorMsg : null;
+  const refetch = activeTab === 'athletes' ? refetchAthletes : 
+                 activeTab === 'contacts' ? refetchContacts : 
+                 activeTab === 'colleges' ? refetchColleges : () => {};
 
-  const handlePrev = () => canPrev && setPage((p) => p - 1);
-  const handleNext = () => canNext && setPage((p) => p + 1);
-
-  return (
-    <QueryClientProvider client={queryClient}>
+  // Error state
+  if (isError) {
+    return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-lg shadow p-6">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Student Athletes</h1>
-
-            {/* Error State */}
-            {isError && (
-              <div className="text-red-600 mb-4">
-                Failed to load athletes.
-              </div>
-            )}
-
-            {/* Loading State */}
-            {isLoading && (
-              <div className="flex justify-center py-10">
-                <Loader2 className="animate-spin h-8 w-8 text-gray-600" />
-              </div>
-            )}
-
-            {/* Grid */}
-            {!isLoading && athletes.length > 0 && (
-              <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                  {pageSlice.map((athlete, idx) => (
-                    <div
-                      key={`${athlete.name}-${idx}`}
-                      className="bg-gray-100 rounded shadow-sm p-4 flex flex-col items-center"
-                    >
-                      <img
-                        src={athlete.photo ?? '/placeholder.png'}
-                        alt={athlete.name}
-                        loading="lazy"
-                        className="w-20 h-20 object-cover rounded-full mb-2"
-                      />
-                      <p className="font-semibold text-center text-sm">{athlete.name}</p>
-                      <p className="text-xs text-gray-500 text-center">
-                        {athlete.sport} — {athlete.college}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Pagination Controls */}
-                <div className="flex items-center justify-center gap-4 mt-6">
-                  <button
-                    onClick={handlePrev}
-                    disabled={!canPrev}
-                    className={`flex items-center gap-1 px-3 py-1.5 rounded border text-sm ${
-                      canPrev ? 'bg-white hover:bg-gray-50' : 'bg-gray-200 cursor-not-allowed'
-                    }`}
-                  >
-                    <ChevronLeft className="w-4 h-4" /> Prev
-                  </button>
-                  <span className="text-sm">
-                    Page {page + 1} of {totalPages}
-                  </span>
-                  <button
-                    onClick={handleNext}
-                    disabled={!canNext}
-                    className={`flex items-center gap-1 px-3 py-1.5 rounded border text-sm ${
-                      canNext ? 'bg-white hover:bg-gray-50' : 'bg-gray-200 cursor-not-allowed'
-                    }`}
-                  >
-                    Next <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </>
-            )}
+          <Alert className="mb-6 border-red-200 bg-red-50">
+            <AlertCircle className="h-4 w-4 text-red-600" />
+            <AlertDescription className="text-red-800">
+              Error loading {activeTab === 'athletes' ? 'student athletes' : 'school contacts'}: {error?.message || 'Unknown error occurred'}
+            </AlertDescription>
+          </Alert>
+          <div className="text-center">
+            <Button onClick={() => refetch()} className="bg-nil-orange hover:bg-nil-navy">
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Try Again
+            </Button>
           </div>
         </div>
       </div>
-    </QueryClientProvider>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <Link 
+              to="/"
+              aria-label="Go back to homepage"
+              className="p-2 rounded-full text-gray-500 hover:bg-gray-200 hover:text-gray-800 transition-colors"
+            >
+              <ArrowLeft className="w-6 h-6" />
+            </Link>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+              <p className="text-gray-600 mt-1">
+                Manage student athletes, school contacts, and brand representatives here.
+              </p>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as TabType)} className="mb-8">
+          <TabsList className="grid w-full max-w-4xl grid-cols-4">
+            <TabsTrigger value="athletes" className="flex items-center gap-2">
+              <GraduationCap className="w-4 h-4" />
+              Student Athletes
+            </TabsTrigger>
+            <TabsTrigger value="contacts" className="flex items-center gap-2">
+              <Building2 className="w-4 h-4" />
+              School Contacts
+            </TabsTrigger>
+            <TabsTrigger value="brand-reps" className="flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              Brand Representatives
+            </TabsTrigger>
+            <TabsTrigger value="colleges" className="flex items-center gap-2">
+              <GraduationCap className="w-4 h-4" />
+              Colleges
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="athletes" className="mt-6">
+            {/* Athletes Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Male</CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {allAthletes.filter(athlete => athlete.gender === 'M').length.toLocaleString()}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Male athletes
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Female</CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {allAthletes.filter(athlete => athlete.gender === 'F').length.toLocaleString()}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Female athletes
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Database Total</CardTitle>
+                  <Database className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {totalAthletes.toLocaleString()}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Showing page {athletesCurrentPage} of {athletesTotalPages}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total SM Followers</CardTitle>
+                  <Shield className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {allAthletes.reduce((sum, athlete) => sum + (athlete.total_followers || 0), 0).toLocaleString()}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Combined followers
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Colleges</CardTitle>
+                  <GraduationCap className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {uniqueColleges.length}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Different colleges
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="contacts" className="mt-6">
+            {/* Contacts Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Contacts</CardTitle>
+                  <Building2 className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {contacts.length.toLocaleString()}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Currently displayed
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Database Total</CardTitle>
+                  <Database className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {totalContacts.toLocaleString()}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Showing page {contactsCurrentPage} of {contactsTotalPages}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Unique Schools</CardTitle>
+                  <GraduationCap className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {contactUniqueColleges.length}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Different schools represented
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        {/* Tab Content */}
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as TabType)}>
+          <TabsContent value="athletes">
+            {/* Athlete Filters */}
+            <AthleteFilters
+              filters={athleteFilters}
+              onFiltersChange={updateAthleteFilters}
+              onClearFilters={clearAthleteFilters}
+              uniqueSports={uniqueSports}
+              uniqueColleges={uniqueColleges}
+              uniqueGenders={uniqueGenders}
+              uniqueYears={uniqueYears}
+              uniqueTotalSmRanges={uniqueTotalSmRanges}
+              totalResults={totalAthletes}
+              isLoading={athletesLoading}
+            />
+
+            {/* Loading State */}
+            {athletesLoading && (
+              <div className="flex items-center justify-center py-12">
+                <div className="flex items-center gap-2 text-gray-600">
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                  <span>Loading student athletes...</span>
+                </div>
+              </div>
+            )}
+
+            {/* Athletes Grid */}
+            {!athletesLoading && (
+              <>
+                {athletes.length === 0 ? (
+                  <Card>
+                    <CardContent className="p-12 text-center">
+                      <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        No athletes found
+                      </h3>
+                      <p className="text-gray-600 mb-4">
+                        {Object.keys(athleteFilters).length > 0
+                          ? 'Try adjusting your filters to see more results.'
+                          : 'No student athletes are currently in the database.'}
+                      </p>
+                      {Object.keys(athleteFilters).length > 0 && (
+                        <Button onClick={clearAthleteFilters} variant="outline">
+                          Clear All Filters
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <>
+                    {/* Athletes Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 mb-8">
+                      {athletes.map((athlete) => (
+                        <AthleteCard 
+                          key={athlete.id} 
+                          athlete={athlete} 
+                          onClick={() => {
+                            setSelectedAthlete(athlete);
+                            setIsAthleteModalOpen(true);
+                          }}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Athletes Pagination */}
+                    <AthletePagination
+                      currentPage={athletesCurrentPage}
+                      totalPages={athletesTotalPages}
+                      totalItems={totalAthletes}
+                      pageSize={100}
+                      onPageChange={athletesGoToPage}
+                      hasNextPage={athletesHasNextPage}
+                      hasPreviousPage={athletesHasPreviousPage}
+                      isLoading={athletesLoading}
+                    />
+                  </>
+                )}
+              </>
+            )}
+          </TabsContent>
+
+          <TabsContent value="contacts">
+            {/* Contact Filters */}
+            <ContactFilters
+              filters={contactFilters}
+              onFiltersChange={updateContactFilters}
+              onClearFilters={clearContactFilters}
+              uniqueColleges={contactUniqueColleges}
+              totalResults={totalContacts}
+              isLoading={contactsLoading}
+            />
+
+            {/* Loading State */}
+            {contactsLoading && (
+              <div className="flex items-center justify-center py-12">
+                <div className="flex items-center gap-2 text-gray-600">
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                  <span>Loading school contacts...</span>
+                </div>
+              </div>
+            )}
+
+            {/* Contacts Grid */}
+            {!contactsLoading && (
+              <>
+                {contacts.length === 0 ? (
+                  <Card>
+                    <CardContent className="p-12 text-center">
+                      <Building2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        No contacts found
+                      </h3>
+                      <p className="text-gray-600 mb-4">
+                        {Object.keys(contactFilters).length > 0
+                          ? 'Try adjusting your filters to see more results.'
+                          : 'No school contacts are currently in the database.'}
+                      </p>
+                      {Object.keys(contactFilters).length > 0 && (
+                        <Button onClick={clearContactFilters} variant="outline">
+                          Clear All Filters
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <>
+                    {/* Contacts Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 mb-8">
+                      {contacts.map((contact) => (
+                        <ContactCard 
+                          key={contact.id} 
+                          contact={contact} 
+                          onClick={() => {
+                            setSelectedContact(contact);
+                            // Modal for contacts can be implemented later
+                            console.log('Contact clicked:', contact.name);
+                          }}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Contacts Pagination */}
+                    <AthletePagination
+                      currentPage={contactsCurrentPage}
+                      totalPages={contactsTotalPages}
+                      totalItems={totalContacts}
+                      pageSize={100}
+                      onPageChange={contactsGoToPage}
+                      hasNextPage={contactsHasNextPage}
+                      hasPreviousPage={contactsHasPreviousPage}
+                      isLoading={contactsLoading}
+                    />
+                  </>
+                )}
+              </>
+            )}
+          </TabsContent>
+
+          <TabsContent value="brand-reps" className="mt-6">
+            {/* Brand Representatives Placeholder */}
+            <Card>
+              <CardContent className="p-12 text-center">
+                <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Brand Representatives
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  This section is coming soon. Brand representative management features will be available here.
+                </p>
+                <div className="text-sm text-gray-500">
+                  Features to include:
+                  <ul className="mt-2 space-y-1">
+                    <li>• Brand representative profiles</li>
+                    <li>• Company affiliations</li>
+                    <li>• Contact information</li>
+                    <li>• Partnership tracking</li>
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="colleges" className="mt-6">
+
+            {/* Geocoding Panel - Temporarily commented out */}
+            {/* <div className="mb-8">
+              <GeocodingPanel />
+            </div> */}
+
+            {/* Interactive College Map */}
+            <CollegeMap 
+              colleges={allColleges} 
+              isLoading={collegesLoading}
+              onCollegeSelect={(college) => {
+                console.log('Selected college:', college);
+                // Future: Open college detail modal or navigate to college page
+              }}
+            />
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      {/* Athlete Detail Modal */}
+      <AthleteDetailModal
+        athlete={selectedAthlete}
+        isOpen={isAthleteModalOpen}
+        onClose={() => {
+          setIsAthleteModalOpen(false);
+          setSelectedAthlete(null);
+        }}
+      />
+    </div>
   );
 };
 

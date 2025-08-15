@@ -15,6 +15,8 @@ import SoccerPage from "./pages/Soccer";
 import InfluencerStaffersPage from "./pages/InfluencerStaffers";
 import WorkWithUsPage from "./pages/WorkWithUs";
 import AdminDashboard from "./pages/AdminDashboard";
+import AthleteDashboard from "./pages/AthleteDashboard";
+import BrandDashboard from "./pages/BrandDashboard";
 import ScrollToTop from "./components/ScrollToTop";
 
 const queryClient = new QueryClient();
@@ -38,6 +40,8 @@ const App = () => (
           <Route path="/initiatives/influencer-staffers" element={<InfluencerStaffersPage />} />
           <Route path="/work-with-us" element={<WorkWithUsPage />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/athlete/dashboard" element={<AthleteDashboard />} />
+          <Route path="/brand/dashboard" element={<BrandDashboard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

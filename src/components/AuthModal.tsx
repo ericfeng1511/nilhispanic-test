@@ -229,6 +229,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 className="h-12 text-base pr-12"
                 placeholder="Enter your password"
                 minLength={6}
+                autoComplete={isLogin ? 'current-password' : 'new-password'}
               />
               <button
                 type="button"

@@ -12,7 +12,7 @@ import { ContactForm } from "./ContactForm";
 import { AuthModal } from "./AuthModal";
 import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'react-router-dom';
-import { Menu, ChevronDown, LogOut, User, Settings, Shield } from 'lucide-react';
+import { Menu, ChevronDown, LogOut, User, Settings, Shield, Trophy, Building2 } from 'lucide-react';
 import {
   HoverCard,
   HoverCardContent,
@@ -133,6 +133,32 @@ const Header = () => {
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
+              {/* Athlete Dashboard Button - Only visible to athlete users */}
+              {profile?.role === 'athlete' && (
+                <Link to="/athlete/dashboard">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="bg-nil-navy text-white hover:bg-nil-orange border-nil-navy hover:border-nil-orange transition-colors flex items-center space-x-1"
+                  >
+                    <Trophy size={16} />
+                    <span>Dashboard</span>
+                  </Button>
+                </Link>
+              )}
+              {/* Brand Dashboard Button - Only visible to brand users */}
+              {profile?.role === 'brand' && (
+                <Link to="/brand/dashboard">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="bg-nil-navy text-white hover:bg-nil-orange border-nil-navy hover:border-nil-orange transition-colors flex items-center space-x-1"
+                  >
+                    <Building2 size={16} />
+                    <span>Dashboard</span>
+                  </Button>
+                </Link>
+              )}
               <Button 
                 onClick={handleLogout}
                 className="bg-red-500 text-white hover:bg-red-600 transition-colors px-3 py-2 rounded-md font-medium flex items-center space-x-1"
@@ -227,6 +253,28 @@ const Header = () => {
                         <Shield size={16} />
                         <span>System Settings</span>
                       </button>
+                      <div className="border-t border-gray-200 my-2"></div>
+                    </div>
+                  )}
+                  {/* Athlete Dashboard for Mobile - Only visible to athlete users */}
+                  {profile?.role === 'athlete' && (
+                    <div className="space-y-2">
+                      <div className="text-xs text-nil-navy font-medium px-3 mb-2">Athlete Panel</div>
+                      <Link to="/athlete/dashboard" className="w-full text-left px-3 py-2 text-sm hover:bg-nil-light-gray flex items-center space-x-2">
+                        <Trophy size={16} />
+                        <span>Dashboard</span>
+                      </Link>
+                      <div className="border-t border-gray-200 my-2"></div>
+                    </div>
+                  )}
+                  {/* Brand Dashboard for Mobile - Only visible to brand users */}
+                  {profile?.role === 'brand' && (
+                    <div className="space-y-2">
+                      <div className="text-xs text-nil-navy font-medium px-3 mb-2">Brand Panel</div>
+                      <Link to="/brand/dashboard" className="w-full text-left px-3 py-2 text-sm hover:bg-nil-light-gray flex items-center space-x-2">
+                        <Building2 size={16} />
+                        <span>Dashboard</span>
+                      </Link>
                       <div className="border-t border-gray-200 my-2"></div>
                     </div>
                   )}

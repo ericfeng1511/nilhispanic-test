@@ -60,18 +60,16 @@ const ForAthletesPage = () => {
 
         <section className="py-16 md:py-24 bg-gradient-to-br from-nil-light-blue via-nil-orange/30 to-white bg-gradient-with-image">
           <div className="container-custom">
-            <div className="text-center">
-              <h2 className="text-3xl md:text-4xl font-bold heading-gradient mb-12">EMPOWERING THE NEXT GENERATION OF HISPANIC ATHLETES</h2>
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold heading-gradient">ATHLETE SPOTLIGHTS</h2>
+              <p className="text-nil-dark-gray max-w-3xl mx-auto text-lg mt-4">
+                Stay up to date with the latest from the ÑIL Hispanic community.
+              </p>
             </div>
-            <div className="grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
-              <div>
-                <img src="/images/athlete-test-img-12.jpg" alt="Hispanic athletes empowerment" className="rounded-lg shadow-xl w-full" />
-              </div>
-              <div className="text-left">
-                <p className="text-lg md:text-xl text-gray-700 leading-relaxed">
-                  At ÑIL Hispanic, we believe in your potential. The world of Name, Image, and Likeness (NIL) has opened incredible opportunities, and we are here to provide the resources, guidance, and community you need to thrive. Our programs are designed to help you build a successful brand and prepare for a prosperous life beyond sports.
-                </p>
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">
+              {instagramUrls.map((url, index) => (
+                <InstagramPost key={index} url={url} />
+              ))}
             </div>
           </div>
         </section>
@@ -98,16 +96,18 @@ const ForAthletesPage = () => {
 
         <section className="py-16 md:py-24 bg-gradient-to-br from-nil-light-blue via-nil-orange/30 to-white bg-gradient-with-image">
           <div className="container-custom">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold heading-gradient">ATHLETE SPOTLIGHTS</h2>
-              <p className="text-nil-dark-gray max-w-3xl mx-auto text-lg mt-4">
-                Stay up to date with the latest from the ÑIL Hispanic community.
-              </p>
+            <div className="text-center">
+              <h2 className="text-3xl md:text-4xl font-bold heading-gradient mb-12">EMPOWERING THE NEXT GENERATION OF HISPANIC ATHLETES</h2>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">
-              {instagramUrls.map((url, index) => (
-                <InstagramPost key={index} url={url} />
-              ))}
+            <div className="grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
+              <div>
+                <img src="/images/athlete-test-img-12.jpg" alt="Hispanic athletes empowerment" className="rounded-lg shadow-xl w-full" />
+              </div>
+              <div className="text-left">
+                <p className="text-lg md:text-xl text-gray-700 leading-relaxed">
+                  At ÑIL Hispanic, we believe in your potential. The world of Name, Image, and Likeness (NIL) has opened incredible opportunities, and we are here to provide the resources, guidance, and community you need to thrive. Our programs are designed to help you build a successful brand and prepare for a prosperous life beyond sports.
+                </p>
+              </div>
             </div>
           </div>
         </section>
