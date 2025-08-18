@@ -45,12 +45,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   // Subscribe to live inserts
   useEffect(() => {
     const unsubscribe = ChatService.subscribeToConversationMessages(conversationId, (msg) => {
+      // Ignore echoes of our own messages to prevent duplicates
+      if (msg.sender_id === currentUserId) return;
       setMessages((prev) => (prev.find((m) => m.id === msg.id) ? prev : [...prev, msg]));
     });
     return unsubscribe;
-  }, [conversationId]);
+  }, [conversationId, currentUserId]);
 
-  // Fallbacks: refresh on tab focus/visibility and light polling to recover from dropped realtime
+  // Fallback: refresh on tab focus/visibility to recover from transient realtime issues
   useEffect(() => {
     const refreshIfVisible = () => {
       if (document.visibilityState === 'visible') {
@@ -59,16 +61,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     };
     window.addEventListener('focus', refreshIfVisible);
     document.addEventListener('visibilitychange', refreshIfVisible);
-
-    // Light polling every 30s as a safety net (cleared on unmount)
-    const interval = window.setInterval(() => {
-      refreshIfVisible();
-    }, 30000);
-
     return () => {
       window.removeEventListener('focus', refreshIfVisible);
       document.removeEventListener('visibilitychange', refreshIfVisible);
-      window.clearInterval(interval);
     };
   }, [loadMessages]);
 
