@@ -70,7 +70,7 @@ export class StudentAthleteService {
     if (filters.search) {
       const searchTerm = filters.search.toLowerCase();
       filteredAthletes = filteredAthletes.filter(athlete =>
-        athlete.name.toLowerCase().includes(searchTerm)
+        (athlete.name || '').toLowerCase().includes(searchTerm)
       );
     }
 
@@ -78,7 +78,7 @@ export class StudentAthleteService {
     if (filters.sports && filters.sports.length > 0) {
       filteredAthletes = filteredAthletes.filter(athlete =>
         filters.sports!.some(sport => 
-          athlete.sport.toLowerCase() === sport.toLowerCase()
+          (athlete.sport || '').toLowerCase() === (sport || '').toLowerCase()
         )
       );
     }
@@ -87,7 +87,7 @@ export class StudentAthleteService {
     if (filters.colleges && filters.colleges.length > 0) {
       filteredAthletes = filteredAthletes.filter(athlete =>
         filters.colleges!.some(college => 
-          athlete.college.toLowerCase().includes(college.toLowerCase())
+          (athlete.college || '').toLowerCase().includes((college || '').toLowerCase())
         )
       );
     }
@@ -96,7 +96,7 @@ export class StudentAthleteService {
     if (filters.genders && filters.genders.length > 0) {
       filteredAthletes = filteredAthletes.filter(athlete =>
         filters.genders!.some(gender => 
-          athlete.gender.toLowerCase() === gender.toLowerCase()
+          (athlete.gender || '').toLowerCase() === (gender || '').toLowerCase()
         )
       );
     }
@@ -105,7 +105,7 @@ export class StudentAthleteService {
     if (filters.years && filters.years.length > 0) {
       filteredAthletes = filteredAthletes.filter(athlete =>
         filters.years!.some(year => 
-          athlete.year.toLowerCase() === year.toLowerCase()
+          (athlete.year || '').toLowerCase() === (year || '').toLowerCase()
         )
       );
     }
@@ -139,7 +139,11 @@ export class StudentAthleteService {
    * Get unique sports from all athletes (for filter dropdown)
    */
   static getUniqueSports(allAthletes: StudentAthlete[]): string[] {
-    const sports = new Set(allAthletes.map(athlete => athlete.sport));
+    const sports = new Set(
+      allAthletes
+        .map(athlete => (athlete.sport ? String(athlete.sport).trim() : ''))
+        .filter((s): s is string => !!s)
+    );
     return Array.from(sports).sort();
   }
 
@@ -147,7 +151,11 @@ export class StudentAthleteService {
    * Get unique colleges from all athletes (for filter dropdown)
    */
   static getUniqueColleges(allAthletes: StudentAthlete[]): string[] {
-    const colleges = new Set(allAthletes.map(athlete => athlete.college));
+    const colleges = new Set(
+      allAthletes
+        .map(athlete => (athlete.college ? String(athlete.college).trim() : ''))
+        .filter((c): c is string => !!c)
+    );
     return Array.from(colleges).sort();
   }
 
@@ -155,7 +163,11 @@ export class StudentAthleteService {
    * Get unique genders from all athletes (for filter dropdown)
    */
   static getUniqueGenders(allAthletes: StudentAthlete[]): string[] {
-    const genders = new Set(allAthletes.map(athlete => athlete.gender));
+    const genders = new Set(
+      allAthletes
+        .map(athlete => (athlete.gender ? String(athlete.gender).trim() : ''))
+        .filter((g): g is string => !!g)
+    );
     return Array.from(genders).sort();
   }
 
