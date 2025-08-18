@@ -2,14 +2,24 @@ import React, { useState } from 'react';
 import { StudentAthlete } from '@/types/studentAthlete';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { User, MapPin, Trophy } from 'lucide-react';
 
 interface AthleteCardProps {
   athlete: StudentAthlete;
   onClick?: () => void;
+  isSelected?: boolean;
+  onSelectionChange?: (athleteId: string, selected: boolean) => void;
+  selectionMode?: boolean;
 }
 
-export const AthleteCard: React.FC<AthleteCardProps> = ({ athlete, onClick }) => {
+export const AthleteCard: React.FC<AthleteCardProps> = ({ 
+  athlete, 
+  onClick, 
+  isSelected = false, 
+  onSelectionChange, 
+  selectionMode = false 
+}) => {
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
 
@@ -22,12 +32,41 @@ export const AthleteCard: React.FC<AthleteCardProps> = ({ athlete, onClick }) =>
     setImageLoading(false);
   };
 
+  const handleSelectionChange = (checked: boolean) => {
+    if (onSelectionChange) {
+      onSelectionChange(athlete.id, checked);
+    }
+  };
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't trigger card click if clicking on checkbox
+    if ((e.target as HTMLElement).closest('[data-checkbox]')) {
+      return;
+    }
+    if (onClick) {
+      onClick();
+    }
+  };
+
   return (
     <Card 
-      className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-white border border-gray-200 cursor-pointer"
-      onClick={onClick}
+      className={`group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-white border border-gray-200 cursor-pointer ${
+        isSelected ? 'ring-2 ring-nil-orange bg-nil-orange/5' : ''
+      }`}
+      onClick={handleCardClick}
     >
       <CardContent className="p-4">
+        {/* Selection Checkbox */}
+        {selectionMode && (
+          <div className="absolute top-2 right-2 z-10" data-checkbox>
+            <Checkbox
+              checked={isSelected}
+              onCheckedChange={handleSelectionChange}
+              className="bg-white border-2 border-gray-300 data-[state=checked]:bg-nil-orange data-[state=checked]:border-nil-orange"
+            />
+          </div>
+        )}
+        
         {/* Photo Section */}
         <div className="relative mb-4 aspect-square rounded-lg overflow-hidden bg-gray-100">
           {imageLoading && (

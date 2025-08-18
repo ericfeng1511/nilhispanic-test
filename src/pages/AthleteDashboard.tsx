@@ -11,6 +11,11 @@ import { useStudentAthletes } from '@/hooks/useStudentAthletes';
 import { StudentAthleteService } from '@/services/studentAthleteService';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import ChatWindow from '@/components/chat/ChatWindow';
+import { ChatService } from '@/services/chatService';
+import { useToast } from '@/hooks/use-toast';
+import type { Conversation } from '@/types/chat';
 
 interface AthleteProfile {
   sport: string;
@@ -31,6 +36,7 @@ const AthleteDashboard: React.FC = () => {
   const { profile, loading: authLoading, user } = useAuth();
   const { allAthletes, uniqueSports, uniqueColleges } = useStudentAthletes();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   
   // Form state
   const [isEditing, setIsEditing] = useState(false);
@@ -59,6 +65,12 @@ const AthleteDashboard: React.FC = () => {
   const [collegeSuggestions, setCollegeSuggestions] = useState<string[]>([]);
   const [showSportSuggestions, setShowSportSuggestions] = useState(false);
   const [showCollegeSuggestions, setShowCollegeSuggestions] = useState(false);
+  
+  // Chat state
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [convLoading, setConvLoading] = useState(false);
+  const [chatConversationId, setChatConversationId] = useState<string | null>(null);
   
   // Fetch current athlete data
   const { data: currentAthleteData, isLoading: athleteLoading, error: athleteError } = useQuery({
@@ -268,6 +280,33 @@ const AthleteDashboard: React.FC = () => {
     }
   };
 
+  // Chat helpers
+  const loadConversations = async () => {
+    if (!profile?.id) return { data: [], total: 0 };
+    const res = await ChatService.listConversationsForUser(profile.id, 'athlete', 1, 50);
+    return res;
+  };
+
+  const handleOpenMessages = async () => {
+    setIsChatOpen(true);
+    setConvLoading(true);
+    try {
+      const res: any = await loadConversations();
+      setConversations(res.data || []);
+      if ((res.total || 0) === 0) {
+        toast({ title: 'No messages yet', description: 'You will see messages here when an admin contacts you.' } as any);
+      } else if ((res.total || 0) === 1) {
+        setChatConversationId(res.data[0].id);
+      } else {
+        setChatConversationId(null);
+      }
+    } catch (e: any) {
+      toast({ title: 'Failed to load messages', description: e?.message || 'Please try again.' } as any);
+    } finally {
+      setConvLoading(false);
+    }
+  };
+
   // Show loading state while checking authentication or loading athlete data
   if (authLoading || athleteLoading) {
     return (
@@ -347,6 +386,10 @@ const AthleteDashboard: React.FC = () => {
                 <div className="text-xs text-gray-500 capitalize">{profile.role}</div>
               </div>
             </div>
+            <Button onClick={handleOpenMessages} className="ml-3 bg-nil-orange hover:bg-nil-navy flex items-center gap-2">
+              <MessageSquare className="w-4 h-4" />
+              Messages
+            </Button>
           </div>
         </div>
 
@@ -843,6 +886,58 @@ const AthleteDashboard: React.FC = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Chat Modal */}
+        <Dialog open={isChatOpen} onOpenChange={(open) => {
+          setIsChatOpen(open);
+          if (!open) {
+            setChatConversationId(null);
+          }
+        }}>
+          <DialogContent className="max-w-3xl w-full">
+            <DialogHeader>
+              <DialogTitle>
+                {chatConversationId ? 'Conversation' : 'Your Messages'}
+              </DialogTitle>
+            </DialogHeader>
+
+            {/* If a conversation is selected, show chat window */}
+            {chatConversationId && profile ? (
+              <ChatWindow
+                conversationId={chatConversationId}
+                currentUserId={profile.id}
+                title="Admin"
+                onBack={() => setChatConversationId(null)}
+              />
+            ) : (
+              <div className="space-y-3">
+                {convLoading ? (
+                  <div className="py-6 text-center text-gray-500">Loading conversations...</div>
+                ) : conversations.length === 0 ? (
+                  <div className="py-6 text-center text-gray-500">No conversations yet.</div>
+                ) : (
+                  <div className="divide-y rounded-md border">
+                    {conversations.map((c) => (
+                      <button
+                        key={c.id}
+                        className="w-full text-left px-4 py-3 hover:bg-gray-50 focus:outline-none"
+                        onClick={() => setChatConversationId(c.id)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="font-medium">Chat with Admin</div>
+                          <div className="text-xs text-gray-500">
+                            {c.last_message_at ? new Date(c.last_message_at).toLocaleString() : '—'}
+                          </div>
+                        </div>
+                        <div className="text-sm text-gray-600">Conversation ID: {c.id}</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

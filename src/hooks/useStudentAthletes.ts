@@ -10,7 +10,7 @@ export const useStudentAthletes = () => {
 
   // Fetch and cache all student athletes
   const {
-    data: allAthletes = [],
+    data: queryData,
     isLoading,
     error,
     isError,
@@ -23,6 +23,10 @@ export const useStudentAthletes = () => {
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
+
+  // Use a stable empty array reference to avoid changing identity on each render
+  const EMPTY_ATHLETES: StudentAthlete[] = useMemo(() => [], []);
+  const allAthletes: StudentAthlete[] = queryData ?? EMPTY_ATHLETES;
 
   // Get paginated results from cached data
   const paginatedResults: PaginatedStudentAthletes = useMemo(() => {

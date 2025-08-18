@@ -9,6 +9,7 @@ import { SchoolContact } from '@/types/schoolContact';
 import { AthleteCard } from '@/components/admin/AthleteCard';
 import { ContactCard } from '@/components/admin/ContactCard';
 import { AthleteDetailModal } from '@/components/admin/AthleteDetailModal';
+import { SelectedStatsModal } from '@/components/admin/SelectedStatsModal';
 import CollegeMap from '@/components/admin/CollegeMap';
 import { GeocodingPanel } from '@/components/admin/GeocodingPanel';
 import { AthleteFilters } from '@/components/admin/AthleteFilters';
@@ -18,7 +19,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Users, Database, RefreshCw, AlertCircle, Shield, GraduationCap, Building2, ArrowLeft } from 'lucide-react';
+import { Loader2, Users, Database, RefreshCw, AlertCircle, Shield, GraduationCap, Building2, ArrowLeft, CheckSquare, Square, BarChart3 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import ChatWindow from '@/components/chat/ChatWindow';
+import { ChatService } from '@/services/chatService';
+import { useToast } from '@/hooks/use-toast';
 
 type TabType = 'athletes' | 'contacts' | 'brand-reps' | 'colleges';
 
@@ -28,6 +33,14 @@ const AdminDashboard: React.FC = () => {
   const [selectedAthlete, setSelectedAthlete] = useState<StudentAthlete | null>(null);
   const [selectedContact, setSelectedContact] = useState<SchoolContact | null>(null);
   const [isAthleteModalOpen, setIsAthleteModalOpen] = useState(false);
+  const [selectedAthleteIds, setSelectedAthleteIds] = useState<Set<string>>(new Set());
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatConversationId, setChatConversationId] = useState<string | null>(null);
+  const [chatTarget, setChatTarget] = useState<StudentAthlete | null>(null);
+  const [chatLoading, setChatLoading] = useState(false);
+  const { toast } = useToast();
   const {
     athletes,
     allAthletes,
@@ -79,6 +92,65 @@ const AdminDashboard: React.FC = () => {
     stats: collegeStats,
     refetch: refetchColleges,
   } = useColleges();
+
+  // Selection handlers
+  const handleAthleteSelection = (athleteId: string, selected: boolean) => {
+    const newSelection = new Set(selectedAthleteIds);
+    if (selected) {
+      newSelection.add(athleteId);
+    } else {
+      newSelection.delete(athleteId);
+    }
+    setSelectedAthleteIds(newSelection);
+  };
+
+  const handleSelectAll = () => {
+    const allCurrentAthleteIds = new Set(athletes.map(athlete => athlete.id));
+    setSelectedAthleteIds(allCurrentAthleteIds);
+  };
+
+  const handleClearSelection = () => {
+    setSelectedAthleteIds(new Set());
+  };
+
+  const toggleSelectionMode = () => {
+    setSelectionMode(!selectionMode);
+    if (selectionMode) {
+      // Clear selection when exiting selection mode
+      setSelectedAthleteIds(new Set());
+    }
+  };
+
+  const getSelectedAthletes = (): StudentAthlete[] => {
+    // Use full cached dataset so selections across pages are included
+    return allAthletes.filter(athlete => selectedAthleteIds.has(athlete.id));
+  };
+
+  const handleStartChat = async (athlete: StudentAthlete) => {
+    if (!profile) return;
+    if (!athlete.profile_id) {
+      toast({
+        title: 'Cannot start chat',
+        description: 'This athlete does not have a linked user profile yet.',
+        variant: 'destructive',
+      } as any);
+      return;
+    }
+    try {
+      setChatLoading(true);
+      setChatTarget(athlete);
+      const conv = await ChatService.getOrCreateConversation({
+        admin_id: profile.id,
+        athlete_id: athlete.profile_id,
+      });
+      setChatConversationId(conv.id);
+      setIsChatOpen(true);
+    } catch (e: any) {
+      toast({ title: 'Failed to open chat', description: e?.message || 'Please try again.' } as any);
+    } finally {
+      setChatLoading(false);
+    }
+  };
 
   // Check if user is admin
   if (authLoading) {
@@ -164,7 +236,6 @@ const AdminDashboard: React.FC = () => {
               </p>
             </div>
           </div>
-
         </div>
 
         {/* Tabs */}
@@ -336,6 +407,37 @@ const AdminDashboard: React.FC = () => {
               isLoading={athletesLoading}
             />
 
+            {/* Selection Mode Controls - Below filters */}
+            <div className="flex items-center gap-2 mb-6">
+              <Button
+                onClick={toggleSelectionMode}
+                variant={selectionMode ? "default" : "outline"}
+                className={selectionMode ? "bg-nil-orange hover:bg-nil-navy" : ""}
+              >
+                {selectionMode ? <CheckSquare className="w-4 h-4 mr-2" /> : <Square className="w-4 h-4 mr-2" />}
+                {selectionMode ? 'Exit Selection' : 'Select Athletes'}
+              </Button>
+              
+              {selectionMode && (
+                <>
+                  <Button onClick={handleSelectAll} variant="outline" size="sm">
+                    Select All ({athletes.length})
+                  </Button>
+                  <Button onClick={handleClearSelection} variant="outline" size="sm">
+                    Clear ({selectedAthleteIds.size})
+                  </Button>
+                  <Button 
+                    onClick={() => setIsStatsModalOpen(true)}
+                    disabled={selectedAthleteIds.size === 0}
+                    className="bg-nil-navy hover:bg-nil-orange"
+                  >
+                    <BarChart3 className="w-4 h-4 mr-2" />
+                    View Selected Stats ({selectedAthleteIds.size})
+                  </Button>
+                </>
+              )}
+            </div>
+
             {/* Loading State */}
             {athletesLoading && (
               <div className="flex items-center justify-center py-12">
@@ -373,14 +475,29 @@ const AdminDashboard: React.FC = () => {
                     {/* Athletes Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 mb-8">
                       {athletes.map((athlete) => (
-                        <AthleteCard 
-                          key={athlete.id} 
-                          athlete={athlete} 
-                          onClick={() => {
-                            setSelectedAthlete(athlete);
-                            setIsAthleteModalOpen(true);
-                          }}
-                        />
+                        <div key={athlete.id} className="space-y-2">
+                          <AthleteCard 
+                            athlete={athlete} 
+                            onClick={() => {
+                              setSelectedAthlete(athlete);
+                              setIsAthleteModalOpen(true);
+                            }}
+                            selectionMode={selectionMode}
+                            isSelected={selectedAthleteIds.has(athlete.id)}
+                            onSelectionChange={handleAthleteSelection}
+                          />
+                          {/* Actions under card */}
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              className="flex-1 bg-nil-orange hover:bg-nil-navy"
+                              onClick={() => handleStartChat(athlete)}
+                              disabled={!athlete.profile_id || chatLoading}
+                            >
+                              Message
+                            </Button>
+                          </div>
+                        </div>
                       ))}
                     </div>
 
@@ -531,6 +648,30 @@ const AdminDashboard: React.FC = () => {
           setSelectedAthlete(null);
         }}
       />
+      
+      {/* Selected Stats Modal */}
+      <SelectedStatsModal
+        isOpen={isStatsModalOpen}
+        onClose={() => setIsStatsModalOpen(false)}
+        selectedAthletes={getSelectedAthletes()}
+      />
+
+      {/* Chat Modal */}
+      <Dialog open={isChatOpen} onOpenChange={setIsChatOpen}>
+        <DialogContent className="max-w-3xl w-full">
+          <DialogHeader>
+            <DialogTitle>Chat {chatTarget ? `with ${chatTarget.name}` : ''}</DialogTitle>
+          </DialogHeader>
+          {chatConversationId && profile && (
+            <ChatWindow
+              conversationId={chatConversationId}
+              currentUserId={profile.id}
+              title={chatTarget ? chatTarget.name : 'Conversation'}
+              onBack={() => setIsChatOpen(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

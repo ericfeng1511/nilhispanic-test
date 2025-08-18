@@ -164,26 +164,31 @@ export class StudentAthleteService {
    * Returns years in logical academic progression order
    */
   static getUniqueYears(allAthletes: StudentAthlete[]): string[] {
-    const years = new Set(allAthletes.map(athlete => athlete.year));
+    // Normalize to uppercase strings and remove empty/null values
+    const years = new Set(
+      allAthletes
+        .map(athlete => (athlete.year ? String(athlete.year).toUpperCase() : ''))
+        .filter((y): y is string => !!y && y.trim() !== '')
+    );
     const yearArray = Array.from(years);
-    
+
     // Define the desired order for academic years
     const yearOrder = ['FR', 'SO', 'JR', 'SR', 'GR', 'RFR'];
-    
+
     // Sort years based on the defined order, with unknown years at the end
     return yearArray.sort((a, b) => {
-      const indexA = yearOrder.indexOf(a.toUpperCase());
-      const indexB = yearOrder.indexOf(b.toUpperCase());
-      
+      const indexA = yearOrder.indexOf(a);
+      const indexB = yearOrder.indexOf(b);
+
       // If both years are in the order array, sort by their position
       if (indexA !== -1 && indexB !== -1) {
         return indexA - indexB;
       }
-      
+
       // If only one is in the order array, prioritize it
       if (indexA !== -1) return -1;
       if (indexB !== -1) return 1;
-      
+
       // If neither is in the order array, sort alphabetically
       return a.localeCompare(b);
     });
