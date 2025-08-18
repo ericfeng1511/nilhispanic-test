@@ -50,6 +50,28 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     return unsubscribe;
   }, [conversationId]);
 
+  // Fallbacks: refresh on tab focus/visibility and light polling to recover from dropped realtime
+  useEffect(() => {
+    const refreshIfVisible = () => {
+      if (document.visibilityState === 'visible') {
+        loadMessages();
+      }
+    };
+    window.addEventListener('focus', refreshIfVisible);
+    document.addEventListener('visibilitychange', refreshIfVisible);
+
+    // Light polling every 30s as a safety net (cleared on unmount)
+    const interval = window.setInterval(() => {
+      refreshIfVisible();
+    }, 30000);
+
+    return () => {
+      window.removeEventListener('focus', refreshIfVisible);
+      document.removeEventListener('visibilitychange', refreshIfVisible);
+      window.clearInterval(interval);
+    };
+  }, [loadMessages]);
+
   // Mark as read when messages present and user opens
   useEffect(() => {
     if (!messages.length) return;
