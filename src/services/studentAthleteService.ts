@@ -62,7 +62,8 @@ export class StudentAthleteService {
     allAthletes: StudentAthlete[],
     page: number = 1,
     pageSize: number = 100,
-    filters: StudentAthleteFilters = {}
+    filters: StudentAthleteFilters = {},
+    options?: { schoolIdToName?: Record<number, string> }
   ): PaginatedStudentAthletes {
     let filteredAthletes = [...allAthletes];
 
@@ -83,13 +84,17 @@ export class StudentAthleteService {
       );
     }
 
-    // Multi-select colleges filter
+    // Multi-select colleges filter (use normalized school name from school_id when available)
     if (filters.colleges && filters.colleges.length > 0) {
-      filteredAthletes = filteredAthletes.filter(athlete =>
-        filters.colleges!.some(college => 
-          (athlete.college || '').toLowerCase().includes((college || '').toLowerCase())
-        )
-      );
+      const idToName = options?.schoolIdToName || {};
+      const selected = filters.colleges.map(c => (c || '').toLowerCase());
+      filteredAthletes = filteredAthletes.filter(athlete => {
+        const normalized = (athlete.school_id && idToName[athlete.school_id])
+          ? idToName[athlete.school_id]
+          : (athlete.college || '');
+        const normalizedLower = (normalized || '').toLowerCase();
+        return selected.some(sel => normalizedLower.includes(sel));
+      });
     }
 
     // Multi-select genders filter
@@ -157,6 +162,24 @@ export class StudentAthleteService {
         .filter((c): c is string => !!c)
     );
     return Array.from(colleges).sort();
+  }
+
+  /**
+   * Get unique college display names using school_id->name mapping with fallback to free-text `college`.
+   */
+  static getUniqueCollegeNames(
+    allAthletes: StudentAthlete[],
+    schoolIdToName: Record<number, string> = {}
+  ): string[] {
+    const names = new Set<string>();
+    for (const a of allAthletes) {
+      const n = (a.school_id && schoolIdToName[a.school_id])
+        ? schoolIdToName[a.school_id]
+        : (a.college || '');
+      const trimmed = (n || '').trim();
+      if (trimmed) names.add(trimmed);
+    }
+    return Array.from(names).sort();
   }
 
   /**
@@ -274,7 +297,7 @@ export class StudentAthleteService {
    */
   static async updateStudentAthlete(
     profileId: string, 
-    updates: Partial<Pick<StudentAthlete, 'sport' | 'year' | 'college' | 'hometown' | 'gender' | 'photo' | 'instagram_handle' | 'instagram_followers' | 'tiktok_handle' | 'tiktok_followers' | 'x_handle' | 'x_followers'>>
+    updates: Partial<Pick<StudentAthlete, 'sport' | 'year' | 'college' | 'hometown' | 'gender' | 'photo' | 'instagram_handle' | 'instagram_followers' | 'tiktok_handle' | 'tiktok_followers' | 'x_handle' | 'x_followers' | 'city_id' | 'school_id'>>
   ): Promise<StudentAthlete> {
     try {
       console.log('Updating student athlete for profile_id:', profileId, 'with updates:', updates);
@@ -305,7 +328,7 @@ export class StudentAthleteService {
   static async createStudentAthlete(
     profileId: string,
     name: string,
-    athleteData: Partial<Pick<StudentAthlete, 'sport' | 'year' | 'college' | 'hometown' | 'gender' | 'photo' | 'instagram_handle' | 'instagram_followers' | 'tiktok_handle' | 'tiktok_followers' | 'x_handle' | 'x_followers'>>
+    athleteData: Partial<Pick<StudentAthlete, 'sport' | 'year' | 'college' | 'hometown' | 'gender' | 'photo' | 'instagram_handle' | 'instagram_followers' | 'tiktok_handle' | 'tiktok_followers' | 'x_handle' | 'x_followers' | 'city_id' | 'school_id'>>
   ): Promise<StudentAthlete> {
     try {
       console.log('Creating student athlete for profile_id:', profileId, 'with data:', athleteData);
@@ -317,6 +340,8 @@ export class StudentAthleteService {
         year: athleteData.year || 'FR',
         college: athleteData.college || 'Unknown',
         hometown: athleteData.hometown || 'Unknown',
+        city_id: athleteData.city_id ?? null,
+        school_id: athleteData.school_id ?? null,
         gender: athleteData.gender || 'Unknown',
         photo: athleteData.photo || '',
         instagram_handle: athleteData.instagram_handle || null,

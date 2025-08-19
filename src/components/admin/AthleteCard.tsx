@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StudentAthlete } from '@/types/studentAthlete';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { User, MapPin, Trophy } from 'lucide-react';
+import { CollegeService } from '@/services/collegeService';
 
 interface AthleteCardProps {
   athlete: StudentAthlete;
@@ -22,6 +23,7 @@ export const AthleteCard: React.FC<AthleteCardProps> = ({
 }) => {
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
+  const [schoolName, setSchoolName] = useState<string>('');
 
   const handleImageError = () => {
     setImageError(true);
@@ -47,6 +49,25 @@ export const AthleteCard: React.FC<AthleteCardProps> = ({
       onClick();
     }
   };
+
+  // Resolve school name from school_id for display
+  useEffect(() => {
+    let active = true;
+    const load = async () => {
+      if (athlete.school_id) {
+        try {
+          const school = await CollegeService.getSchoolById(athlete.school_id);
+          if (active) setSchoolName(school?.name || '');
+        } catch (e) {
+          if (active) setSchoolName('');
+        }
+      } else {
+        if (active) setSchoolName('');
+      }
+    };
+    load();
+    return () => { active = false; };
+  }, [athlete.school_id]);
 
   return (
     <Card 
@@ -103,7 +124,7 @@ export const AthleteCard: React.FC<AthleteCardProps> = ({
           
           <div className="flex items-center text-gray-600 text-sm">
             <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
-            <span className="line-clamp-1">{athlete.college}</span>
+            <span className="line-clamp-1">{schoolName || athlete.college || 'N/A'}</span>
           </div>
           
           {/* Sport info row */}

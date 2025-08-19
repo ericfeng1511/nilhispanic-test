@@ -16,10 +16,12 @@ import ChatWindow from '@/components/chat/ChatWindow';
 import { ChatService } from '@/services/chatService';
 import { useToast } from '@/hooks/use-toast';
 import type { Conversation } from '@/types/chat';
+import { CityService, type City } from '@/services/cityService';
+import { CollegeService } from '@/services/collegeService';
 
 interface AthleteProfile {
   sport: string;
-  year: 'FR' | 'SO' | 'JR' | 'SR' | '';
+  year: 'FR' | 'SO' | 'JR' | 'SR' | 'RFR' | 'GR' | '';
   college: string;
   hometown: string;
   gender: 'M' | 'F' | '';
@@ -30,6 +32,8 @@ interface AthleteProfile {
   tiktok_followers?: number;
   x_handle?: string;
   x_followers?: number;
+  city_id?: number;
+  school_id?: number;
 }
 
 const AthleteDashboard: React.FC = () => {
@@ -52,7 +56,9 @@ const AthleteDashboard: React.FC = () => {
     tiktok_handle: '',
     tiktok_followers: undefined,
     x_handle: '',
-    x_followers: undefined
+    x_followers: undefined,
+    city_id: undefined,
+    school_id: undefined
   });
   
   // Photo upload state
@@ -65,6 +71,18 @@ const AthleteDashboard: React.FC = () => {
   const [collegeSuggestions, setCollegeSuggestions] = useState<string[]>([]);
   const [showSportSuggestions, setShowSportSuggestions] = useState(false);
   const [showCollegeSuggestions, setShowCollegeSuggestions] = useState(false);
+  // City autocomplete state
+  const [cityQuery, setCityQuery] = useState('');
+  const [citySuggestions, setCitySuggestions] = useState<City[]>([]);
+  const [showCitySuggestions, setShowCitySuggestions] = useState(false);
+  const citySearchTimeout = useRef<number | null>(null);
+  const [selectedCityLabel, setSelectedCityLabel] = useState<string>('');
+  // School autocomplete state
+  const [schoolQuery, setSchoolQuery] = useState('');
+  const [schoolSuggestions, setSchoolSuggestions] = useState<Array<{ id: number; name: string }>>([]);
+  const [showSchoolSuggestions, setShowSchoolSuggestions] = useState(false);
+  const schoolSearchTimeout = useRef<number | null>(null);
+  const [selectedSchoolLabel, setSelectedSchoolLabel] = useState<string>('');
   
   // Chat state
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -114,7 +132,7 @@ const AthleteDashboard: React.FC = () => {
 
   // Update mutation
   const updateMutation = useMutation({
-    mutationFn: async (updates: Partial<Pick<AthleteProfile, 'sport' | 'year' | 'college' | 'hometown' | 'gender' | 'photo' | 'instagram_handle' | 'instagram_followers' | 'tiktok_handle' | 'tiktok_followers' | 'x_handle' | 'x_followers'>>) => {
+    mutationFn: async (updates: Partial<Pick<AthleteProfile, 'sport' | 'year' | 'college' | 'hometown' | 'gender' | 'photo' | 'instagram_handle' | 'instagram_followers' | 'tiktok_handle' | 'tiktok_followers' | 'x_handle' | 'x_followers' | 'city_id' | 'school_id'>>) => {
       if (!profile?.id) throw new Error('No profile ID available');
       
       // Handle photo upload if there's a selected photo
@@ -125,7 +143,14 @@ const AthleteDashboard: React.FC = () => {
         console.log('Photo uploaded successfully:', photoUrl);
       }
       
-      const finalUpdates = { ...updates, photo: photoUrl };
+      // Explicitly include ids as number or null to avoid being dropped
+      const finalUpdates = {
+        ...updates,
+        photo: photoUrl,
+        city_id: typeof athleteProfile.city_id === 'number' ? athleteProfile.city_id : null,
+        school_id: typeof athleteProfile.school_id === 'number' ? athleteProfile.school_id : null
+      } as typeof updates;
+      console.log('Submitting updates:', finalUpdates);
       
       // If no athlete record exists, create one
       if (!currentAthleteData) {
@@ -160,7 +185,7 @@ const AthleteDashboard: React.FC = () => {
     if (currentAthleteData) {
       setAthleteProfile({
         sport: currentAthleteData.sport || '',
-        year: (currentAthleteData.year as 'FR' | 'SO' | 'JR' | 'SR') || '',
+        year: (currentAthleteData.year as 'FR' | 'SO' | 'JR' | 'SR' | 'RFR' | 'GR') || '',
         college: currentAthleteData.college || '',
         hometown: currentAthleteData.hometown || '',
         gender: (currentAthleteData.gender as 'M' | 'F') || '',
@@ -170,8 +195,46 @@ const AthleteDashboard: React.FC = () => {
         tiktok_handle: currentAthleteData.tiktok_handle || '',
         tiktok_followers: currentAthleteData.tiktok_followers || undefined,
         x_handle: currentAthleteData.x_handle || '',
-        x_followers: currentAthleteData.x_followers || undefined
+        x_followers: currentAthleteData.x_followers || undefined,
+        city_id: (currentAthleteData as any).city_id || undefined,
+        school_id: (currentAthleteData as any).school_id || undefined
       });
+      // Prefill the visible query with existing hometown for user context
+      setCityQuery(currentAthleteData.hometown || '');
+      // If a city_id exists, load its label for display
+      const cid = (currentAthleteData as any).city_id as number | undefined;
+      if (cid) {
+        CityService.getCityById(cid)
+          .then(city => {
+            if (city) {
+              const label = CityService.formatCityLabel(city);
+              setSelectedCityLabel(label);
+              setCityQuery(label);
+            } else {
+              setSelectedCityLabel('');
+            }
+          })
+          .catch(() => setSelectedCityLabel(''));
+      } else {
+        setSelectedCityLabel('');
+      }
+      // If a school_id exists, load its name for display
+      const sid = (currentAthleteData as any).school_id as number | undefined;
+      if (sid) {
+        CollegeService.getSchoolById(sid)
+          .then((school) => {
+            if (school) {
+              setSelectedSchoolLabel(school.name);
+              setSchoolQuery(school.name);
+            } else {
+              setSelectedSchoolLabel('');
+            }
+          })
+          .catch(() => setSelectedSchoolLabel(''));
+      } else {
+        setSelectedSchoolLabel('');
+        setSchoolQuery(currentAthleteData.college || '');
+      }
     }
   }, [currentAthleteData]);
   
@@ -206,7 +269,7 @@ const AthleteDashboard: React.FC = () => {
     if (currentAthleteData) {
       setAthleteProfile({
         sport: currentAthleteData.sport || '',
-        year: (currentAthleteData.year as 'FR' | 'SO' | 'JR' | 'SR') || '',
+        year: (currentAthleteData.year as 'FR' | 'SO' | 'JR' | 'SR' | 'RFR' | 'GR') || '',
         college: currentAthleteData.college || '',
         hometown: currentAthleteData.hometown || '',
         gender: (currentAthleteData.gender as 'M' | 'F') || '',
@@ -216,7 +279,9 @@ const AthleteDashboard: React.FC = () => {
         tiktok_handle: currentAthleteData.tiktok_handle || '',
         tiktok_followers: currentAthleteData.tiktok_followers || undefined,
         x_handle: currentAthleteData.x_handle || '',
-        x_followers: currentAthleteData.x_followers || undefined
+        x_followers: currentAthleteData.x_followers || undefined,
+        city_id: (currentAthleteData as any).city_id || undefined,
+        school_id: (currentAthleteData as any).school_id || undefined
       });
     } else {
       setAthleteProfile({
@@ -231,13 +296,19 @@ const AthleteDashboard: React.FC = () => {
         tiktok_handle: '',
         tiktok_followers: undefined,
         x_handle: '',
-        x_followers: undefined
+        x_followers: undefined,
+        city_id: undefined,
+        school_id: undefined
       });
     }
     // Reset photo upload state
     setSelectedPhoto(null);
     setPhotoPreview(null);
     setIsEditing(false);
+    // Reset query to either selected city label or hometown
+    setCityQuery(selectedCityLabel || currentAthleteData?.hometown || '');
+    // Reset school query to selected label or existing college text
+    setSchoolQuery(selectedSchoolLabel || currentAthleteData?.college || '');
   };
 
   // Photo upload handlers
@@ -560,7 +631,7 @@ const AthleteDashboard: React.FC = () => {
                 {isEditing ? (
                   <Select
                     value={athleteProfile.year}
-                    onValueChange={(value) => setAthleteProfile(prev => ({ ...prev, year: value as 'FR' | 'SO' | 'JR' | 'SR' | '' }))}
+                    onValueChange={(value) => setAthleteProfile(prev => ({ ...prev, year: value as 'FR' | 'SO' | 'JR' | 'SR' | 'RFR' | 'GR' | '' }))}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select your year" />
@@ -570,6 +641,8 @@ const AthleteDashboard: React.FC = () => {
                       <SelectItem value="SO">Sophomore (SO)</SelectItem>
                       <SelectItem value="JR">Junior (JR)</SelectItem>
                       <SelectItem value="SR">Senior (SR)</SelectItem>
+                      <SelectItem value="RFR">Redshirt (RFR)</SelectItem>
+                      <SelectItem value="GR">Graduate (GR)</SelectItem>
                     </SelectContent>
                   </Select>
                 ) : (
@@ -578,67 +651,132 @@ const AthleteDashboard: React.FC = () => {
                       athleteProfile.year === 'FR' ? 'Freshman (FR)' :
                       athleteProfile.year === 'SO' ? 'Sophomore (SO)' :
                       athleteProfile.year === 'JR' ? 'Junior (JR)' :
-                      athleteProfile.year === 'SR' ? 'Senior (SR)' : athleteProfile.year
+                      athleteProfile.year === 'SR' ? 'Senior (SR)' :
+                      athleteProfile.year === 'RFR' ? 'Redshirt (RFR)' :
+                      athleteProfile.year === 'GR' ? 'Graduate (GR)' : athleteProfile.year
                     ) : 'Not specified'}
                   </div>
                 )}
               </div>
 
-              {/* College Field */}
+              {/* College/University (Schools) Field with Autocomplete backed by schools table */}
               <div className="space-y-2 relative">
                 <Label htmlFor="college">College/University</Label>
                 {isEditing ? (
                   <div className="relative">
                     <Input
                       id="college"
-                      value={athleteProfile.college}
+                      value={schoolQuery}
                       onChange={(e) => {
-                        setAthleteProfile(prev => ({ ...prev, college: e.target.value }));
-                        setShowCollegeSuggestions(e.target.value.length > 0);
+                        const val = e.target.value;
+                        setSchoolQuery(val);
+                        setShowSchoolSuggestions(!!val);
+                        // debounce
+                        if (schoolSearchTimeout.current) {
+                          window.clearTimeout(schoolSearchTimeout.current);
+                        }
+                        schoolSearchTimeout.current = window.setTimeout(async () => {
+                          try {
+                            const results = await CollegeService.searchSchoolsByName(val);
+                            setSchoolSuggestions(results);
+                          } catch (err) {
+                            console.error('School search failed', err);
+                          }
+                        }, 200);
                       }}
-                      onFocus={() => setShowCollegeSuggestions(athleteProfile.college.length > 0)}
-                      onBlur={() => setTimeout(() => setShowCollegeSuggestions(false), 200)}
-                      placeholder="Enter your college or university"
+                      onFocus={() => setShowSchoolSuggestions(!!schoolQuery)}
+                      onBlur={() => setTimeout(() => setShowSchoolSuggestions(false), 150)}
+                      placeholder="Search your college or university"
                       className="w-full"
                     />
-                    {showCollegeSuggestions && athleteProfile.college && (
-                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-40 overflow-y-auto">
-                        {getFilteredCollegeSuggestions(athleteProfile.college).map((college, index) => (
-                          <div
-                            key={index}
-                            className="px-3 py-2 cursor-pointer hover:bg-gray-100"
-                            onClick={() => {
-                              setAthleteProfile(prev => ({ ...prev, college }));
-                              setShowCollegeSuggestions(false);
-                            }}
-                          >
-                            {college}
-                          </div>
-                        ))}
+                    {showSchoolSuggestions && schoolQuery && (
+                      <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-56 overflow-y-auto">
+                        {schoolSuggestions.length === 0 ? (
+                          <div className="px-3 py-2 text-sm text-gray-500">No matches</div>
+                        ) : (
+                          schoolSuggestions.map((s) => (
+                            <div
+                              key={s.id}
+                              className="px-3 py-2 cursor-pointer hover:bg-gray-100"
+                              onClick={() => {
+                                setAthleteProfile(prev => ({ ...prev, school_id: s.id }));
+                                setSelectedSchoolLabel(s.name);
+                                setSchoolQuery(s.name);
+                                setShowSchoolSuggestions(false);
+                              }}
+                            >
+                              {s.name}
+                            </div>
+                          ))
+                        )}
                       </div>
                     )}
+                    <p className="text-xs text-gray-500 mt-1">Select from the list to link your profile to a school.</p>
                   </div>
                 ) : (
                   <div className="p-3 bg-gray-50 rounded-md">
-                    {athleteProfile.college || 'Not specified'}
+                    {selectedSchoolLabel || athleteProfile.college || 'Not specified'}
                   </div>
                 )}
               </div>
 
-              {/* Hometown Field */}
-              <div className="space-y-2">
+              {/* Hometown (City) Field with Autocomplete */}
+              <div className="space-y-2 relative">
                 <Label htmlFor="hometown">Hometown</Label>
                 {isEditing ? (
-                  <Input
-                    id="hometown"
-                    value={athleteProfile.hometown}
-                    onChange={(e) => setAthleteProfile(prev => ({ ...prev, hometown: e.target.value }))}
-                    placeholder="Enter your hometown"
-                    className="w-full"
-                  />
+                  <div className="relative">
+                    <Input
+                      id="hometown"
+                      value={cityQuery}
+                      onChange={async (e) => {
+                        const val = e.target.value;
+                        setCityQuery(val);
+                        setShowCitySuggestions(!!val);
+                        // debounce
+                        if (citySearchTimeout.current) {
+                          window.clearTimeout(citySearchTimeout.current);
+                        }
+                        citySearchTimeout.current = window.setTimeout(async () => {
+                          try {
+                            const results = await CityService.searchCities(val);
+                            setCitySuggestions(results);
+                          } catch (err) {
+                            console.error('City search failed', err);
+                          }
+                        }, 200);
+                      }}
+                      onFocus={() => setShowCitySuggestions(!!cityQuery)}
+                      onBlur={() => setTimeout(() => setShowCitySuggestions(false), 150)}
+                      placeholder="Search city (e.g., Los Angeles, CA or 90007)"
+                      className="w-full"
+                    />
+                    {showCitySuggestions && cityQuery && (
+                      <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-56 overflow-y-auto">
+                        {citySuggestions.length === 0 ? (
+                          <div className="px-3 py-2 text-sm text-gray-500">No matches</div>
+                        ) : (
+                          citySuggestions.map((c) => (
+                            <div
+                              key={c.id}
+                              className="px-3 py-2 cursor-pointer hover:bg-gray-100"
+                              onClick={() => {
+                                setAthleteProfile(prev => ({ ...prev, city_id: c.id }));
+                                setCityQuery(CityService.formatCityLabel(c));
+                                setSelectedCityLabel(CityService.formatCityLabel(c));
+                                setShowCitySuggestions(false);
+                              }}
+                            >
+                              {CityService.formatCityLabel(c)}
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    )}
+                    <p className="text-xs text-gray-500 mt-1">Select from the list to set your city. International cities may be unavailable.</p>
+                  </div>
                 ) : (
                   <div className="p-3 bg-gray-50 rounded-md">
-                    {athleteProfile.hometown || 'Not specified'}
+                    {selectedCityLabel || athleteProfile.hometown || 'Not specified'}
                   </div>
                 )}
               </div>
@@ -686,7 +824,6 @@ const AthleteDashboard: React.FC = () => {
               {/* Instagram Section */}
               <div className="space-y-4">
                 <h4 className="font-medium text-sm text-gray-700">Instagram</h4>
-                
                 {/* Instagram Handle */}
                 <div className="space-y-2">
                   <Label htmlFor="instagram_handle">Instagram Handle</Label>
@@ -696,10 +833,9 @@ const AthleteDashboard: React.FC = () => {
                       value={athleteProfile.instagram_handle || ''}
                       onChange={(e) => {
                         const value = e.target.value;
-                        setAthleteProfile(prev => ({ 
-                          ...prev, 
+                        setAthleteProfile(prev => ({
+                          ...prev,
                           instagram_handle: value,
-                          // Clear followers if handle is removed
                           instagram_followers: value ? prev.instagram_followers : undefined
                         }));
                       }}
@@ -712,7 +848,6 @@ const AthleteDashboard: React.FC = () => {
                     </div>
                   )}
                 </div>
-
                 {/* Instagram Followers */}
                 <div className="space-y-2">
                   <Label htmlFor="instagram_followers">Instagram Followers</Label>
@@ -747,7 +882,6 @@ const AthleteDashboard: React.FC = () => {
               {/* X (Twitter) Section */}
               <div className="space-y-4">
                 <h4 className="font-medium text-sm text-gray-700">X (Twitter)</h4>
-                
                 {/* X Handle */}
                 <div className="space-y-2">
                   <Label htmlFor="x_handle">X Handle</Label>
@@ -757,10 +891,9 @@ const AthleteDashboard: React.FC = () => {
                       value={athleteProfile.x_handle || ''}
                       onChange={(e) => {
                         const value = e.target.value;
-                        setAthleteProfile(prev => ({ 
-                          ...prev, 
+                        setAthleteProfile(prev => ({
+                          ...prev,
                           x_handle: value,
-                          // Clear followers if handle is removed
                           x_followers: value ? prev.x_followers : undefined
                         }));
                       }}
@@ -773,7 +906,6 @@ const AthleteDashboard: React.FC = () => {
                     </div>
                   )}
                 </div>
-
                 {/* X Followers */}
                 <div className="space-y-2">
                   <Label htmlFor="x_followers">X Followers</Label>
@@ -808,7 +940,6 @@ const AthleteDashboard: React.FC = () => {
               {/* TikTok Section */}
               <div className="space-y-4 md:col-span-2">
                 <h4 className="font-medium text-sm text-gray-700">TikTok</h4>
-                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* TikTok Handle */}
                   <div className="space-y-2">
@@ -819,10 +950,9 @@ const AthleteDashboard: React.FC = () => {
                         value={athleteProfile.tiktok_handle || ''}
                         onChange={(e) => {
                           const value = e.target.value;
-                          setAthleteProfile(prev => ({ 
-                            ...prev, 
+                          setAthleteProfile(prev => ({
+                            ...prev,
                             tiktok_handle: value,
-                            // Clear followers if handle is removed
                             tiktok_followers: value ? prev.tiktok_followers : undefined
                           }));
                         }}
@@ -835,7 +965,6 @@ const AthleteDashboard: React.FC = () => {
                       </div>
                     )}
                   </div>
-
                   {/* TikTok Followers */}
                   <div className="space-y-2">
                     <Label htmlFor="tiktok_followers">TikTok Followers</Label>
@@ -871,22 +1000,6 @@ const AthleteDashboard: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Future Features Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="w-5 h-5 text-nil-orange" />
-                Messages
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">Connect with brands and opportunities.</p>
-              <p className="text-sm text-gray-500 mt-2">Coming Soon</p>
-            </CardContent>
-          </Card>
-        </div>
-
         {/* Chat Modal */}
         <Dialog open={isChatOpen} onOpenChange={(open) => {
           setIsChatOpen(open);
@@ -900,7 +1013,6 @@ const AthleteDashboard: React.FC = () => {
                 {chatConversationId ? 'Conversation' : 'Your Messages'}
               </DialogTitle>
             </DialogHeader>
-
             {/* If a conversation is selected, show chat window */}
             {chatConversationId && profile ? (
               <ChatWindow

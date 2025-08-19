@@ -6,6 +6,8 @@ export interface StudentAthlete {
   year: string; // FR, SO, JR, SR
   college: string;
   hometown: string;
+  city_id?: number; // FK to cities.id (nullable during migration)
+  school_id?: number; // FK to schools.id (nullable during migration)
   gender: string; // M or F
   photo: string;
   instagram_handle?: string;

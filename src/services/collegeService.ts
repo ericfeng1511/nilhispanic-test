@@ -278,4 +278,59 @@ export class CollegeService {
       throw error;
     }
   }
+
+  /**
+   * Lightweight search against schools table by name (for autocomplete)
+   */
+  static async searchSchoolsByName(query: string): Promise<Pick<College, 'id' | 'name'>[]> {
+    const q = (query || '').trim();
+    if (!q) return [];
+    const { data, error } = await supabase
+      .from('schools')
+      .select('id, name')
+      .ilike('name', `%${q}%`)
+      .order('name')
+      .limit(10);
+    if (error) throw error;
+    return (data || []) as Pick<College, 'id' | 'name'>[];
+  }
+
+  /**
+   * Get a single school by id (id, name only)
+   */
+  static async getSchoolById(id: number): Promise<Pick<College, 'id' | 'name'> | null> {
+    const { data, error } = await supabase
+      .from('schools')
+      .select('id, name')
+      .eq('id', id)
+      .single();
+    if (error) {
+      if ((error as any).code === 'PGRST116') return null;
+      throw error;
+    }
+    return data as Pick<College, 'id' | 'name'>;
+  }
+
+  /**
+   * Get multiple schools by ids (id, name only)
+   * Returns an array of minimal school objects for the provided ids.
+   */
+  static async getSchoolsByIds(ids: number[]): Promise<Pick<College, 'id' | 'name'>[]> {
+    const uniqueIds = Array.from(new Set((ids || []).filter((v): v is number => typeof v === 'number')));
+    if (uniqueIds.length === 0) return [];
+
+    const { data, error } = await supabase
+      .from('schools')
+      .select('id, name')
+      .in('id', uniqueIds)
+      .order('name');
+
+    if (error) {
+      // Surface error for caller to handle; return empty list as safe fallback
+      console.error('Error fetching schools by ids:', error);
+      throw error;
+    }
+
+    return (data || []) as Pick<College, 'id' | 'name'>[];
+  }
 }

@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { StudentAthleteService } from '@/services/studentAthleteService';
 import { StudentAthlete, StudentAthleteFilters, PaginatedStudentAthletes } from '@/types/studentAthlete';
+import { CollegeService } from '@/services/collegeService';
 
 export const useStudentAthletes = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -28,6 +29,33 @@ export const useStudentAthletes = () => {
   const EMPTY_ATHLETES: StudentAthlete[] = useMemo(() => [], []);
   const allAthletes: StudentAthlete[] = queryData ?? EMPTY_ATHLETES;
 
+  // Build a list of school_ids present in the dataset
+  const schoolIds = useMemo(() => {
+    const ids = new Set<number>();
+    for (const a of allAthletes) {
+      if (typeof a.school_id === 'number') ids.add(a.school_id);
+    }
+    return Array.from(ids);
+  }, [allAthletes]);
+
+  // Fetch school names for those ids (bulk)
+  const { data: schools = [] } = useQuery({
+    queryKey: ['schools-by-ids', schoolIds],
+    queryFn: () => CollegeService.getSchoolsByIds(schoolIds),
+    enabled: schoolIds.length > 0,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+
+  // Build id->name map
+  const schoolIdToName = useMemo(() => {
+    const map: Record<number, string> = {};
+    for (const s of schools) {
+      if (s && typeof s.id === 'number' && s.name) map[s.id] = s.name;
+    }
+    return map;
+  }, [schools]);
+
   // Get paginated results from cached data
   const paginatedResults: PaginatedStudentAthletes = useMemo(() => {
     if (!allAthletes.length) {
@@ -44,19 +72,20 @@ export const useStudentAthletes = () => {
       allAthletes,
       currentPage,
       pageSize,
-      filters
+      filters,
+      { schoolIdToName }
     );
-  }, [allAthletes, currentPage, pageSize, filters]);
+  }, [allAthletes, currentPage, pageSize, filters, schoolIdToName]);
 
   // Get unique sports for filter dropdown
   const uniqueSports = useMemo(() => {
     return StudentAthleteService.getUniqueSports(allAthletes);
   }, [allAthletes]);
 
-  // Get unique colleges for filter dropdown
+  // Get unique colleges for filter dropdown (normalized via school_id)
   const uniqueColleges = useMemo(() => {
-    return StudentAthleteService.getUniqueColleges(allAthletes);
-  }, [allAthletes]);
+    return StudentAthleteService.getUniqueCollegeNames(allAthletes, schoolIdToName);
+  }, [allAthletes, schoolIdToName]);
 
   // Get unique genders for filter dropdown
   const uniqueGenders = useMemo(() => {

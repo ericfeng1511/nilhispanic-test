@@ -4,6 +4,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Badge } from '@/components/ui/badge';
 import { User, MapPin, Trophy, Calendar, Users, Instagram, Music, Twitter } from 'lucide-react';
 import { formatAcademicYear, formatGender } from '@/utils/formatters';
+import { CityService } from '@/services/cityService';
+import { CollegeService } from '@/services/collegeService';
 
 interface AthleteDetailModalProps {
   athlete: StudentAthlete | null;
@@ -18,6 +20,8 @@ export const AthleteDetailModal: React.FC<AthleteDetailModalProps> = ({
 }) => {
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
+  const [formattedCity, setFormattedCity] = useState<string>('N/A');
+  const [schoolName, setSchoolName] = useState<string>('');
 
   // Reset image state when athlete changes
   useEffect(() => {
@@ -26,6 +30,46 @@ export const AthleteDetailModal: React.FC<AthleteDetailModalProps> = ({
       setImageLoading(true);
     }
   }, [athlete]);
+
+  // Load formatted hometown from city_id
+  useEffect(() => {
+    const loadCity = async () => {
+      if (athlete?.city_id) {
+        try {
+          const city = await CityService.getCityById(athlete.city_id);
+          if (city) {
+            setFormattedCity(CityService.formatCityLabel(city));
+          } else {
+            setFormattedCity('N/A');
+          }
+        } catch (e) {
+          setFormattedCity('N/A');
+        }
+      } else {
+        setFormattedCity('N/A');
+      }
+    };
+    loadCity();
+  }, [athlete]);
+
+  // Load school name from school_id
+  useEffect(() => {
+    let active = true;
+    const loadSchool = async () => {
+      if (athlete?.school_id) {
+        try {
+          const school = await CollegeService.getSchoolById(athlete.school_id);
+          if (active) setSchoolName(school?.name || '');
+        } catch (e) {
+          if (active) setSchoolName('');
+        }
+      } else {
+        if (active) setSchoolName('');
+      }
+    };
+    loadSchool();
+    return () => { active = false; };
+  }, [athlete?.school_id]);
 
   if (!athlete) return null;
 
@@ -144,7 +188,7 @@ export const AthleteDetailModal: React.FC<AthleteDetailModalProps> = ({
                 <Trophy className="w-5 h-5 text-nil-orange flex-shrink-0" />
                 <div>
                   <span className="font-medium text-gray-700">College:</span>
-                  <span className="ml-2 text-gray-900">{athlete.college}</span>
+                  <span className="ml-2 text-gray-900">{schoolName || athlete.college || 'N/A'}</span>
                 </div>
               </div>
 
@@ -153,7 +197,7 @@ export const AthleteDetailModal: React.FC<AthleteDetailModalProps> = ({
                 <MapPin className="w-5 h-5 text-nil-orange flex-shrink-0" />
                 <div>
                   <span className="font-medium text-gray-700">Hometown:</span>
-                  <span className="ml-2 text-gray-900">{athlete.hometown}</span>
+                  <span className="ml-2 text-gray-900">{formattedCity}</span>
                 </div>
               </div>
 
