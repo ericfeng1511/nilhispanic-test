@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate, Link } from 'react-router-dom';
-import { User, Trophy, Calendar, MessageSquare, Settings, BarChart3, Edit3, Save, X, ArrowLeft, Camera, Upload } from 'lucide-react';
+import { User, Trophy, Calendar, MessageSquare, Settings, BarChart3, Edit3, Save, X, ArrowLeft, Camera, Upload, Instagram, Twitter } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +18,17 @@ import { useToast } from '@/hooks/use-toast';
 import type { Conversation } from '@/types/chat';
 import { CityService, type City } from '@/services/cityService';
 import { CollegeService } from '@/services/collegeService';
+
+// Custom TikTok Icon Component
+const TikTokIcon = ({ className }: { className?: string }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    className={className}
+  >
+    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-.04-.1z"/>
+  </svg>
+);
 
 interface AthleteProfile {
   sport: string;
@@ -433,6 +444,7 @@ const AthleteDashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
+        {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -444,39 +456,121 @@ const AthleteDashboard: React.FC = () => {
                 <ArrowLeft className="w-6 h-6" />
               </Link>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Athlete Dashboard</h1>
-                <p className="text-gray-600 mt-2">
-                  Welcome back, {profile.full_name || 'Athlete'}!
+                <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
+                <p className="text-gray-600 mt-1">
+                  Manage your athlete profile and social media presence
                 </p>
               </div>
             </div>
-            <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-lg shadow-sm">
-              <User className="w-5 h-5 text-nil-orange" />
-              <div>
-                <div className="font-medium text-sm">{profile.full_name}</div>
-                <div className="text-xs text-gray-500 capitalize">{profile.role}</div>
-              </div>
-            </div>
-            <Button onClick={handleOpenMessages} className="ml-3 bg-nil-orange hover:bg-nil-navy flex items-center gap-2">
+            <Button onClick={handleOpenMessages} className="bg-nil-orange hover:bg-nil-navy flex items-center gap-2">
               <MessageSquare className="w-4 h-4" />
               Messages
             </Button>
           </div>
         </div>
 
-        {/* Profile Information Card */}
-        <Card className="mb-8">
+        {/* Profile Header Card */}
+        <Card className="mb-6">
+          <CardContent className="pt-6">
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+              {/* Profile Photo */}
+              <div className="relative">
+                <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 border-4 border-white shadow-lg">
+                  {photoPreview || athleteProfile.photo ? (
+                    <img
+                      src={photoPreview || athleteProfile.photo}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-nil-orange to-nil-navy">
+                      <User className="w-12 h-12 text-white" />
+                    </div>
+                  )}
+                </div>
+                {/* Photo Edit Button */}
+                <button
+                  onClick={handlePhotoUploadClick}
+                  className="absolute bottom-2 right-2 w-8 h-8 bg-nil-orange hover:bg-nil-navy text-white rounded-full flex items-center justify-center shadow-lg transition-colors"
+                >
+                  <Camera className="w-4 h-4" />
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoSelect}
+                  className="hidden"
+                />
+              </div>
+
+              {/* Profile Info */}
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <h2 className="text-2xl font-bold text-gray-900">{profile.full_name}</h2>
+                  <div className="px-3 py-1 bg-nil-orange text-white text-sm rounded-full">
+                    Student Athlete
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-4 text-gray-600">
+                  {athleteProfile.sport && (
+                    <div className="flex items-center gap-1">
+                      <Trophy className="w-4 h-4" />
+                      <span>{athleteProfile.sport}</span>
+                    </div>
+                  )}
+                  {(selectedSchoolLabel || athleteProfile.college) && (
+                    <div className="flex items-center gap-1">
+                      <Settings className="w-4 h-4" />
+                      <span>{selectedSchoolLabel || athleteProfile.college}</span>
+                    </div>
+                  )}
+                  {athleteProfile.year && (
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-4 h-4" />
+                      <span>
+                        {athleteProfile.year === 'FR' ? 'Freshman' :
+                         athleteProfile.year === 'SO' ? 'Sophomore' :
+                         athleteProfile.year === 'JR' ? 'Junior' :
+                         athleteProfile.year === 'SR' ? 'Senior' :
+                         athleteProfile.year === 'RFR' ? 'Redshirt' :
+                         athleteProfile.year === 'GR' ? 'Graduate' : athleteProfile.year}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                {(selectedPhoto || photoPreview) && (
+                  <div className="mt-3 flex gap-2">
+                    <Button
+                      onClick={handleSave}
+                      disabled={updateMutation.isPending}
+                      size="sm"
+                      className="bg-nil-orange hover:bg-nil-navy"
+                    >
+                      {updateMutation.isPending ? 'Saving...' : 'Save Photo'}
+                    </Button>
+                    <Button
+                      onClick={handleRemovePhoto}
+                      variant="outline"
+                      size="sm"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Basic Information */}
+        <Card className="mb-6">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <Trophy className="w-5 h-5 text-nil-orange" />
-                  Athlete Profile
-                </CardTitle>
-                <CardDescription>
-                  Manage your athletic profile information
-                </CardDescription>
-              </div>
+              <CardTitle className="flex items-center gap-2">
+                <User className="w-5 h-5 text-nil-orange" />
+                Basic Information
+              </CardTitle>
               {!isEditing ? (
                 <Button
                   onClick={() => setIsEditing(true)}
@@ -485,7 +579,7 @@ const AthleteDashboard: React.FC = () => {
                   className="flex items-center gap-2"
                 >
                   <Edit3 className="w-4 h-4" />
-                  Edit Profile
+                  Edit
                 </Button>
               ) : (
                 <div className="flex gap-2">
@@ -516,73 +610,6 @@ const AthleteDashboard: React.FC = () => {
             </div>
           </CardHeader>
           <CardContent>
-            {/* Photo Upload Section */}
-            <div className="mb-6">
-              <Label htmlFor="photo">Profile Photo</Label>
-              <div className="mt-2 flex items-center gap-4">
-                {/* Photo Preview */}
-                <div className="relative">
-                  <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-100 border-2 border-gray-200">
-                    {photoPreview || athleteProfile.photo ? (
-                      <img
-                        src={photoPreview || athleteProfile.photo}
-                        alt="Profile preview"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <User className="w-8 h-8 text-gray-400" />
-                      </div>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Upload Controls */}
-                {isEditing && (
-                  <div className="flex flex-col gap-2">
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handlePhotoSelect}
-                      className="hidden"
-                    />
-                    <Button
-                      type="button"
-                      onClick={handlePhotoUploadClick}
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center gap-2"
-                    >
-                      <Upload className="w-4 h-4" />
-                      {photoPreview || athleteProfile.photo ? 'Change Photo' : 'Upload Photo'}
-                    </Button>
-                    {(photoPreview || athleteProfile.photo) && (
-                      <Button
-                        type="button"
-                        onClick={handleRemovePhoto}
-                        variant="outline"
-                        size="sm"
-                        className="flex items-center gap-2 text-red-600 hover:text-red-700"
-                      >
-                        <X className="w-4 h-4" />
-                        Remove Photo
-                      </Button>
-                    )}
-                    <p className="text-xs text-gray-500 mt-1">
-                      Max file size: 5MB. Supported formats: JPG, JPEG, PNG
-                    </p>
-                  </div>
-                )}
-                
-                {!isEditing && !athleteProfile.photo && (
-                  <div className="text-sm text-gray-500">
-                    No photo uploaded
-                  </div>
-                )}
-              </div>
-            </div>
-            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Sport Field */}
               <div className="space-y-2 relative">
@@ -813,23 +840,39 @@ const AthleteDashboard: React.FC = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <MessageSquare className="w-5 h-5 text-nil-orange" />
-              Social Media
+              Social Media Presence
             </CardTitle>
             <CardDescription>
               Connect your social media accounts to showcase your online presence
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Instagram Section */}
-              <div className="space-y-4">
-                <h4 className="font-medium text-sm text-gray-700">Instagram</h4>
-                {/* Instagram Handle */}
-                <div className="space-y-2">
-                  <Label htmlFor="instagram_handle">Instagram Handle</Label>
-                  {isEditing ? (
+            <div className="space-y-8">
+              {/* Instagram */}
+              <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                    <Instagram className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-900">Instagram</h4>
+                    <p className="text-sm text-gray-500">
+                      {athleteProfile.instagram_handle ? (
+                        <>
+                          {athleteProfile.instagram_handle}
+                          {athleteProfile.instagram_followers && (
+                            <span className="ml-2">• {athleteProfile.instagram_followers.toLocaleString()} followers</span>
+                          )}
+                        </>
+                      ) : (
+                        'Not connected'
+                      )}
+                    </p>
+                  </div>
+                </div>
+                {isEditing ? (
+                  <div className="flex gap-2">
                     <Input
-                      id="instagram_handle"
                       value={athleteProfile.instagram_handle || ''}
                       onChange={(e) => {
                         const value = e.target.value;
@@ -840,20 +883,9 @@ const AthleteDashboard: React.FC = () => {
                         }));
                       }}
                       placeholder="@username"
-                      className="w-full"
+                      className="w-32"
                     />
-                  ) : (
-                    <div className="p-3 bg-gray-50 rounded-md">
-                      {athleteProfile.instagram_handle || 'Not specified'}
-                    </div>
-                  )}
-                </div>
-                {/* Instagram Followers */}
-                <div className="space-y-2">
-                  <Label htmlFor="instagram_followers">Instagram Followers</Label>
-                  {isEditing ? (
                     <Input
-                      id="instagram_followers"
                       type="number"
                       value={athleteProfile.instagram_followers ?? ''}
                       onChange={(e) => {
@@ -867,27 +899,47 @@ const AthleteDashboard: React.FC = () => {
                           }
                         }
                       }}
-                      placeholder="Follower count"
-                      className="w-full"
+                      placeholder="Followers"
+                      className="w-24"
                       disabled={!athleteProfile.instagram_handle}
                     />
-                  ) : (
-                    <div className="p-3 bg-gray-50 rounded-md">
-                      {athleteProfile.instagram_followers ? athleteProfile.instagram_followers.toLocaleString() : 'Not specified'}
-                    </div>
-                  )}
-                </div>
+                  </div>
+                ) : (
+                  <Button
+                    onClick={() => setIsEditing(true)}
+                    variant="ghost"
+                    size="sm"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                  </Button>
+                )}
               </div>
 
-              {/* X (Twitter) Section */}
-              <div className="space-y-4">
-                <h4 className="font-medium text-sm text-gray-700">X (Twitter)</h4>
-                {/* X Handle */}
-                <div className="space-y-2">
-                  <Label htmlFor="x_handle">X Handle</Label>
-                  {isEditing ? (
+              {/* X (Twitter) */}
+              <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center">
+                    <Twitter className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-900">X (Twitter)</h4>
+                    <p className="text-sm text-gray-500">
+                      {athleteProfile.x_handle ? (
+                        <>
+                          {athleteProfile.x_handle}
+                          {athleteProfile.x_followers && (
+                            <span className="ml-2">• {athleteProfile.x_followers.toLocaleString()} followers</span>
+                          )}
+                        </>
+                      ) : (
+                        'Not connected'
+                      )}
+                    </p>
+                  </div>
+                </div>
+                {isEditing ? (
+                  <div className="flex gap-2">
                     <Input
-                      id="x_handle"
                       value={athleteProfile.x_handle || ''}
                       onChange={(e) => {
                         const value = e.target.value;
@@ -898,20 +950,9 @@ const AthleteDashboard: React.FC = () => {
                         }));
                       }}
                       placeholder="@username"
-                      className="w-full"
+                      className="w-32"
                     />
-                  ) : (
-                    <div className="p-3 bg-gray-50 rounded-md">
-                      {athleteProfile.x_handle || 'Not specified'}
-                    </div>
-                  )}
-                </div>
-                {/* X Followers */}
-                <div className="space-y-2">
-                  <Label htmlFor="x_followers">X Followers</Label>
-                  {isEditing ? (
                     <Input
-                      id="x_followers"
                       type="number"
                       value={athleteProfile.x_followers ?? ''}
                       onChange={(e) => {
@@ -925,76 +966,87 @@ const AthleteDashboard: React.FC = () => {
                           }
                         }
                       }}
-                      placeholder="Follower count"
-                      className="w-full"
+                      placeholder="Followers"
+                      className="w-24"
                       disabled={!athleteProfile.x_handle}
                     />
-                  ) : (
-                    <div className="p-3 bg-gray-50 rounded-md">
-                      {athleteProfile.x_followers ? athleteProfile.x_followers.toLocaleString() : 'Not specified'}
-                    </div>
-                  )}
-                </div>
+                  </div>
+                ) : (
+                  <Button
+                    onClick={() => setIsEditing(true)}
+                    variant="ghost"
+                    size="sm"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                  </Button>
+                )}
               </div>
 
-              {/* TikTok Section */}
-              <div className="space-y-4 md:col-span-2">
-                <h4 className="font-medium text-sm text-gray-700">TikTok</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* TikTok Handle */}
-                  <div className="space-y-2">
-                    <Label htmlFor="tiktok_handle">TikTok Handle</Label>
-                    {isEditing ? (
-                      <Input
-                        id="tiktok_handle"
-                        value={athleteProfile.tiktok_handle || ''}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          setAthleteProfile(prev => ({
-                            ...prev,
-                            tiktok_handle: value,
-                            tiktok_followers: value ? prev.tiktok_followers : undefined
-                          }));
-                        }}
-                        placeholder="@username"
-                        className="w-full"
-                      />
-                    ) : (
-                      <div className="p-3 bg-gray-50 rounded-md">
-                        {athleteProfile.tiktok_handle || 'Not specified'}
-                      </div>
-                    )}
+              {/* TikTok */}
+              <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-black rounded-lg flex items-center justify-center">
+                    <TikTokIcon className="w-6 h-6 text-white" />
                   </div>
-                  {/* TikTok Followers */}
-                  <div className="space-y-2">
-                    <Label htmlFor="tiktok_followers">TikTok Followers</Label>
-                    {isEditing ? (
-                      <Input
-                        id="tiktok_followers"
-                        type="number"
-                        value={athleteProfile.tiktok_followers ?? ''}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          if (value === '') {
-                            setAthleteProfile(prev => ({ ...prev, tiktok_followers: undefined }));
-                          } else {
-                            const numValue = parseInt(value, 10);
-                            if (!isNaN(numValue) && numValue >= 0) {
-                              setAthleteProfile(prev => ({ ...prev, tiktok_followers: numValue }));
-                            }
-                          }
-                        }}
-                        placeholder="Follower count"
-                        className="w-full"
-                        disabled={!athleteProfile.tiktok_handle}
-                      />
-                    ) : (
-                      <div className="p-3 bg-gray-50 rounded-md">
-                        {athleteProfile.tiktok_followers ? athleteProfile.tiktok_followers.toLocaleString() : 'Not specified'}
-                      </div>
-                    )}
+                  <div>
+                    <h4 className="font-medium text-gray-900">TikTok</h4>
+                    <p className="text-sm text-gray-500">
+                      {athleteProfile.tiktok_handle ? (
+                        <>
+                          {athleteProfile.tiktok_handle}
+                          {athleteProfile.tiktok_followers && (
+                            <span className="ml-2">• {athleteProfile.tiktok_followers.toLocaleString()} followers</span>
+                          )}
+                        </>
+                      ) : (
+                        'Not connected'
+                      )}
+                    </p>
                   </div>
                 </div>
+                {isEditing ? (
+                  <div className="flex gap-2">
+                    <Input
+                      value={athleteProfile.tiktok_handle || ''}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setAthleteProfile(prev => ({
+                          ...prev,
+                          tiktok_handle: value,
+                          tiktok_followers: value ? prev.tiktok_followers : undefined
+                        }));
+                      }}
+                      placeholder="@username"
+                      className="w-32"
+                    />
+                    <Input
+                      type="number"
+                      value={athleteProfile.tiktok_followers ?? ''}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === '') {
+                          setAthleteProfile(prev => ({ ...prev, tiktok_followers: undefined }));
+                        } else {
+                          const numValue = parseInt(value, 10);
+                          if (!isNaN(numValue) && numValue >= 0) {
+                            setAthleteProfile(prev => ({ ...prev, tiktok_followers: numValue }));
+                          }
+                        }
+                      }}
+                      placeholder="Followers"
+                      className="w-24"
+                      disabled={!athleteProfile.tiktok_handle}
+                    />
+                  </div>
+                ) : (
+                  <Button
+                    onClick={() => setIsEditing(true)}
+                    variant="ghost"
+                    size="sm"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                  </Button>
+                )}
               </div>
             </div>
           </CardContent>
