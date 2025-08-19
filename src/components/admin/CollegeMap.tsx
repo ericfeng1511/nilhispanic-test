@@ -343,7 +343,8 @@ const CollegeMap: React.FC<CollegeMapProps> = ({
         </Card>
       )}
 
-      {/* Colleges without coordinates */}
+      {/* Colleges without coordinates - Hidden */}
+      {/* 
       {collegesWithoutCoords.length > 0 && (
         <Card>
           <CardHeader>
@@ -372,6 +373,7 @@ const CollegeMap: React.FC<CollegeMapProps> = ({
           </CardContent>
         </Card>
       )}
+      */}
     </div>
   );
 };

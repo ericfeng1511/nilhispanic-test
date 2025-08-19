@@ -2,9 +2,12 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ChatService } from '@/services/chatService';
+import { StudentAthleteService } from '@/services/studentAthleteService';
 import type { Message } from '@/types/chat';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
+import { ArrowLeft, MoreVertical, Phone, Video, User } from 'lucide-react';
+import { supabase } from '@/lib/supabaseClient';
 
 interface ChatWindowProps {
   conversationId: string;
@@ -24,6 +27,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const pageSize = 100;
+  const [avatars, setAvatars] = useState<Record<string, string | undefined>>({});
+  const [athleteId, setAthleteId] = useState<string | null>(null);
+  const [adminId, setAdminId] = useState<string | null>(null);
+  const [headerImgErrored, setHeaderImgErrored] = useState(false);
 
   const loadMessages = useCallback(async () => {
     try {
@@ -41,6 +48,52 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   useEffect(() => {
     loadMessages();
   }, [loadMessages]);
+
+  // Load conversation participants to determine avatar photos (athlete only for now)
+  useEffect(() => {
+    let active = true;
+    const loadAvatars = async () => {
+      try {
+        const convo = await ChatService.getConversationById(conversationId);
+        // Track both participant IDs
+        if (active) {
+          setAthleteId(convo?.athlete_id ?? null);
+          setAdminId(convo?.admin_id ?? null);
+        }
+        // Load athlete avatar
+        if (convo?.athlete_id) {
+          const athlete = await StudentAthleteService.fetchStudentAthleteByProfileId(convo.athlete_id);
+          if (!active) return;
+          if (athlete?.photo && athlete.photo.trim() !== '') {
+            setAvatars((prev) => ({ ...prev, [convo.athlete_id]: athlete.photo }));
+          }
+        }
+
+        // Load admin avatar from profiles if available (avatar_url or photo)
+        if (convo?.admin_id) {
+          try {
+            const { data, error } = await supabase
+              .from('profiles')
+              .select('avatar_url, photo')
+              .eq('id', convo.admin_id)
+              .single();
+            if (!error && data) {
+              const adminPhoto = (data as any)?.avatar_url || (data as any)?.photo || '';
+              if (adminPhoto && String(adminPhoto).trim() !== '') {
+                setAvatars((prev) => ({ ...prev, [convo.admin_id]: String(adminPhoto) }));
+              }
+            }
+          } catch {}
+        }
+      } catch (e) {
+        // Non-fatal: avatars are optional
+      }
+    };
+    loadAvatars();
+    return () => {
+      active = false;
+    };
+  }, [conversationId]);
 
   // Subscribe to live inserts
   useEffect(() => {
@@ -97,33 +150,79 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     [conversationId, currentUserId]
   );
 
+  const headerParticipantId = useMemo(() => {
+    // Show the OTHER participant's avatar in the header
+    if (athleteId && adminId) {
+      return currentUserId === athleteId ? adminId : athleteId;
+    }
+    // Fallback to athlete if admin is missing
+    return adminId ?? athleteId ?? null;
+  }, [currentUserId, athleteId, adminId]);
+
+  // Reset header image error when the source changes
+  useEffect(() => {
+    setHeaderImgErrored(false);
+  }, [headerParticipantId, avatars?.[headerParticipantId || '']]);
+
   const header = useMemo(
     () => (
-      <div className="flex items-center justify-between p-3 border-b border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/70 backdrop-blur">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white shadow-sm">
+        <div className="flex items-center gap-3">
           {onBack && (
-            <Button variant="ghost" size="sm" onClick={onBack}>
-              Back
+            <Button variant="ghost" size="sm" onClick={onBack} className="p-2 hover:bg-gray-100 rounded-full">
+              <ArrowLeft className="w-5 h-5 text-gray-600" />
             </Button>
           )}
-          <h3 className="font-semibold text-slate-900 dark:text-slate-100">{title}</h3>
+          <div className="flex items-center gap-3">
+            {(headerParticipantId && avatars[headerParticipantId] && !headerImgErrored) ? (
+              <img
+                src={avatars[headerParticipantId]!}
+                alt="avatar"
+                className="w-10 h-10 rounded-full object-cover bg-gray-100"
+                onError={() => setHeaderImgErrored(true)}
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-br from-nil-light-blue to-nil-navy">
+                <User className="w-5 h-5 text-white opacity-60" />
+              </div>
+            )}
+            <div>
+              <h3 className="font-semibold text-gray-900 text-base">{title}</h3>
+              <p className="text-xs text-green-500 font-medium">Online</p>
+            </div>
+          </div>
         </div>
-        <div className="text-xs text-slate-500">{messages.length} messages</div>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-100 rounded-full">
+            <Phone className="w-5 h-5 text-gray-600" />
+          </Button>
+          <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-100 rounded-full">
+            <Video className="w-5 h-5 text-gray-600" />
+          </Button>
+          <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-100 rounded-full">
+            <MoreVertical className="w-5 h-5 text-gray-600" />
+          </Button>
+        </div>
       </div>
     ),
-    [messages.length, onBack, title]
+    [onBack, title, headerParticipantId, avatars]
   );
 
   return (
-    <Card className="flex flex-col h-[540px] w-full max-w-3xl overflow-hidden">
+    <Card className="flex flex-col h-[600px] w-full max-w-4xl overflow-hidden shadow-lg border-0 rounded-2xl">
       {header}
       {error && (
-        <div className="p-4 text-sm text-red-600 border-b border-red-200 bg-red-50">{error}</div>
+        <div className="p-4 text-sm text-red-600 border-b border-red-200 bg-red-50 mx-4 mt-2 rounded-lg">{error}</div>
       )}
       {loading ? (
-        <div className="flex-1 flex items-center justify-center text-slate-500">Loading messages...</div>
+        <div className="flex-1 flex items-center justify-center text-gray-500">
+          <div className="flex flex-col items-center gap-2">
+            <div className="w-8 h-8 border-2 border-gray-300 border-t-nil-orange rounded-full animate-spin"></div>
+            <span className="text-sm">Loading messages...</span>
+          </div>
+        </div>
       ) : (
-        <MessageList messages={messages} currentUserId={currentUserId} />
+        <MessageList messages={messages} currentUserId={currentUserId} avatars={avatars} />
       )}
       <MessageInput onSend={onSend} disabled={loading} />
     </Card>

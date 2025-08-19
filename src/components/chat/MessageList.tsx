@@ -1,13 +1,37 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { format, isSameDay, isToday, isYesterday, differenceInMinutes } from 'date-fns';
 import type { Message } from '@/types/chat';
+import { User } from 'lucide-react';
 
 interface MessageListProps {
   messages: Message[];
   currentUserId: string;
+  avatars?: Record<string, string | undefined>; // map of sender_id -> avatar URL
 }
 
-export const MessageList: React.FC<MessageListProps> = ({ messages, currentUserId }) => {
+// Small helper to render an avatar with image fallback to a gradient placeholder (matches admin dashboard style)
+const AvatarBubble: React.FC<{ src?: string; nameKey: string }> = ({ src, nameKey }) => {
+  const [errored, setErrored] = useState(false);
+
+  if (!src || errored) {
+    return (
+      <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-nil-light-blue to-nil-navy">
+        <User className="w-4 h-4 text-white opacity-60" />
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt="avatar"
+      className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+      onError={() => setErrored(true)}
+    />
+  );
+};
+
+export const MessageList: React.FC<MessageListProps> = ({ messages, currentUserId, avatars }) => {
   const endRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -35,7 +59,7 @@ export const MessageList: React.FC<MessageListProps> = ({ messages, currentUserI
           href={href}
           target="_blank"
           rel="noopener noreferrer"
-          className="underline underline-offset-2 hover:opacity-80 break-words"
+          className="underline underline-offset-2 hover:opacity-80 break-words text-blue-200 hover:text-blue-100"
           onClick={(e) => e.stopPropagation()}
         >
           {raw}
@@ -60,7 +84,7 @@ export const MessageList: React.FC<MessageListProps> = ({ messages, currentUserI
   const formatMsgTime = (d: Date) => format(d, 'p'); // locale-aware time like 6:02 PM
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-white/40 dark:bg-slate-900/40">
+    <div className="flex-1 overflow-y-auto p-4 space-y-1 bg-gray-50">
       {messages.map((msg, index) => {
         const isMine = msg.sender_id === currentUserId;
         const curDate = new Date(msg.created_at);
@@ -90,28 +114,36 @@ export const MessageList: React.FC<MessageListProps> = ({ messages, currentUserI
         return (
           <React.Fragment key={msg.id}>
             {showDateHeader && (
-              <div className="w-full flex justify-center my-2">
-                <div className="text-xs px-2 py-1 rounded-full bg-white/60 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60">
+              <div className="w-full flex justify-center my-4">
+                <div className="text-xs px-3 py-1.5 rounded-full bg-white text-gray-600 shadow-sm border border-gray-200 font-medium">
                   {formatDayHeader(curDate)}
                 </div>
               </div>
             )}
-            <div className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
-              <div
-                className={`max-w-[80%] rounded-2xl px-4 py-2 text-sm shadow-sm ${
-                  isMine
-                    ? 'bg-nil-orange text-white rounded-br-sm'
-                    : 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-bl-sm border border-slate-200 dark:border-slate-700'
-                }`}
-                title={new Date(msg.created_at).toLocaleString()}
-                aria-label={`Sent at ${new Date(msg.created_at).toISOString()}`}
-              >
-                <div className="whitespace-pre-wrap break-words">{renderMessageText(msg.content)}</div>
-                {(metaPieces.length > 0) && (
-                  <div className={`mt-1 text-[10px] opacity-75 ${isMine ? 'text-white/90' : 'text-slate-500 dark:text-slate-400'}`}>
-                    {metaPieces.join(' • ')}
-                  </div>
+            <div className={`flex ${isMine ? 'justify-end' : 'justify-start'} mb-1`}>
+              <div className={`flex items-end gap-2 max-w-[75%] ${isMine ? 'flex-row-reverse' : 'flex-row'}`}>
+                {!isMine && !inSameClusterAsPrev && (
+                  <AvatarBubble src={avatars?.[msg.sender_id]} nameKey={msg.sender_id} />
                 )}
+                {!isMine && inSameClusterAsPrev && (
+                  <div className="w-8 h-8 flex-shrink-0"></div>
+                )}
+                <div
+                  className={`rounded-2xl px-4 py-2.5 text-sm shadow-sm relative ${
+                    isMine
+                      ? 'bg-nil-orange text-white rounded-br-md'
+                      : 'bg-white text-gray-900 rounded-bl-md border border-gray-200'
+                  }`}
+                  title={new Date(msg.created_at).toLocaleString()}
+                  aria-label={`Sent at ${new Date(msg.created_at).toISOString()}`}
+                >
+                  <div className="whitespace-pre-wrap break-words leading-relaxed">{renderMessageText(msg.content)}</div>
+                  {(metaPieces.length > 0) && (
+                    <div className={`mt-1.5 text-[10px] opacity-75 ${isMine ? 'text-white/90' : 'text-gray-500'}`}>
+                      {metaPieces.join(' • ')}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </React.Fragment>

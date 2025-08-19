@@ -13,6 +13,18 @@ const CONVERSATIONS_TABLE = 'conversations';
 const MESSAGES_TABLE = 'messages';
 
 export class ChatService {
+  // Fetch a single conversation by id
+  static async getConversationById(id: string): Promise<Conversation> {
+    const { data, error } = await supabase
+      .from(CONVERSATIONS_TABLE)
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) throw new Error(`Failed to fetch conversation: ${error.message}`);
+    return data as Conversation;
+  }
+
   // Fetch or create a one-to-one conversation between admin and athlete
   static async getOrCreateConversation(input: CreateConversationInput): Promise<Conversation> {
     const { admin_id, athlete_id } = input;
