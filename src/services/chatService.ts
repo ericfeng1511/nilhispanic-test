@@ -6,11 +6,15 @@ import type {
   SendMessageInput,
   PaginatedResult,
   UserRole,
+  MessageAttachment,
+  SendMessageWithAttachmentsInput,
 } from '@/types/chat';
 
 // Table names used by Supabase
 const CONVERSATIONS_TABLE = 'conversations';
 const MESSAGES_TABLE = 'messages';
+const ATTACHMENTS_TABLE = 'message_attachments';
+const ATTACHMENTS_BUCKET = 'chat-attachments';
 
 export class ChatService {
   // Fetch a single conversation by id
@@ -105,8 +109,30 @@ export class ChatService {
 
     if (error) throw new Error(`Failed to fetch messages: ${error.message}`);
 
+    const messages = (data || []) as Message[];
+
+    // Fetch attachments for these messages in one query
+    if (messages.length > 0) {
+      const messageIds = messages.map((m) => m.id);
+      const { data: attachmentsData, error: attErr } = await supabase
+        .from(ATTACHMENTS_TABLE)
+        .select('*')
+        .in('message_id', messageIds);
+
+      if (!attErr && attachmentsData) {
+        const byMessage: Record<string, MessageAttachment[]> = {};
+        for (const att of attachmentsData as MessageAttachment[]) {
+          if (!byMessage[att.message_id]) byMessage[att.message_id] = [];
+          byMessage[att.message_id].push(att);
+        }
+        for (const m of messages) {
+          m.attachments = byMessage[m.id] || [];
+        }
+      }
+    }
+
     return {
-      data: (data || []) as Message[],
+      data: messages,
       total: count || 0,
       page,
       pageSize,
@@ -132,6 +158,83 @@ export class ChatService {
       .eq('id', conversation_id);
 
     return data as Message;
+  }
+
+  // Create a signed URL for a storage path (private buckets)
+  static async getSignedUrlForPath(storagePath: string, expiresInSeconds = 60 * 60) {
+    const { data, error } = await supabase.storage
+      .from(ATTACHMENTS_BUCKET)
+      .createSignedUrl(storagePath, expiresInSeconds);
+    if (error) throw new Error(`Failed to sign URL: ${error.message}`);
+    return data.signedUrl;
+  }
+
+  // Upload a single attachment and create a DB row (without signed URL)
+  private static async uploadAttachment(
+    file: File,
+    conversationId: string,
+    messageId: string
+  ): Promise<MessageAttachment> {
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const ts = Date.now();
+    const path = `${conversationId}/${messageId}/${ts}-${safeName}`;
+
+    const { error: upErr } = await supabase.storage
+      .from(ATTACHMENTS_BUCKET)
+      .upload(path, file, {
+        cacheControl: '3600',
+        upsert: false,
+        contentType: file.type || 'application/octet-stream',
+      });
+    if (upErr) throw new Error(`Upload failed: ${upErr.message}`);
+
+    const insertPayload = {
+      message_id: messageId,
+      storage_path: path,
+      file_name: file.name,
+      file_size: file.size,
+      mime_type: file.type || 'application/octet-stream',
+    };
+
+    const { data, error } = await supabase
+      .from(ATTACHMENTS_TABLE)
+      .insert(insertPayload)
+      .select('*')
+      .single();
+    if (error) throw new Error(`Failed to create attachment row: ${error.message}`);
+
+    return data as MessageAttachment;
+  }
+
+  // Send message with multiple attachments
+  static async sendMessageWithAttachments(
+    input: SendMessageWithAttachmentsInput
+  ): Promise<Message> {
+    const { conversation_id, sender_id, content, files } = input;
+
+    // 1) Create the message row first (caption/content may be empty)
+    const { data: msg, error: msgErr } = await supabase
+      .from(MESSAGES_TABLE)
+      .insert({ conversation_id, sender_id, content: content ?? '' })
+      .select('*')
+      .single();
+    if (msgErr) throw new Error(`Failed to send message: ${msgErr.message}`);
+
+    // 2) Upload each file and create attachment rows
+    const attachments: MessageAttachment[] = [];
+    for (const f of files) {
+      const att = await this.uploadAttachment(f, conversation_id, msg.id);
+      attachments.push(att);
+    }
+
+    // 3) Update conversation last_message_at (ignore any RLS error)
+    await supabase
+      .from(CONVERSATIONS_TABLE)
+      .update({ last_message_at: msg.created_at })
+      .eq('id', conversation_id);
+
+    const fullMessage: Message = { ...(msg as Message), attachments };
+    return fullMessage;
   }
 
   // Mark all messages as read for this user in a conversation (server may restrict to receiver only)

@@ -24,6 +24,8 @@ export interface Message {
   content: string;
   created_at: string; // ISO timestamp
   read_at?: string | null; // ISO timestamp when read
+  // Structured attachments (joined from `message_attachments`)
+  attachments?: MessageAttachment[];
 }
 
 export interface CreateConversationInput {
@@ -42,4 +44,25 @@ export interface PaginatedResult<T> {
   total: number;
   page: number;
   pageSize: number;
+}
+
+// Structured attachment type (mirrors public.message_attachments)
+export interface MessageAttachment {
+  id: string; // uuid
+  message_id: string; // uuid
+  storage_path: string; // e.g. chat-attachments/<conversationId>/<messageId>/<filename>
+  file_name: string;
+  file_size: number;
+  mime_type: string;
+  created_at: string; // ISO timestamp
+  // Runtime-only helpers (not stored in DB)
+  signed_url?: string; // resolved at render-time for private buckets
+}
+
+// Input for sending a message that may include multiple attachments.
+export interface SendMessageWithAttachmentsInput {
+  conversation_id: string;
+  sender_id: string;
+  content?: string; // optional caption/text
+  files: File[]; // browser File objects selected by the user
 }

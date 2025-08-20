@@ -74,7 +74,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           try {
             const { data, error } = await supabase
               .from('profiles')
-              .select('avatar_url, photo')
+              .select('*')
               .eq('id', convo.admin_id)
               .single();
             if (!error && data) {
@@ -145,6 +145,98 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         // Revert optimistic
         setMessages((prev) => prev.filter((m) => m.id !== tempId));
         throw e;
+      }
+    },
+    [conversationId, currentUserId]
+  );
+
+  const onSendWithAttachments = useCallback(
+    async (content: string, files: File[]) => {
+      const hasText = !!content?.trim();
+      const hasFiles = files && files.length > 0;
+
+      // If both text and files are present, send as two separate messages
+      if (hasText && hasFiles) {
+        // 1) Optimistic text-only message
+        const tempTextId = `temp-text-${Date.now()}`;
+        const optimisticText: Message = {
+          id: tempTextId,
+          conversation_id: conversationId,
+          sender_id: currentUserId,
+          content: content.trim(),
+          created_at: new Date().toISOString(),
+          read_at: null,
+          attachments: [],
+        } as Message;
+        setMessages((prev) => [...prev, optimisticText]);
+        try {
+          const savedText = await ChatService.sendMessage({
+            conversation_id: conversationId,
+            sender_id: currentUserId,
+            content: content.trim(),
+          });
+          setMessages((prev) => prev.map((m) => (m.id === tempTextId ? savedText : m)));
+        } catch (e) {
+          setMessages((prev) => prev.filter((m) => m.id !== tempTextId));
+          throw e as any;
+        }
+
+        // 2) Optimistic attachments-only message
+        const tempFilesId = `temp-files-${Date.now()}`;
+        const optimisticFiles: Message = {
+          id: tempFilesId,
+          conversation_id: conversationId,
+          sender_id: currentUserId,
+          content: '',
+          created_at: new Date().toISOString(),
+          read_at: null,
+          attachments: [],
+        } as Message;
+        setMessages((prev) => [...prev, optimisticFiles]);
+        try {
+          const savedFiles = await ChatService.sendMessageWithAttachments({
+            conversation_id: conversationId,
+            sender_id: currentUserId,
+            content: '',
+            files,
+          });
+          setMessages((prev) => prev.map((m) => (m.id === tempFilesId ? savedFiles : m)));
+        } catch (e) {
+          setMessages((prev) => prev.filter((m) => m.id !== tempFilesId));
+          throw e as any;
+        }
+        return;
+      }
+
+      // Otherwise, keep current behavior
+      const tempId = `temp-${Date.now()}`;
+      const optimistic: Message = {
+        id: tempId,
+        conversation_id: conversationId,
+        sender_id: currentUserId,
+        content: content || '',
+        created_at: new Date().toISOString(),
+        read_at: null,
+        attachments: [],
+      } as Message;
+      setMessages((prev) => [...prev, optimistic]);
+      try {
+        const saved = hasFiles
+          ? await ChatService.sendMessageWithAttachments({
+              conversation_id: conversationId,
+              sender_id: currentUserId,
+              content: content || '',
+              files,
+            })
+          : await ChatService.sendMessage({
+              conversation_id: conversationId,
+              sender_id: currentUserId,
+              content: content || '',
+            });
+        setMessages((prev) => prev.map((m) => (m.id === tempId ? saved : m)));
+      } catch (e) {
+        setMessages((prev) => prev.filter((m) => m.id !== tempId));
+        throw e as any;
       }
     },
     [conversationId, currentUserId]
@@ -224,7 +316,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       ) : (
         <MessageList messages={messages} currentUserId={currentUserId} avatars={avatars} />
       )}
-      <MessageInput onSend={onSend} disabled={loading} />
+      <MessageInput onSend={onSend} onSendWithAttachments={onSendWithAttachments} disabled={loading} />
     </Card>
   );
 };
