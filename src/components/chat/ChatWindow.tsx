@@ -280,20 +280,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             )}
             <div>
               <h3 className="font-semibold text-gray-900 text-base">{title}</h3>
-              <p className="text-xs text-green-500 font-medium">Online</p>
             </div>
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-100 rounded-full">
-            <Phone className="w-5 h-5 text-gray-600" />
-          </Button>
-          <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-100 rounded-full">
-            <Video className="w-5 h-5 text-gray-600" />
-          </Button>
-          <Button variant="ghost" size="sm" className="p-2 hover:bg-gray-100 rounded-full">
-            <MoreVertical className="w-5 h-5 text-gray-600" />
-          </Button>
         </div>
       </div>
     ),
