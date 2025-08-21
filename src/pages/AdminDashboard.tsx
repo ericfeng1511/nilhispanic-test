@@ -25,7 +25,7 @@ import ChatWindow from '@/components/chat/ChatWindow';
 import { ChatService } from '@/services/chatService';
 import { useToast } from '@/hooks/use-toast';
 
-type TabType = 'athletes' | 'contacts' | 'brand-reps' | 'colleges';
+type TabType = 'athletes' | 'contacts' | 'colleges';
 
 const AdminDashboard: React.FC = () => {
   const { profile, loading: authLoading } = useAuth();
@@ -248,7 +248,7 @@ const AdminDashboard: React.FC = () => {
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
               <p className="text-gray-600 mt-1">
-                Manage student athletes, school contacts, and brand representatives here.
+                Manage student athletes, school contacts, and colleges here.
               </p>
             </div>
           </div>
@@ -256,7 +256,7 @@ const AdminDashboard: React.FC = () => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as TabType)} className="mb-8">
-          <TabsList className="grid w-full max-w-4xl grid-cols-4">
+          <TabsList className="grid w-full max-w-3xl grid-cols-3">
             <TabsTrigger value="athletes" className="flex items-center gap-2">
               <GraduationCap className="w-4 h-4" />
               Student Athletes
@@ -264,10 +264,6 @@ const AdminDashboard: React.FC = () => {
             <TabsTrigger value="contacts" className="flex items-center gap-2">
               <Building2 className="w-4 h-4" />
               School Contacts
-            </TabsTrigger>
-            <TabsTrigger value="brand-reps" className="flex items-center gap-2">
-              <Users className="w-4 h-4" />
-              Brand Representatives
             </TabsTrigger>
             <TabsTrigger value="colleges" className="flex items-center gap-2">
               <GraduationCap className="w-4 h-4" />
@@ -611,29 +607,6 @@ const AdminDashboard: React.FC = () => {
             )}
           </TabsContent>
 
-          <TabsContent value="brand-reps" className="mt-6">
-            {/* Brand Representatives Placeholder */}
-            <Card>
-              <CardContent className="p-12 text-center">
-                <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Brand Representatives
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  This section is coming soon. Brand representative management features will be available here.
-                </p>
-                <div className="text-sm text-gray-500">
-                  Features to include:
-                  <ul className="mt-2 space-y-1">
-                    <li>• Brand representative profiles</li>
-                    <li>• Company affiliations</li>
-                    <li>• Contact information</li>
-                    <li>• Partnership tracking</li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
 
           <TabsContent value="colleges" className="mt-6">
 
