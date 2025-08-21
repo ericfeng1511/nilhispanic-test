@@ -309,12 +309,12 @@ const Header = () => {
                       )}
                     </div>
                   </div>
-                  {/* Admin Dropdown for Mobile - Only visible to admin users */}
+                  {/* Admin Dashboard for Mobile - Only visible to admin users */}
                   {profile?.role === 'admin' && (
                     <div className="space-y-2">
                       <div className="text-xs text-nil-navy font-medium px-3 mb-2">Admin Panel</div>
                       <Link to="/admin/dashboard" className="w-full text-left px-3 py-2 text-sm hover:bg-nil-light-gray flex items-center space-x-2">
-                        <Settings size={16} />
+                        <Shield size={16} />
                         <span className="flex items-center gap-2">
                           Dashboard
                           {unreadCount > 0 && (
@@ -324,14 +324,6 @@ const Header = () => {
                           )}
                         </span>
                       </Link>
-                      <button className="w-full text-left px-3 py-2 text-sm hover:bg-nil-light-gray flex items-center space-x-2">
-                        <User size={16} />
-                        <span>Manage Users</span>
-                      </button>
-                      <button className="w-full text-left px-3 py-2 text-sm hover:bg-nil-light-gray flex items-center space-x-2">
-                        <Shield size={16} />
-                        <span>System Settings</span>
-                      </button>
                       <div className="border-t border-gray-200 my-2"></div>
                     </div>
                   )}
