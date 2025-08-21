@@ -12,7 +12,7 @@ import { ContactForm } from "./ContactForm";
 import { AuthModal } from "./AuthModal";
 import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'react-router-dom';
-import { Menu, ChevronDown, LogOut, User, Settings, Shield, Trophy, Building2 } from 'lucide-react';
+import { Menu, ChevronDown, LogOut, User, Settings, Shield, Trophy, Building2, MessageSquare } from 'lucide-react';
 import {
   HoverCard,
   HoverCardContent,
@@ -25,11 +25,38 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useUnreadMessages } from '@/hooks/useUnreadMessages';
+import { ChatService } from '@/services/chatService';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const { user, profile, loading, signOut } = useAuth();
+  const { count: unreadCount } = useUnreadMessages();
+  const navigate = useNavigate();
+  const [previewsOpen, setPreviewsOpen] = useState(false);
+  const [loadingPreviews, setLoadingPreviews] = useState(false);
+  const [previews, setPreviews] = useState<Array<{ conversation_id: string; latest_message: any; unread_count: number }>>([]);
+
+  // Load previews when dropdown opens
+  useEffect(() => {
+    const load = async () => {
+      if (!previewsOpen || !user || !profile?.role || (profile.role !== 'admin' && profile.role !== 'athlete')) return;
+      setLoadingPreviews(true);
+      try {
+        const res = await ChatService.getUnreadPreviewsForUser(user.id, profile.role as any, 1, 20);
+        setPreviews(res);
+      } catch (e) {
+        console.warn('Failed to load unread previews', e);
+        setPreviews([]);
+      } finally {
+        setLoadingPreviews(false);
+      }
+    };
+    load();
+  }, [previewsOpen, user?.id, profile?.role]);
 
   const handleLogout = () => {
     // 1. Clear UI state immediately
@@ -100,6 +127,71 @@ const Header = () => {
                   </span>
                 )}
               </div>
+              {/* Unread messages icon (desktop) for admins and athletes */}
+              {(profile?.role === 'admin' || profile?.role === 'athlete') && (
+                <DropdownMenu onOpenChange={setPreviewsOpen}>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      aria-label="Messages"
+                      className="relative inline-flex items-center justify-center w-9 h-9 rounded-full border border-gray-200 text-nil-navy hover:text-nil-orange hover:border-nil-orange transition-colors"
+                      title="Messages"
+                    >
+                      <MessageSquare size={18} />
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[11px] leading-[18px] text-center font-semibold">
+                          {unreadCount > 99 ? '99+' : unreadCount}
+                        </span>
+                      )}
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-80 p-0">
+                    <div className="py-2">
+                      <div className="px-3 py-2 text-sm font-semibold text-nil-navy">Unread messages</div>
+                      {loadingPreviews ? (
+                        <div className="px-3 py-4 text-sm text-gray-500">Loading...</div>
+                      ) : previews.length === 0 ? (
+                        <div className="px-3 py-4 text-sm text-gray-500">No unread messages</div>
+                      ) : (
+                        <div className="max-h-80 overflow-auto">
+                          {previews.map((p) => (
+                            <button
+                              key={p.conversation_id}
+                              onClick={async () => {
+                                // Optimistic close dropdown and navigate
+                                setPreviewsOpen(false);
+                                const target = profile.role === 'admin' ? '/admin/dashboard' : '/athlete/dashboard';
+                                // Optionally mark read immediately; dashboard will also mark upon open
+                                try { await ChatService.markConversationRead(p.conversation_id, user!.id); } catch {}
+                                navigate(`${target}?openChat=${p.conversation_id}`);
+                              }}
+                              className="w-full text-left px-3 py-2 hover:bg-gray-50 flex items-start gap-3"
+                            >
+                              <div className="mt-1">
+                                <span className="inline-flex items-center justify-center min-w-[20px] h-[20px] px-1 rounded-full bg-red-500 text-white text-[11px] leading-[20px] font-semibold">
+                                  {p.unread_count > 99 ? '99+' : p.unread_count}
+                                </span>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="text-sm font-medium text-gray-900 truncate">Conversation</div>
+                                <div className="text-xs text-gray-600 truncate">{p.latest_message?.content || 'New message'}</div>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      <div className="border-t mt-2" />
+                      <div className="px-3 py-2">
+                        <Link
+                          to={profile.role === 'admin' ? '/admin/dashboard' : '/athlete/dashboard'}
+                          className="text-sm text-nil-orange hover:underline"
+                        >
+                          View all messages
+                        </Link>
+                      </div>
+                    </div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
               {/* Admin Dropdown - Only visible to admin users */}
               {profile?.role === 'admin' && (
                 <DropdownMenu>
@@ -243,7 +335,14 @@ const Header = () => {
                       <div className="text-xs text-nil-navy font-medium px-3 mb-2">Admin Panel</div>
                       <Link to="/admin/dashboard" className="w-full text-left px-3 py-2 text-sm hover:bg-nil-light-gray flex items-center space-x-2">
                         <Settings size={16} />
-                        <span>Dashboard</span>
+                        <span className="flex items-center gap-2">
+                          Dashboard
+                          {unreadCount > 0 && (
+                            <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[11px] leading-[18px] font-semibold">
+                              {unreadCount > 99 ? '99+' : unreadCount}
+                            </span>
+                          )}
+                        </span>
                       </Link>
                       <button className="w-full text-left px-3 py-2 text-sm hover:bg-nil-light-gray flex items-center space-x-2">
                         <User size={16} />
@@ -262,7 +361,14 @@ const Header = () => {
                       <div className="text-xs text-nil-navy font-medium px-3 mb-2">Athlete Panel</div>
                       <Link to="/athlete/dashboard" className="w-full text-left px-3 py-2 text-sm hover:bg-nil-light-gray flex items-center space-x-2">
                         <Trophy size={16} />
-                        <span>Dashboard</span>
+                        <span className="flex items-center gap-2">
+                          Dashboard
+                          {unreadCount > 0 && (
+                            <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[11px] leading-[18px] font-semibold">
+                              {unreadCount > 99 ? '99+' : unreadCount}
+                            </span>
+                          )}
+                        </span>
                       </Link>
                       <div className="border-t border-gray-200 my-2"></div>
                     </div>

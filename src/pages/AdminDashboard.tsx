@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useStudentAthletes } from '@/hooks/useStudentAthletes';
 import { useSchoolContacts } from '@/hooks/useSchoolContacts';
@@ -41,6 +41,7 @@ const AdminDashboard: React.FC = () => {
   const [chatTarget, setChatTarget] = useState<StudentAthlete | null>(null);
   const [chatLoading, setChatLoading] = useState(false);
   const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
   const {
     athletes,
     allAthletes,
@@ -103,6 +104,21 @@ const AdminDashboard: React.FC = () => {
     }
     setSelectedAthleteIds(newSelection);
   };
+
+  // Open a specific conversation if openChat query param is present
+  useEffect(() => {
+    const convoId = searchParams.get('openChat');
+    if (convoId && profile?.id && profile.role === 'admin') {
+      setChatConversationId(convoId);
+      setIsChatOpen(true);
+      // Mark as read for current user (admin)
+      ChatService.markConversationRead(convoId, profile.id).catch(() => {});
+      // Optional: remove query param to avoid re-opening on close
+      const sp = new URLSearchParams(searchParams);
+      sp.delete('openChat');
+      setSearchParams(sp, { replace: true });
+    }
+  }, [searchParams, profile?.id, profile?.role, setSearchParams]);
 
   const handleSelectAll = () => {
     const allCurrentAthleteIds = new Set(athletes.map(athlete => athlete.id));

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Navigate, Link } from 'react-router-dom';
+import { Navigate, Link, useSearchParams } from 'react-router-dom';
 import { User, Trophy, Calendar, MessageSquare, Settings, BarChart3, Edit3, Save, X, ArrowLeft, Camera, Upload, Instagram, Twitter } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -100,6 +100,7 @@ const AthleteDashboard: React.FC = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [convLoading, setConvLoading] = useState(false);
   const [chatConversationId, setChatConversationId] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
   
   // Fetch current athlete data
   const { data: currentAthleteData, isLoading: athleteLoading, error: athleteError } = useQuery({
@@ -263,6 +264,21 @@ const AthleteDashboard: React.FC = () => {
       sport && sport.toLowerCase().includes(input.toLowerCase())
     ).slice(0, 5);
   };
+
+  // Open a specific conversation if openChat query param is present
+  useEffect(() => {
+    const convoId = searchParams.get('openChat');
+    if (convoId && profile?.id && profile.role === 'athlete') {
+      setIsChatOpen(true);
+      setChatConversationId(convoId);
+      // Mark as read for current user (athlete)
+      ChatService.markConversationRead(convoId, profile.id).catch(() => {});
+      // Remove query param to avoid reopening
+      const sp = new URLSearchParams(searchParams);
+      sp.delete('openChat');
+      setSearchParams(sp, { replace: true });
+    }
+  }, [searchParams, profile?.id, profile?.role, setSearchParams]);
   
   const getFilteredCollegeSuggestions = (input: string) => {
     return collegeSuggestions.filter(college => 

@@ -29,6 +29,125 @@ export class ChatService {
     return data as Conversation;
   }
 
+  // Return unread previews per conversation for a user:
+  // [{ conversation_id, latest_message, unread_count }]
+  static async getUnreadPreviewsForUser(
+    userId: string,
+    role: UserRole,
+    maxItemsPerConvo = 1,
+    maxConvos = 20
+  ): Promise<{
+    conversation_id: string;
+    latest_message: Message;
+    unread_count: number;
+  }[]> {
+    // Find conversations for this user
+    const convos = await this.listConversationsForUser(userId, role, 1, 1000);
+    const convoIds = convos.data.map((c) => c.id);
+    if (convoIds.length === 0) return [];
+
+    // Fetch unread messages across those conversations, newest first
+    const { data, error } = await supabase
+      .from(MESSAGES_TABLE)
+      .select('*')
+      .in('conversation_id', convoIds)
+      .neq('sender_id', userId)
+      .is('read_at', null)
+      .order('created_at', { ascending: false })
+      .limit(maxConvos * Math.max(1, maxItemsPerConvo));
+
+    if (error) throw new Error(`Failed to fetch unread previews: ${error.message}`);
+
+    const unread = (data || []) as Message[];
+    const byConvo: Record<string, { latest: Message; count: number }> = {};
+    for (const m of unread) {
+      const entry = byConvo[m.conversation_id];
+      if (!entry) {
+        byConvo[m.conversation_id] = { latest: m, count: 1 };
+      } else {
+        // first encountered is latest due to ordering
+        entry.count += 1;
+      }
+    }
+
+    const results = Object.entries(byConvo)
+      .slice(0, maxConvos)
+      .map(([conversation_id, v]) => ({
+        conversation_id,
+        latest_message: v.latest,
+        unread_count: v.count,
+      }));
+
+    return results;
+  }
+
+  // Quickly get conversation IDs for a user by role
+  static async listConversationIdsForUser(userId: string, role: UserRole): Promise<string[]> {
+    const res = await this.listConversationsForUser(userId, role, 1, 1000);
+    return res.data.map((c) => c.id);
+  }
+
+  // Get unread count across all conversations for a user
+  static async getUnreadCountForUser(userId: string, role: UserRole): Promise<number> {
+    // 1) Find conversations for this user
+    const convos = await this.listConversationsForUser(userId, role, 1, 1000);
+    const convoIds = convos.data.map((c) => c.id);
+    if (convoIds.length === 0) return 0;
+
+    // 2) Count unread messages not sent by the user in those conversations
+    const { count, error } = await supabase
+      .from(MESSAGES_TABLE)
+      .select('id', { count: 'exact', head: true })
+      .in('conversation_id', convoIds)
+      .neq('sender_id', userId)
+      .is('read_at', null);
+
+    if (error) throw new Error(`Failed to get unread count: ${error.message}`);
+    return count || 0;
+  }
+
+  // Subscribe to unread changes across multiple conversations.
+  // Returns an unsubscribe function that tears down all channels.
+  static subscribeToUnreadForUser(
+    userId: string,
+    convoIds: string[],
+    onDelta: (delta: number) => void
+  ) {
+    // Create one channel per conversation to keep filters precise
+    const channels: any[] = [];
+    for (const convoId of convoIds) {
+      const ch = supabase
+        .channel(`unread-${convoId}-${userId}`)
+        // New message in this conversation
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: MESSAGES_TABLE, filter: `conversation_id=eq.${convoId}` },
+          (payload) => {
+            const msg = payload.new as any;
+            // Count only messages not from this user and not yet read
+            if (msg.sender_id !== userId && !msg.read_at) onDelta(1);
+          }
+        )
+        // Read status updates (mark as read)
+        .on(
+          'postgres_changes',
+          { event: 'UPDATE', schema: 'public', table: MESSAGES_TABLE, filter: `conversation_id=eq.${convoId}` },
+          (payload) => {
+            const oldRow = payload.old as any;
+            const newRow = payload.new as any;
+            // If a message (not from this user) transitioned from unread -> read, decrement
+            if (newRow.sender_id !== userId && !oldRow.read_at && !!newRow.read_at) onDelta(-1);
+          }
+        )
+        .subscribe();
+      channels.push(ch);
+    }
+
+    return () => {
+      for (const ch of channels) supabase.removeChannel(ch);
+    };
+  }
+
   // Fetch or create a one-to-one conversation between admin and athlete
   static async getOrCreateConversation(input: CreateConversationInput): Promise<Conversation> {
     const { admin_id, athlete_id } = input;
