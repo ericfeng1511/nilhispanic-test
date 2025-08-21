@@ -192,38 +192,18 @@ const Header = () => {
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
-              {/* Admin Dropdown - Only visible to admin users */}
+              {/* Admin Dashboard Button - Only visible to admin users */}
               {profile?.role === 'admin' && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className="bg-nil-navy text-white hover:bg-nil-orange border-nil-navy hover:border-nil-orange transition-colors flex items-center space-x-1"
-                    >
-                      <Shield size={16} />
-                      <span>Admin</span>
-                      <ChevronDown size={14} />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem className="cursor-pointer" asChild>
-                      <Link to="/admin/dashboard" className="flex items-center">
-                        <Settings className="mr-2 h-4 w-4" />
-                        <span>Dashboard</span>
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="cursor-pointer">
-                      <User className="mr-2 h-4 w-4" />
-                      <span>Manage Users</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem className="cursor-pointer">
-                      <Shield className="mr-2 h-4 w-4" />
-                      <span>System Settings</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <Link to="/admin/dashboard">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="bg-nil-navy text-white hover:bg-nil-orange border-nil-navy hover:border-nil-orange transition-colors flex items-center space-x-1"
+                  >
+                    <Shield size={16} />
+                    <span>Dashboard</span>
+                  </Button>
+                </Link>
               )}
               {/* Athlete Dashboard Button - Only visible to athlete users */}
               {profile?.role === 'athlete' && (
