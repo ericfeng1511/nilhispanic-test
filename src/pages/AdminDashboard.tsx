@@ -19,11 +19,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Users, Database, RefreshCw, AlertCircle, Shield, GraduationCap, Building2, ArrowLeft, CheckSquare, Square, BarChart3 } from 'lucide-react';
+import { Loader2, Users, Database, RefreshCw, AlertCircle, Shield, GraduationCap, Building2, ArrowLeft, CheckSquare, Square, BarChart3, MessageSquare, User } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import ChatWindow from '@/components/chat/ChatWindow';
 import { ChatService } from '@/services/chatService';
 import { useToast } from '@/hooks/use-toast';
+import type { Conversation } from '@/types/chat';
+import { useUnreadMessages } from '@/hooks/useUnreadMessages';
+import { StudentAthleteService } from '@/services/studentAthleteService';
 
 type TabType = 'athletes' | 'contacts' | 'colleges';
 
@@ -40,8 +43,13 @@ const AdminDashboard: React.FC = () => {
   const [chatConversationId, setChatConversationId] = useState<string | null>(null);
   const [chatTarget, setChatTarget] = useState<StudentAthlete | null>(null);
   const [chatLoading, setChatLoading] = useState(false);
+  const [chatTitle, setChatTitle] = useState<string | null>(null);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [convLoading, setConvLoading] = useState(false);
+  
   const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { count: unreadCount } = useUnreadMessages();
   const {
     athletes,
     allAthletes,
@@ -105,6 +113,23 @@ const AdminDashboard: React.FC = () => {
     setSelectedAthleteIds(newSelection);
   };
 
+  // When a message is sent inside ChatWindow, update the list ordering immediately
+  const handleMessageSent = (conversationId: string, createdAt: string) => {
+    setConversations((prev) => {
+      if (!prev || prev.length === 0) return prev;
+      const updated = prev.map((c) =>
+        c.id === conversationId ? ({ ...c, last_message_at: createdAt } as any) : c
+      );
+      // Sort by last_message_at desc
+      updated.sort((a: any, b: any) => {
+        const at = a?.last_message_at ? new Date(a.last_message_at).getTime() : 0;
+        const bt = b?.last_message_at ? new Date(b.last_message_at).getTime() : 0;
+        return bt - at;
+      });
+      return [...updated];
+    });
+  };
+
   // Open a specific conversation if openChat query param is present
   useEffect(() => {
     const convoId = searchParams.get('openChat');
@@ -155,6 +180,7 @@ const AdminDashboard: React.FC = () => {
     try {
       setChatLoading(true);
       setChatTarget(athlete);
+      setChatTitle(athlete.name);
       const conv = await ChatService.getOrCreateConversation({
         admin_id: profile.id,
         athlete_id: athlete.profile_id,
@@ -165,6 +191,49 @@ const AdminDashboard: React.FC = () => {
       toast({ title: 'Failed to open chat', description: e?.message || 'Please try again.' } as any);
     } finally {
       setChatLoading(false);
+    }
+  };
+
+  // Messages button: open list of conversations first
+  const handleOpenMessages = async () => {
+    try {
+      if (!profile?.id) return;
+      setIsChatOpen(true);
+      setChatConversationId(null);
+      setChatTarget(null);
+      setChatTitle(null);
+      setConvLoading(true);
+      const res = await ChatService.listConversationsForUser(profile.id, 'admin', 1, 50) as { data: Conversation[]; total: number };
+      const list = res.data || [];
+      // Enrich with athlete names and photos for display
+      try {
+        const uniqueAthleteIds = Array.from(new Set(list.map((c) => c.athlete_id).filter(Boolean)));
+        const nameMap: Record<string, string> = {};
+        const photoMap: Record<string, string> = {};
+        await Promise.all(
+          uniqueAthleteIds.map(async (id) => {
+            const a = await StudentAthleteService.fetchStudentAthleteByProfileId(id);
+            if (a?.name) nameMap[id] = a.name;
+            if (a?.photo && a.photo.trim() !== '') photoMap[id] = a.photo;
+          })
+        );
+        const enriched = list.map((c) => ({
+          ...c,
+          athlete_name: (c as any).athlete_name || nameMap[c.athlete_id] || '',
+          athlete_photo: (c as any).athlete_photo || photoMap[c.athlete_id] || '',
+        }));
+        setConversations(enriched as Conversation[]);
+      } catch {
+        // If enrichment fails, still show raw list
+        setConversations(list);
+      }
+      if ((res.total || 0) === 0) {
+        toast({ title: 'No messages yet', description: 'You will see messages here when you start conversations with athletes.' } as any);
+      }
+    } catch (e: any) {
+      toast({ title: 'Failed to load messages', description: e?.message || 'Please try again.' } as any);
+    } finally {
+      setConvLoading(false);
     }
   };
 
@@ -252,6 +321,15 @@ const AdminDashboard: React.FC = () => {
               </p>
             </div>
           </div>
+          <Button onClick={handleOpenMessages} className="relative bg-nil-orange hover:bg-nil-navy hidden sm:inline-flex items-center gap-2">
+            <MessageSquare className="w-4 h-4" />
+            Messages
+            {unreadCount > 0 && (
+              <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-medium leading-none text-white bg-red-600 rounded-full">
+                {unreadCount}
+              </span>
+            )}
+          </Button>
         </div>
 
         {/* Tabs */}
@@ -646,18 +724,104 @@ const AdminDashboard: React.FC = () => {
       />
 
       {/* Chat Modal */}
-      <Dialog open={isChatOpen} onOpenChange={setIsChatOpen}>
+      <Dialog
+        open={isChatOpen}
+        onOpenChange={(open) => {
+          setIsChatOpen(open);
+          if (!open) {
+            setChatConversationId(null);
+            setChatTarget(null);
+          }
+        }}
+      >
         <DialogContent className="max-w-3xl w-full">
           <DialogHeader>
-            <DialogTitle>Chat {chatTarget ? `with ${chatTarget.name}` : ''}</DialogTitle>
+            <DialogTitle>
+              {chatConversationId
+                ? (() => {
+                    const name = chatTitle || (chatTarget ? chatTarget.name : null);
+                    return name ? `Chat with ${name}` : 'Chat';
+                  })()
+                : 'Your Messages'}
+            </DialogTitle>
           </DialogHeader>
-          {chatConversationId && profile && (
+          {chatConversationId && profile ? (
             <ChatWindow
               conversationId={chatConversationId}
               currentUserId={profile.id}
-              title={chatTarget ? chatTarget.name : 'Conversation'}
-              onBack={() => setIsChatOpen(false)}
+              title={chatTitle || (chatTarget ? chatTarget.name : 'Conversation')}
+              onBack={() => {
+                // Return to conversation list within the same modal
+                setChatConversationId(null);
+                setChatTarget(null);
+                setChatTitle(null);
+              }}
+              onMessageSent={handleMessageSent}
             />
+          ) : (
+            <div className="space-y-3">
+              {convLoading ? (
+                <div className="flex items-center gap-2 text-gray-600">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Loading conversations...</span>
+                </div>
+              ) : conversations.length === 0 ? (
+                <div className="text-gray-600">No conversations found.</div>
+              ) : (
+                <div className="divide-y rounded-md border">
+                  {conversations.map((conv) => (
+                    <button
+                      key={conv.id}
+                      onClick={async () => {
+                        try {
+                          setChatConversationId(conv.id);
+                          const otherName = (conv as any).athlete_name as string | undefined;
+                          if (otherName) setChatTitle(otherName);
+                          // Fetch athlete name to ensure title is correct
+                          const athlete = await StudentAthleteService.fetchStudentAthleteByProfileId(conv.athlete_id);
+                          if (athlete) {
+                            setChatTarget(athlete);
+                            if (!otherName && athlete.name) setChatTitle(athlete.name);
+                          }
+                          if (profile?.id) {
+                            try { await ChatService.markConversationRead(conv.id, profile.id); } catch {}
+                          }
+                        } catch {}
+                      }}
+                      className="w-full text-left p-3 hover:bg-gray-50"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="relative w-10 h-10 flex-shrink-0">
+                            {(conv as any).athlete_photo ? (
+                              <img
+                                src={(conv as any).athlete_photo}
+                                alt={(conv as any).athlete_name || 'User avatar'}
+                                className="w-10 h-10 rounded-full object-cover bg-gray-100"
+                                onError={(e) => {
+                                  // Hide image and reveal placeholder sibling
+                                  (e.currentTarget as HTMLImageElement).style.display = 'none';
+                                  const placeholder = (e.currentTarget.nextElementSibling as HTMLElement | null);
+                                  if (placeholder) placeholder.classList.remove('hidden');
+                                }}
+                              />
+                            ) : null}
+                            <div className={(conv as any).athlete_photo ? 'hidden absolute inset-0 flex items-center justify-center rounded-full bg-gradient-to-br from-nil-light-blue to-nil-navy' : 'absolute inset-0 flex items-center justify-center rounded-full bg-gradient-to-br from-nil-light-blue to-nil-navy'}>
+                              <User className="w-5 h-5 text-white opacity-70" />
+                            </div>
+                          </div>
+                          <div className="min-w-0">
+                            <div className="font-medium text-gray-900 truncate">{(conv as any).athlete_name || 'Conversation'}</div>
+                            <div className="text-sm text-gray-600 line-clamp-1">Tap to open conversation</div>
+                          </div>
+                        </div>
+                        <div className="text-xs text-gray-500 ml-3 flex-shrink-0">{new Date(conv.last_message_at || conv.updated_at || conv.created_at).toLocaleString()}</div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
         </DialogContent>
       </Dialog>

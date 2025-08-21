@@ -14,6 +14,7 @@ interface ChatWindowProps {
   currentUserId: string;
   title?: string;
   onBack?: () => void;
+  onMessageSent?: (conversationId: string, createdAt: string) => void;
 }
 
 export const ChatWindow: React.FC<ChatWindowProps> = ({
@@ -21,6 +22,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   currentUserId,
   title = 'Conversation',
   onBack,
+  onMessageSent,
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
@@ -141,6 +143,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       try {
         const saved = await ChatService.sendMessage({ conversation_id: conversationId, sender_id: currentUserId, content });
         setMessages((prev) => prev.map((m) => (m.id === tempId ? saved : m)));
+        // Notify parent for list reordering
+        onMessageSent?.(conversationId, saved.created_at);
       } catch (e) {
         // Revert optimistic
         setMessages((prev) => prev.filter((m) => m.id !== tempId));
@@ -176,6 +180,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             content: content.trim(),
           });
           setMessages((prev) => prev.map((m) => (m.id === tempTextId ? savedText : m)));
+          // Notify parent for list reordering
+          onMessageSent?.(conversationId, savedText.created_at);
         } catch (e) {
           setMessages((prev) => prev.filter((m) => m.id !== tempTextId));
           throw e as any;
@@ -201,6 +207,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             files,
           });
           setMessages((prev) => prev.map((m) => (m.id === tempFilesId ? savedFiles : m)));
+          // Notify parent for list reordering
+          onMessageSent?.(conversationId, savedFiles.created_at);
         } catch (e) {
           setMessages((prev) => prev.filter((m) => m.id !== tempFilesId));
           throw e as any;
@@ -234,6 +242,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               content: content || '',
             });
         setMessages((prev) => prev.map((m) => (m.id === tempId ? saved : m)));
+        // Notify parent for list reordering
+        onMessageSent?.(conversationId, saved.created_at);
       } catch (e) {
         setMessages((prev) => prev.filter((m) => m.id !== tempId));
         throw e as any;

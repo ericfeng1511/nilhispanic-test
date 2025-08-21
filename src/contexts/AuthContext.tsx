@@ -354,11 +354,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error('Error signing out:', error);
-    }
-    // Supabase will trigger onAuthStateChange which will clear our state
+    // Optimistic: clear local auth state immediately
+    setUser(null);
+    setProfile(null);
+    setSession(null);
+
+    // Fire-and-forget remote sign-out. Ignore "no active session" noise.
+    // Default scope is 'global'; this may 403 if there is no refresh token/session.
+    supabase.auth
+      .signOut()
+      .then(({ error }) => {
+        if (error) {
+          const msg = (error as any)?.message || '';
+          const status = (error as any)?.status || (error as any)?.statusCode;
+          // Ignore benign cases where there is no session to revoke
+          if (
+            msg.includes('Auth session missing') ||
+            msg.includes('session_missing') ||
+            status === 401 ||
+            status === 403
+          ) {
+            return; // non-fatal; local state already cleared
+          }
+          console.warn('Non-fatal signOut warning:', error);
+        }
+      })
+      .catch(() => {
+        // Swallow network errors; tokens will expire and user is already logged out locally
+      });
   };
 
   const updateProfile = async (updates: Partial<Profile>) => {
