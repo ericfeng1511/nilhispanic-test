@@ -485,7 +485,7 @@ const AdminDashboard: React.FC = () => {
                 ) : (
                   <>
                     {/* Athletes Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 mb-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-6 mb-8">
                       {athletes.map((athlete) => (
                         <div key={athlete.id} className="space-y-2">
                           <AthleteCard 
@@ -498,8 +498,8 @@ const AdminDashboard: React.FC = () => {
                             isSelected={selectedAthleteIds.has(athlete.id)}
                             onSelectionChange={handleAthleteSelection}
                           />
-                          {/* Actions under card */}
-                          <div className="flex gap-2">
+                          {/* Actions under card - Hidden on mobile since horizontal cards are more compact */}
+                          <div className="hidden sm:flex gap-2">
                             <Button
                               size="sm"
                               className="flex-1 bg-nil-orange hover:bg-nil-navy"
