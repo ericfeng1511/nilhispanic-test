@@ -397,14 +397,29 @@ export class ChatGroupService {
     groupId: string,
     onInsert: (message: GroupMessage) => void
   ) {
+    const name = `group-messages-${groupId}`;
+    // Proactively remove any existing channel with the same name (helps in React StrictMode)
+    try {
+      const existing = (supabase as any).getChannels?.() as any[] | undefined;
+      if (existing && existing.length) {
+        for (const ch of existing) {
+          if ((ch as any).topic === name || (ch as any).name === name) {
+            // fire-and-forget; do not return a promise from React cleanup
+            void supabase.removeChannel(ch as any);
+          }
+        }
+      }
+    } catch {}
+
     const channel = supabase
-      .channel(`group-messages-${groupId}`)
+      .channel(name)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: GROUP_MESSAGES_TABLE, filter: `group_id=eq.${groupId}` },
         (payload) => onInsert(payload.new as GroupMessage)
       )
       .subscribe();
-    return () => supabase.removeChannel(channel);
+    // Return a void cleanup function to satisfy React typings
+    return () => { void supabase.removeChannel(channel); };
   }
 }

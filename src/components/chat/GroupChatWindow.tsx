@@ -29,6 +29,8 @@ export const GroupChatWindow: React.FC<GroupChatWindowProps> = ({ groupId, curre
   const [participantIds, setParticipantIds] = useState<string[]>([]);
   const [showSettings, setShowSettings] = useState(false);
   const [localTitle, setLocalTitle] = useState<string>(title || 'Group');
+  // Track received message IDs to avoid duplicate inserts from double-fired subscriptions
+  const receivedIdsRef = useRef<Set<string>>(new Set());
 
   // Keep local title in sync if parent prop changes externally
   useEffect(() => {
@@ -90,7 +92,13 @@ export const GroupChatWindow: React.FC<GroupChatWindowProps> = ({ groupId, curre
 
   // Separate realtime subscription for new messages
   useEffect(() => {
+    // Reset dedup set on group change
+    receivedIdsRef.current = new Set();
     const unsubscribe = ChatGroupService.subscribeToGroupMessages(groupId, (newMessage) => {
+      const id = newMessage.id;
+      if (!id) return;
+      if (receivedIdsRef.current.has(id)) return;
+      receivedIdsRef.current.add(id);
       setMessages((prevMessages) => {
         // Avoid duplicates - check if message already exists
         const exists = prevMessages.find((msg) => msg.id === newMessage.id);
