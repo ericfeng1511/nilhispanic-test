@@ -165,6 +165,7 @@ export const GroupChatWindow: React.FC<GroupChatWindowProps> = ({ groupId, curre
           .select('user_id, role')
           .eq('group_id', groupId);
         if (error || !parts) {
+          if (error && !cancelled) console.warn('group_participants fetch error:', error);
           if (!cancelled) {
             setParticipantRoles({});
             setDisplayNames({});
@@ -176,11 +177,17 @@ export const GroupChatWindow: React.FC<GroupChatWindowProps> = ({ groupId, curre
         const ids: string[] = [];
         for (const row of parts as any[]) {
           const uid = String(row.user_id);
-          const role = (row.role as 'owner'|'admin'|'member') || 'member';
-          rolesMap[uid] = role;
+          const roleLc = String(row.role ?? 'member').toLowerCase();
+          const normRole = (roleLc === 'owner' || roleLc === 'admin') ? (roleLc as 'owner'|'admin') : 'member';
+          rolesMap[uid] = normRole;
           ids.push(uid);
         }
-        if (!cancelled) setParticipantRoles(rolesMap);
+        if (!cancelled) {
+          if (typeof window !== 'undefined') {
+            console.debug('[GroupChat] roles loaded', { groupId, count: Object.keys(rolesMap).length, rolesMap });
+          }
+          setParticipantRoles(rolesMap);
+        }
 
         if (ids.length === 0) {
           if (!cancelled) setDisplayNames({});
@@ -192,6 +199,7 @@ export const GroupChatWindow: React.FC<GroupChatWindowProps> = ({ groupId, curre
           .select('id, full_name')
           .in('id', ids);
         if (pErr || !profs) {
+          if (pErr && !cancelled) console.warn('profiles fetch error:', pErr);
           if (!cancelled) setDisplayNames({});
           return;
         }
@@ -200,7 +208,12 @@ export const GroupChatWindow: React.FC<GroupChatWindowProps> = ({ groupId, curre
           const nm = (p.full_name as string) || '';
           nameMap[String(p.id)] = nm;
         }
-        if (!cancelled) setDisplayNames(nameMap);
+        if (!cancelled) {
+          if (typeof window !== 'undefined') {
+            console.debug('[GroupChat] names loaded', { groupId, count: Object.keys(nameMap).length, sample: Object.fromEntries(Object.entries(nameMap).slice(0, 5)) });
+          }
+          setDisplayNames(nameMap);
+        }
       } catch (e) {
         if (!cancelled) {
           setParticipantRoles({});
@@ -326,13 +339,15 @@ const GroupMessageList: React.FC<{ messages: GroupMessage[]; currentUserId: stri
   return (
     <div>
       {messages.map((msg, idx) => {
-        const isMine = msg.sender_id === currentUserId;
+        const senderId = String(msg.sender_id);
+        const isMine = senderId === String(currentUserId);
         const created = new Date(msg.created_at);
         const images = (msg.attachments || []).filter((a) => a.mime_type?.startsWith('image/'));
         const others = (msg.attachments || []).filter((a) => !a.mime_type?.startsWith('image/'));
         const prev = idx > 0 ? messages[idx - 1] : undefined;
-        const showAvatar = !isMine && (!prev || prev.sender_id !== msg.sender_id);
-        const newCluster = !prev || prev.sender_id !== msg.sender_id;
+        const prevSenderId = prev ? String(prev.sender_id) : undefined;
+        const showAvatar = !isMine && (!prev || prevSenderId !== senderId);
+        const newCluster = !prev || prevSenderId !== senderId;
         const isSystem = !!msg.content && msg.content.startsWith('[system]');
         const systemText = isSystem ? msg.content!.replace(/^\[system\]\s*/, '') : '';
 
@@ -350,13 +365,14 @@ const GroupMessageList: React.FC<{ messages: GroupMessage[]; currentUserId: stri
           );
         }
 
-        const role = roles?.[msg.sender_id];
-        const nameLabel = role === 'admin' || role === 'owner' ? 'Admin' : (names?.[msg.sender_id] || '');
+        const role = roles?.[senderId];
+        const nameFromMap = names?.[senderId];
+        const nameLabel = role === 'admin' || role === 'owner' ? 'Admin' : (nameFromMap && nameFromMap.trim() ? nameFromMap : 'Member');
 
         return (
           <div className="contents" key={msg.id}>
-            {/* name label at the start of a cluster */}
-            {newCluster && !isSystem && nameLabel && (
+            {/* name label at the start of a cluster (others only) */}
+            {newCluster && !isSystem && !isMine && nameLabel && (
               <div className={`text-[11px] text-gray-600 mb-1 ${isMine ? 'text-right pr-10' : 'pl-10'}`}>{nameLabel}</div>
             )}
             {/* message bubble */}
@@ -366,7 +382,7 @@ const GroupMessageList: React.FC<{ messages: GroupMessage[]; currentUserId: stri
               }`}>
                 {!isMine && (
                   showAvatar ? (
-                    <AvatarBubble src={avatars?.[msg.sender_id]} />
+                    <AvatarBubble src={avatars?.[senderId]} />
                   ) : (
                     <div className="w-8 h-8 flex-shrink-0" />
                   )
@@ -632,28 +648,6 @@ const GroupSettings: React.FC<GroupSettingsProps> = ({ groupId, title, currentUs
             </div>
           </div>
           
-          <div className="border-t pt-4">
-            <h3 className="font-medium text-gray-900 mb-2">Settings</h3>
-            <div className="space-y-3">
-              <button className="w-full text-left p-2 rounded hover:bg-gray-50 text-gray-700">
-                Manage Participants
-              </button>
-              <button className="w-full text-left p-2 rounded hover:bg-gray-50 text-gray-700">
-                Notification Settings
-              </button>
-              <button className="w-full text-left p-2 rounded hover:bg-gray-50 text-gray-700">
-                Media & Files
-              </button>
-            </div>
-          </div>
-          
-          <div className="border-t pt-4">
-            <div className="bg-gray-50 rounded-lg p-3">
-              <p className="text-sm text-gray-600 text-center">
-                🚧 Group settings coming soon!
-              </p>
-            </div>
-          </div>
         </div>
         
         {/* Footer */}
