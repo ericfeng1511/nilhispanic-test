@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import type { GroupConversation, GroupMessage, GroupMessageAttachment } from '@/types/chatGroup';
+import React, { useEffect, useRef, useState } from 'react';
+import type { GroupMessage, GroupMessageAttachment } from '@/types/chatGroup';
 import { ChatGroupService } from '@/services/chatGroupService';
 import { supabase } from '@/lib/supabaseClient';
 import { ArrowLeft, Download, Edit2, MoreVertical, Users } from 'lucide-react';
@@ -27,9 +27,10 @@ export const GroupChatWindow: React.FC<GroupChatWindowProps> = ({ groupId, curre
   const [sending, setSending] = useState(false);
   const [avatars, setAvatars] = useState<Record<string, string | undefined>>({});
   const [participantIds, setParticipantIds] = useState<string[]>([]);
+  const [participantRoles, setParticipantRoles] = useState<Record<string, 'owner'|'admin'|'member'>>({});
+  const [displayNames, setDisplayNames] = useState<Record<string, string>>({});
   const [showSettings, setShowSettings] = useState(false);
   const [localTitle, setLocalTitle] = useState<string>(title || 'Group');
-  const [senderNames, setSenderNames] = useState<Record<string, string>>({});
   // Track received message IDs to avoid duplicate inserts from double-fired subscriptions
   const receivedIdsRef = useRef<Set<string>>(new Set());
 
@@ -133,41 +134,15 @@ export const GroupChatWindow: React.FC<GroupChatWindowProps> = ({ groupId, curre
         // Use the new service method to get all participant photos
         const photoMap = await ChatGroupService.getGroupParticipantsWithPhotos(groupId);
         
-        // Get participant IDs for realtime subscriptions and fetch names
+        // Get participant IDs for realtime subscriptions
         const { data: parts, error: pErr } = await supabase
           .from('group_participants')
-          .select('user_id, role')
+          .select('user_id')
           .eq('group_id', groupId);
         
         if (!pErr && parts) {
           const userIds = Array.from(new Set(parts.map((r: any) => r.user_id as string)));
           if (active) setParticipantIds(userIds);
-          
-          // Fetch names from profiles table
-          const { data: profiles, error: profileErr } = await supabase
-            .from('profiles')
-            .select('id, first_name, last_name')
-            .in('id', userIds);
-          
-          if (!profileErr && profiles) {
-            const nameMap: Record<string, string> = {};
-            const roleMap = Object.fromEntries(parts.map((p: any) => [p.user_id, p.role]));
-            
-            for (const profile of profiles) {
-              const userId = profile.id;
-              const role = roleMap[userId];
-              
-              if (role === 'admin' || role === 'owner') {
-                nameMap[userId] = 'Admin';
-              } else {
-                const firstName = profile.first_name || '';
-                const lastName = profile.last_name || '';
-                nameMap[userId] = `${firstName} ${lastName}`.trim() || 'User';
-              }
-            }
-            
-            if (active) setSenderNames(nameMap);
-          }
         }
         
         // Merge instead of replace to avoid clearing already-known avatars
@@ -179,6 +154,62 @@ export const GroupChatWindow: React.FC<GroupChatWindowProps> = ({ groupId, curre
     loadAvatars();
     return () => { active = false; };
   }, [groupId, currentUserId]);
+
+  // Load participant roles and display names for sender labels
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data: parts, error } = await supabase
+          .from('group_participants')
+          .select('user_id, role')
+          .eq('group_id', groupId);
+        if (error || !parts) {
+          if (!cancelled) {
+            setParticipantRoles({});
+            setDisplayNames({});
+          }
+          return;
+        }
+
+        const rolesMap: Record<string, 'owner'|'admin'|'member'> = {};
+        const ids: string[] = [];
+        for (const row of parts as any[]) {
+          const uid = String(row.user_id);
+          const role = (row.role as 'owner'|'admin'|'member') || 'member';
+          rolesMap[uid] = role;
+          ids.push(uid);
+        }
+        if (!cancelled) setParticipantRoles(rolesMap);
+
+        if (ids.length === 0) {
+          if (!cancelled) setDisplayNames({});
+          return;
+        }
+
+        const { data: profs, error: pErr } = await supabase
+          .from('profiles')
+          .select('id, full_name')
+          .in('id', ids);
+        if (pErr || !profs) {
+          if (!cancelled) setDisplayNames({});
+          return;
+        }
+        const nameMap: Record<string, string> = {};
+        for (const p of profs as any[]) {
+          const nm = (p.full_name as string) || '';
+          nameMap[String(p.id)] = nm;
+        }
+        if (!cancelled) setDisplayNames(nameMap);
+      } catch (e) {
+        if (!cancelled) {
+          setParticipantRoles({});
+          setDisplayNames({});
+        }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [groupId]);
 
   const onSendText = async (content: string) => {
     if (!content.trim()) return;
@@ -236,7 +267,13 @@ export const GroupChatWindow: React.FC<GroupChatWindowProps> = ({ groupId, curre
         ) : messages.length === 0 ? (
           <div className="text-gray-600">No messages yet.</div>
         ) : (
-          <GroupMessageList messages={messages} currentUserId={currentUserId} avatars={avatars} senderNames={senderNames} />
+          <GroupMessageList
+            messages={messages}
+            currentUserId={currentUserId}
+            avatars={avatars}
+            names={displayNames}
+            roles={participantRoles}
+          />
         )}
       </div>
 
@@ -281,8 +318,8 @@ const AvatarBubble: React.FC<{ src?: string }> = ({ src }) => {
   );
 };
 
-const GroupMessageList: React.FC<{ messages: GroupMessage[]; currentUserId: string; avatars?: Record<string, string | undefined>; senderNames?: Record<string, string> }>
-= ({ messages, currentUserId, avatars, senderNames }) => {
+const GroupMessageList: React.FC<{ messages: GroupMessage[]; currentUserId: string; avatars?: Record<string, string | undefined>; names?: Record<string, string>; roles?: Record<string, 'owner'|'admin'|'member'> }>
+= ({ messages, currentUserId, avatars, names, roles }) => {
   const endRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages.length]);
 
@@ -295,11 +332,9 @@ const GroupMessageList: React.FC<{ messages: GroupMessage[]; currentUserId: stri
         const others = (msg.attachments || []).filter((a) => !a.mime_type?.startsWith('image/'));
         const prev = idx > 0 ? messages[idx - 1] : undefined;
         const showAvatar = !isMine && (!prev || prev.sender_id !== msg.sender_id);
-        const newCluster = !!prev && prev.sender_id !== msg.sender_id;
+        const newCluster = !prev || prev.sender_id !== msg.sender_id;
         const isSystem = !!msg.content && msg.content.startsWith('[system]');
         const systemText = isSystem ? msg.content!.replace(/^\[system\]\s*/, '') : '';
-        const showSenderName = newCluster && !isMine;
-        const senderName = senderNames?.[msg.sender_id] || 'User';
 
         if (isSystem) {
           return (
@@ -315,41 +350,45 @@ const GroupMessageList: React.FC<{ messages: GroupMessage[]; currentUserId: stri
           );
         }
 
+        const role = roles?.[msg.sender_id];
+        const nameLabel = role === 'admin' || role === 'owner' ? 'Admin' : (names?.[msg.sender_id] || '');
+
         return (
-          <div key={msg.id} className={`${newCluster ? 'mt-4' : 'mb-1'}`}>
-            {/* Sender name label for new message clusters */}
-            {showSenderName && (
-              <div className="text-xs text-gray-500 font-medium mb-1 ml-10">
-                {senderName}
-              </div>
+          <div className="contents" key={msg.id}>
+            {/* name label at the start of a cluster */}
+            {newCluster && !isSystem && nameLabel && (
+              <div className={`text-[11px] text-gray-600 mb-1 ${isMine ? 'text-right pr-10' : 'pl-10'}`}>{nameLabel}</div>
             )}
-              <div className={`flex ${isMine ? 'justify-end' : 'justify-start'} mb-1`}>
-                <div className={`${isMine ? 'max-w-[75%] flex flex-row-reverse items-end gap-2' : 'max-w-[75%] flex flex-row items-end gap-2'}`}>
-                  {!isMine && (
-                    showAvatar ? (
-                      <AvatarBubble src={avatars?.[msg.sender_id]} />
-                    ) : (
-                      <div className="w-8 h-8 flex-shrink-0" />
-                    )
-                  )}
-                  <div className={`${isMine ? 'bg-nil-orange text-white rounded-2xl rounded-br-md' : 'bg-white text-gray-900 rounded-2xl rounded-bl-md border border-gray-200'} px-4 py-2.5 text-sm shadow-sm`}
-                       title={created.toLocaleString()} aria-label={`Sent at ${created.toISOString()}`}>
-                    {msg.content?.trim() ? (
-                      <div className="whitespace-pre-wrap break-words leading-relaxed">{msg.content}</div>
-                    ) : null}
-                    {images.length > 0 || others.length > 0 ? (
-                      <div className={`${msg.content?.trim() ? 'mt-2' : ''}`}>
-                        <GroupAttachmentGallery images={images} others={others} />
-                      </div>
-                    ) : null}
-                    <div className={`mt-1.5 text-[10px] opacity-75 ${isMine ? 'text-white/90' : 'text-gray-500'}`}>
-                      {created.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
-                    </div>
+            {/* message bubble */}
+            <div className={`flex ${isMine ? 'justify-end' : 'justify-start'} mb-1`}>
+              <div className={`${
+                isMine ? 'max-w-[75%] flex flex-row-reverse items-end gap-2' : 'max-w-[75%] flex flex-row items-end gap-2'
+              }`}>
+                {!isMine && (
+                  showAvatar ? (
+                    <AvatarBubble src={avatars?.[msg.sender_id]} />
+                  ) : (
+                    <div className="w-8 h-8 flex-shrink-0" />
+                  )
+                )}
+              <div className={`${isMine ? 'bg-nil-orange text-white rounded-2xl rounded-br-md' : 'bg-white text-gray-900 rounded-2xl rounded-bl-md border border-gray-200'} px-4 py-2.5 text-sm shadow-sm`}
+                   title={created.toLocaleString()} aria-label={`Sent at ${created.toISOString()}`}>
+                {msg.content?.trim() ? (
+                  <div className="whitespace-pre-wrap break-words leading-relaxed">{msg.content}</div>
+                ) : null}
+                {images.length > 0 || others.length > 0 ? (
+                  <div className={`${msg.content?.trim() ? 'mt-2' : ''}`}>
+                    <GroupAttachmentGallery images={images} others={others} />
                   </div>
+                ) : null}
+                <div className={`mt-1.5 text-[10px] opacity-75 ${isMine ? 'text-white/90' : 'text-gray-500'}`}>
+                  {created.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
                 </div>
               </div>
             </div>
-          );
+            </div>
+          </div>
+        );
       })}
       <div ref={endRef} />
     </div>
