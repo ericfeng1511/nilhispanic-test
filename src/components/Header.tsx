@@ -12,7 +12,7 @@ import { ContactForm } from "./ContactForm";
 import { AuthModal } from "./AuthModal";
 import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'react-router-dom';
-import { Menu, ChevronDown, LogOut, User, Settings, Shield, Trophy, Building2, MessageSquare } from 'lucide-react';
+import { Menu, ChevronDown, LogOut, User, Settings, Shield, Trophy, Building2, Bell } from 'lucide-react';
 import {
   HoverCard,
   HoverCardContent,
@@ -116,17 +116,6 @@ const Header = () => {
             </div>
           ) : user ? (
             <div className="flex items-center space-x-3">
-              <div className="flex items-center space-x-2 text-nil-navy">
-                <User size={18} />
-                <span className="text-sm font-medium">
-                  {profile?.full_name || user.email}
-                </span>
-                {profile?.role && (
-                  <span className="text-xs bg-nil-light-blue text-nil-navy px-2 py-1 rounded-full">
-                    {profile.role}
-                  </span>
-                )}
-              </div>
               {/* Unread messages icon (desktop) for admins and athletes */}
               {(profile?.role === 'admin' || profile?.role === 'athlete') && (
                 <DropdownMenu onOpenChange={setPreviewsOpen}>
@@ -136,7 +125,7 @@ const Header = () => {
                       className="relative inline-flex items-center justify-center w-9 h-9 rounded-full border border-gray-200 text-nil-navy hover:text-nil-orange hover:border-nil-orange transition-colors"
                       title="Messages"
                     >
-                      <MessageSquare size={18} />
+                      <Bell size={18} />
                       {unreadCount > 0 && (
                         <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[11px] leading-[18px] text-center font-semibold">
                           {unreadCount > 99 ? '99+' : unreadCount}
@@ -192,52 +181,52 @@ const Header = () => {
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
-              {/* Admin Dashboard Button - Only visible to admin users */}
-              {profile?.role === 'admin' && (
-                <Link to="/admin/dashboard">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="bg-nil-navy text-white hover:bg-nil-orange border-nil-navy hover:border-nil-orange transition-colors flex items-center space-x-1"
-                  >
-                    <Shield size={16} />
-                    <span>Dashboard</span>
-                  </Button>
-                </Link>
-              )}
-              {/* Athlete Dashboard Button - Only visible to athlete users */}
-              {profile?.role === 'athlete' && (
-                <Link to="/athlete/dashboard">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="bg-nil-navy text-white hover:bg-nil-orange border-nil-navy hover:border-nil-orange transition-colors flex items-center space-x-1"
-                  >
-                    <Trophy size={16} />
-                    <span>Dashboard</span>
-                  </Button>
-                </Link>
-              )}
-              {/* Brand Dashboard Button - Only visible to brand users */}
-              {profile?.role === 'brand' && (
-                <Link to="/brand/dashboard">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="bg-nil-navy text-white hover:bg-nil-orange border-nil-navy hover:border-nil-orange transition-colors flex items-center space-x-1"
-                  >
-                    <Building2 size={16} />
-                    <span>Dashboard</span>
-                  </Button>
-                </Link>
-              )}
-              <Button 
-                onClick={handleLogout}
-                className="bg-red-500 text-white hover:bg-red-600 transition-colors px-3 py-2 rounded-md font-medium flex items-center space-x-1"
-              >
-                <LogOut size={16} />
-                <span>Logout</span>
-              </Button>
+              {/* User Profile Dropdown */}
+              <HoverCard openDelay={200} closeDelay={100}>
+                <HoverCardTrigger asChild>
+                  <button className="flex items-center space-x-2 text-nil-navy hover:text-nil-orange transition-colors px-3 py-2 rounded-md hover:bg-gray-50">
+                    <User size={18} />
+                    <div className="text-left">
+                      <div className="text-sm font-medium">
+                        {profile?.full_name || user.email}
+                      </div>
+                      {profile?.role && (
+                        <div className="text-xs text-gray-600">
+                          {profile.role}
+                        </div>
+                      )}
+                    </div>
+                    <ChevronDown size={16} />
+                  </button>
+                </HoverCardTrigger>
+                <HoverCardContent align="end" className="w-48 p-1">
+                  {/* Dashboard Link */}
+                  {profile?.role === 'admin' && (
+                    <Link to="/admin/dashboard" className="flex items-center space-x-2 w-full px-2 py-2 text-sm rounded-sm hover:bg-gray-100">
+                      <Shield size={16} />
+                      <span>Dashboard</span>
+                    </Link>
+                  )}
+                  {profile?.role === 'athlete' && (
+                    <Link to="/athlete/dashboard" className="flex items-center space-x-2 w-full px-2 py-2 text-sm rounded-sm hover:bg-gray-100">
+                      <Trophy size={16} />
+                      <span>Dashboard</span>
+                    </Link>
+                  )}
+                  {profile?.role === 'brand' && (
+                    <Link to="/brand/dashboard" className="flex items-center space-x-2 w-full px-2 py-2 text-sm rounded-sm hover:bg-gray-100">
+                      <Building2 size={16} />
+                      <span>Dashboard</span>
+                    </Link>
+                  )}
+                  <div className="border-t border-gray-200 my-1" />
+                  {/* Logout */}
+                  <button onClick={handleLogout} className="flex items-center space-x-2 w-full px-2 py-2 text-sm rounded-sm hover:bg-gray-100 text-red-600">
+                    <LogOut size={16} />
+                    <span>Logout</span>
+                  </button>
+                </HoverCardContent>
+              </HoverCard>
             </div>
           ) : (
             <Button 
@@ -296,7 +285,8 @@ const Header = () => {
                 </div>
               ) : user ? (
                 <div className="space-y-3">
-                  <div className="flex items-center space-x-2 text-nil-navy px-3">
+                  {/* User Profile Section */}
+                  <div className="flex items-center space-x-2 text-nil-navy px-3 py-2 bg-gray-50 rounded-md">
                     <User size={18} />
                     <div className="flex-1">
                       <div className="font-medium text-sm">
@@ -309,53 +299,57 @@ const Header = () => {
                       )}
                     </div>
                   </div>
-                  {/* Admin Dashboard for Mobile - Only visible to admin users */}
+                  
+                  {/* Dashboard Link */}
                   {profile?.role === 'admin' && (
-                    <div className="space-y-2">
-                      <div className="text-xs text-nil-navy font-medium px-3 mb-2">Admin Panel</div>
-                      <Link to="/admin/dashboard" className="w-full text-left px-3 py-2 text-sm hover:bg-nil-light-gray flex items-center space-x-2">
-                        <Shield size={16} />
-                        <span className="flex items-center gap-2">
-                          Dashboard
-                          {unreadCount > 0 && (
-                            <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[11px] leading-[18px] font-semibold">
-                              {unreadCount > 99 ? '99+' : unreadCount}
-                            </span>
-                          )}
-                        </span>
-                      </Link>
-                      <div className="border-t border-gray-200 my-2"></div>
-                    </div>
+                    <Link 
+                      to="/admin/dashboard" 
+                      className="w-full text-left px-3 py-3 text-sm hover:bg-nil-light-gray flex items-center space-x-2 rounded-md"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <Shield size={16} />
+                      <span className="flex items-center gap-2">
+                        Dashboard
+                        {unreadCount > 0 && (
+                          <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[11px] leading-[18px] font-semibold">
+                            {unreadCount > 99 ? '99+' : unreadCount}
+                          </span>
+                        )}
+                      </span>
+                    </Link>
                   )}
-                  {/* Athlete Dashboard for Mobile - Only visible to athlete users */}
                   {profile?.role === 'athlete' && (
-                    <div className="space-y-2">
-                      <div className="text-xs text-nil-navy font-medium px-3 mb-2">Athlete Panel</div>
-                      <Link to="/athlete/dashboard" className="w-full text-left px-3 py-2 text-sm hover:bg-nil-light-gray flex items-center space-x-2">
-                        <Trophy size={16} />
-                        <span className="flex items-center gap-2">
-                          Dashboard
-                          {unreadCount > 0 && (
-                            <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[11px] leading-[18px] font-semibold">
-                              {unreadCount > 99 ? '99+' : unreadCount}
-                            </span>
-                          )}
-                        </span>
-                      </Link>
-                      <div className="border-t border-gray-200 my-2"></div>
-                    </div>
+                    <Link 
+                      to="/athlete/dashboard" 
+                      className="w-full text-left px-3 py-3 text-sm hover:bg-nil-light-gray flex items-center space-x-2 rounded-md"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <Trophy size={16} />
+                      <span className="flex items-center gap-2">
+                        Dashboard
+                        {unreadCount > 0 && (
+                          <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[11px] leading-[18px] font-semibold">
+                            {unreadCount > 99 ? '99+' : unreadCount}
+                          </span>
+                        )}
+                      </span>
+                    </Link>
                   )}
-                  {/* Brand Dashboard for Mobile - Only visible to brand users */}
                   {profile?.role === 'brand' && (
-                    <div className="space-y-2">
-                      <div className="text-xs text-nil-navy font-medium px-3 mb-2">Brand Panel</div>
-                      <Link to="/brand/dashboard" className="w-full text-left px-3 py-2 text-sm hover:bg-nil-light-gray flex items-center space-x-2">
-                        <Building2 size={16} />
-                        <span>Dashboard</span>
-                      </Link>
-                      <div className="border-t border-gray-200 my-2"></div>
-                    </div>
+                    <Link 
+                      to="/brand/dashboard" 
+                      className="w-full text-left px-3 py-3 text-sm hover:bg-nil-light-gray flex items-center space-x-2 rounded-md"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <Building2 size={16} />
+                      <span>Dashboard</span>
+                    </Link>
                   )}
+                  
+                  {/* Separator */}
+                  <div className="border-t border-gray-200"></div>
+                  
+                  {/* Logout Button */}
                   <Button 
                     onClick={handleLogout}
                     className="bg-red-500 text-white hover:bg-red-600 transition-colors w-full h-12 touch-manipulation font-medium flex items-center justify-center space-x-2"

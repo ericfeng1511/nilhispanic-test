@@ -13,9 +13,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import ChatWindow from '@/components/chat/ChatWindow';
+import GroupChatList from '@/components/chat/GroupChatList';
+import GroupChatWindow from '@/components/chat/GroupChatWindow';
 import { ChatService } from '@/services/chatService';
+import { ChatGroupService } from '@/services/chatGroupService';
 import { useToast } from '@/hooks/use-toast';
 import type { Conversation } from '@/types/chat';
+import type { GroupConversation } from '@/types/chatGroup';
 import { CityService, type City } from '@/services/cityService';
 import { CollegeService } from '@/services/collegeService';
 
@@ -101,6 +105,12 @@ const AthleteDashboard: React.FC = () => {
   const [convLoading, setConvLoading] = useState(false);
   const [chatConversationId, setChatConversationId] = useState<string | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
+  // Groups state for Messages modal
+  const [messagesMode, setMessagesMode] = useState<'direct' | 'groups'>('direct');
+  const [groups, setGroups] = useState<GroupConversation[]>([]);
+  const [groupsLoading, setGroupsLoading] = useState(false);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const [selectedGroupTitle, setSelectedGroupTitle] = useState<string | null>(null);
   
   // Fetch current athlete data
   const { data: currentAthleteData, isLoading: athleteLoading, error: athleteError } = useQuery({
@@ -194,61 +204,74 @@ const AthleteDashboard: React.FC = () => {
   
   // Load existing data into form when athlete data is fetched
   useEffect(() => {
-    if (currentAthleteData) {
-      setAthleteProfile({
-        sport: currentAthleteData.sport || '',
-        year: (currentAthleteData.year as 'FR' | 'SO' | 'JR' | 'SR' | 'RFR' | 'GR') || '',
-        college: currentAthleteData.college || '',
-        hometown: currentAthleteData.hometown || '',
-        gender: (currentAthleteData.gender as 'M' | 'F') || '',
-        photo: currentAthleteData.photo || '',
-        instagram_handle: currentAthleteData.instagram_handle || '',
-        instagram_followers: currentAthleteData.instagram_followers || undefined,
-        tiktok_handle: currentAthleteData.tiktok_handle || '',
-        tiktok_followers: currentAthleteData.tiktok_followers || undefined,
-        x_handle: currentAthleteData.x_handle || '',
-        x_followers: currentAthleteData.x_followers || undefined,
-        city_id: (currentAthleteData as any).city_id || undefined,
-        school_id: (currentAthleteData as any).school_id || undefined
-      });
-      // Prefill the visible query with existing hometown for user context
-      setCityQuery(currentAthleteData.hometown || '');
-      // If a city_id exists, load its label for display
+    if (!currentAthleteData) return;
+    
+    setAthleteProfile({
+      sport: currentAthleteData.sport || '',
+      year: (currentAthleteData.year as 'FR' | 'SO' | 'JR' | 'SR' | 'RFR' | 'GR') || '',
+      college: currentAthleteData.college || '',
+      hometown: currentAthleteData.hometown || '',
+      gender: (currentAthleteData.gender as 'M' | 'F') || '',
+      photo: currentAthleteData.photo || '',
+      instagram_handle: currentAthleteData.instagram_handle || '',
+      instagram_followers: currentAthleteData.instagram_followers || undefined,
+      tiktok_handle: currentAthleteData.tiktok_handle || '',
+      tiktok_followers: currentAthleteData.tiktok_followers || undefined,
+      x_handle: currentAthleteData.x_handle || '',
+      x_followers: currentAthleteData.x_followers || undefined,
+      city_id: (currentAthleteData as any).city_id || undefined,
+      school_id: (currentAthleteData as any).school_id || undefined
+    });
+    
+    // Load city and school data asynchronously without causing re-renders
+    const loadCityData = async () => {
       const cid = (currentAthleteData as any).city_id as number | undefined;
       if (cid) {
-        CityService.getCityById(cid)
-          .then(city => {
-            if (city) {
-              const label = CityService.formatCityLabel(city);
-              setSelectedCityLabel(label);
-              setCityQuery(label);
-            } else {
-              setSelectedCityLabel('');
-            }
-          })
-          .catch(() => setSelectedCityLabel(''));
+        try {
+          const city = await CityService.getCityById(cid);
+          if (city) {
+            const label = CityService.formatCityLabel(city);
+            setSelectedCityLabel(label);
+            setCityQuery(label);
+          } else {
+            setSelectedCityLabel('');
+            setCityQuery(currentAthleteData.hometown || '');
+          }
+        } catch {
+          setSelectedCityLabel('');
+          setCityQuery(currentAthleteData.hometown || '');
+        }
       } else {
         setSelectedCityLabel('');
+        setCityQuery(currentAthleteData.hometown || '');
       }
-      // If a school_id exists, load its name for display
+    };
+
+    const loadSchoolData = async () => {
       const sid = (currentAthleteData as any).school_id as number | undefined;
       if (sid) {
-        CollegeService.getSchoolById(sid)
-          .then((school) => {
-            if (school) {
-              setSelectedSchoolLabel(school.name);
-              setSchoolQuery(school.name);
-            } else {
-              setSelectedSchoolLabel('');
-            }
-          })
-          .catch(() => setSelectedSchoolLabel(''));
+        try {
+          const school = await CollegeService.getSchoolById(sid);
+          if (school) {
+            setSelectedSchoolLabel(school.name);
+            setSchoolQuery(school.name);
+          } else {
+            setSelectedSchoolLabel('');
+            setSchoolQuery(currentAthleteData.college || '');
+          }
+        } catch {
+          setSelectedSchoolLabel('');
+          setSchoolQuery(currentAthleteData.college || '');
+        }
       } else {
         setSelectedSchoolLabel('');
         setSchoolQuery(currentAthleteData.college || '');
       }
-    }
-  }, [currentAthleteData]);
+    };
+
+    loadCityData();
+    loadSchoolData();
+  }, [currentAthleteData?.id]); // Only depend on the ID to prevent infinite loops
   
   // Get unique sports and colleges from existing data
   useEffect(() => {
@@ -278,7 +301,7 @@ const AthleteDashboard: React.FC = () => {
       sp.delete('openChat');
       setSearchParams(sp, { replace: true });
     }
-  }, [searchParams, profile?.id, profile?.role, setSearchParams]);
+  }, [searchParams, profile?.id, profile?.role]);
   
   const getFilteredCollegeSuggestions = (input: string) => {
     return collegeSuggestions.filter(college => 
@@ -387,6 +410,10 @@ const AthleteDashboard: React.FC = () => {
 
   const handleOpenMessages = async () => {
     setIsChatOpen(true);
+    setChatConversationId(null);
+    setSelectedGroupId(null);
+    setSelectedGroupTitle(null);
+    setMessagesMode('direct');
     setConvLoading(true);
     try {
       const res: any = await loadConversations();
@@ -397,6 +424,16 @@ const AthleteDashboard: React.FC = () => {
         setChatConversationId(res.data[0].id);
       } else {
         setChatConversationId(null);
+      }
+      // Load groups in background
+      try {
+        setGroupsLoading(true);
+        const gres = await ChatGroupService.listGroupsForUser(profile.id, 1, 50);
+        setGroups(gres.data || []);
+      } catch (e: any) {
+        // non-fatal
+      } finally {
+        setGroupsLoading(false);
       }
     } catch (e: any) {
       toast({ title: 'Failed to load messages', description: e?.message || 'Please try again.' } as any);
@@ -1073,12 +1110,18 @@ const AthleteDashboard: React.FC = () => {
           setIsChatOpen(open);
           if (!open) {
             setChatConversationId(null);
+            setSelectedGroupId(null);
+            setSelectedGroupTitle(null);
           }
         }}>
           <DialogContent className="max-w-3xl w-full">
             <DialogHeader>
               <DialogTitle>
-                {chatConversationId ? 'Conversation' : 'Your Messages'}
+                {chatConversationId
+                  ? 'Conversation'
+                  : selectedGroupId
+                    ? `Group: ${selectedGroupTitle || 'Group'}`
+                    : 'Your Messages'}
               </DialogTitle>
             </DialogHeader>
             {/* If a conversation is selected, show chat window */}
@@ -1089,30 +1132,82 @@ const AthleteDashboard: React.FC = () => {
                 title="Admin"
                 onBack={() => setChatConversationId(null)}
               />
+            ) : selectedGroupId && profile ? (
+              <GroupChatWindow
+                groupId={selectedGroupId}
+                currentUserId={profile.id}
+                title={selectedGroupTitle || 'Group'}
+                onTitleChange={(newTitle) => setSelectedGroupTitle(newTitle)}
+                onBack={() => {
+                  setSelectedGroupId(null);
+                  setSelectedGroupTitle(null);
+                }}
+              />
             ) : (
-              <div className="space-y-3">
-                {convLoading ? (
-                  <div className="py-6 text-center text-gray-500">Loading conversations...</div>
-                ) : conversations.length === 0 ? (
-                  <div className="py-6 text-center text-gray-500">No conversations yet.</div>
-                ) : (
-                  <div className="divide-y rounded-md border">
-                    {conversations.map((c) => (
-                      <button
-                        key={c.id}
-                        className="w-full text-left px-4 py-3 hover:bg-gray-50 focus:outline-none"
-                        onClick={() => setChatConversationId(c.id)}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="font-medium">Chat with Admin</div>
-                          <div className="text-xs text-gray-500">
-                            {c.last_message_at ? new Date(c.last_message_at).toLocaleString() : '—'}
-                          </div>
-                        </div>
-                        <div className="text-sm text-gray-600">Conversation ID: {c.id}</div>
-                      </button>
-                    ))}
+              <div className="space-y-4">
+                {/* Toggle */}
+                <div className="inline-flex rounded-md border overflow-hidden">
+                  <button
+                    className={`px-3 py-1.5 text-sm ${messagesMode === 'direct' ? 'bg-nil-orange text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                    onClick={() => setMessagesMode('direct')}
+                  >
+                    Direct
+                  </button>
+                  <button
+                    className={`px-3 py-1.5 text-sm border-l ${messagesMode === 'groups' ? 'bg-nil-orange text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                    onClick={async () => {
+                      setMessagesMode('groups');
+                      if (profile?.id && groups.length === 0) {
+                        try {
+                          setGroupsLoading(true);
+                          const gres = await ChatGroupService.listGroupsForUser(profile.id, 1, 50);
+                          setGroups(gres.data || []);
+                        } catch {} finally { setGroupsLoading(false); }
+                      }
+                    }}
+                  >
+                    Groups
+                  </button>
+                </div>
+
+                {messagesMode === 'direct' ? (
+                  <div className="space-y-3">
+                    {convLoading ? (
+                      <div className="py-6 text-center text-gray-500">Loading conversations...</div>
+                    ) : conversations.length === 0 ? (
+                      <div className="py-6 text-center text-gray-500">No conversations yet.</div>
+                    ) : (
+                      <div className="divide-y rounded-md border">
+                        {conversations.map((c) => (
+                          <button
+                            key={c.id}
+                            className="w-full text-left px-4 py-3 hover:bg-gray-50 focus:outline-none"
+                            onClick={() => setChatConversationId(c.id)}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="font-medium">Chat with Admin</div>
+                              <div className="text-xs text-gray-500">
+                                {c.last_message_at ? new Date(c.last_message_at).toLocaleString() : '—'}
+                              </div>
+                            </div>
+                            <div className="text-sm text-gray-600">Conversation ID: {c.id}</div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
+                ) : (
+                  <GroupChatList
+                    groups={groups}
+                    loading={groupsLoading}
+                    onOpen={async (g) => {
+                      setSelectedGroupId(g.id);
+                      setSelectedGroupTitle(g.title);
+                      if (profile?.id) {
+                        try { await ChatGroupService.markGroupRead(g.id, profile.id); } catch {}
+                      }
+                    }}
+                  />
                 )}
               </div>
             )}

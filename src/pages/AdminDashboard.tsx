@@ -21,10 +21,15 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, Users, Database, RefreshCw, AlertCircle, Shield, GraduationCap, Building2, ArrowLeft, CheckSquare, Square, BarChart3, MessageSquare, User } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import ChatWindow from '@/components/chat/ChatWindow';
+import GroupChatList from '@/components/chat/GroupChatList';
+import GroupChatWindow from '@/components/chat/GroupChatWindow';
 import { ChatService } from '@/services/chatService';
+import { ChatGroupService } from '@/services/chatGroupService';
 import { useToast } from '@/hooks/use-toast';
 import type { Conversation } from '@/types/chat';
+import type { GroupConversation } from '@/types/chatGroup';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { StudentAthleteService } from '@/services/studentAthleteService';
 
@@ -46,6 +51,16 @@ const AdminDashboard: React.FC = () => {
   const [chatTitle, setChatTitle] = useState<string | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [convLoading, setConvLoading] = useState(false);
+  // New Group dialog state
+  const [isNewGroupOpen, setIsNewGroupOpen] = useState(false);
+  const [newGroupTitle, setNewGroupTitle] = useState('');
+  const [creatingGroup, setCreatingGroup] = useState(false);
+  // Groups state for Messages modal
+  const [messagesMode, setMessagesMode] = useState<'direct' | 'groups'>('direct');
+  const [groups, setGroups] = useState<GroupConversation[]>([]);
+  const [groupsLoading, setGroupsLoading] = useState(false);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const [selectedGroupTitle, setSelectedGroupTitle] = useState<string | null>(null);
   
   const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -162,6 +177,46 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  const openNewGroupDialog = () => {
+    const count = selectedAthleteIds.size;
+    const defaultTitle = count > 1 ? `Group with ${count} athletes` : 'New Group';
+    setNewGroupTitle(defaultTitle);
+    setIsNewGroupOpen(true);
+  };
+
+  const handleCreateGroup = async () => {
+    if (!profile) return;
+    const selected = getSelectedAthletes();
+    // Map to participant profile IDs (athlete.profile_id). Filter missing.
+    const participantIds = selected
+      .map((a) => a.profile_id)
+      .filter((id): id is string => !!id && id.trim() !== '' && id !== profile.id);
+
+    if (participantIds.length === 0) {
+      toast({
+        title: 'Cannot create group',
+        description: 'Selected athletes do not have linked profiles.',
+        variant: 'destructive',
+      } as any);
+      return;
+    }
+
+    try {
+      setCreatingGroup(true);
+      const title = newGroupTitle && newGroupTitle.trim() !== '' ? newGroupTitle.trim() : `Group with ${participantIds.length} athletes`;
+      await ChatGroupService.createGroup(title, profile.id, participantIds);
+      setIsNewGroupOpen(false);
+      setNewGroupTitle('');
+      setSelectedAthleteIds(new Set());
+      toast({ title: 'Group created', description: 'Your new group has been created successfully.' } as any);
+      // Future: open Groups tab and GroupChatWindow
+    } catch (e: any) {
+      toast({ title: 'Failed to create group', description: e?.message || 'Please try again.' , variant: 'destructive'} as any);
+    } finally {
+      setCreatingGroup(false);
+    }
+  };
+
   const getSelectedAthletes = (): StudentAthlete[] => {
     // Use full cached dataset so selections across pages are included
     return allAthletes.filter(athlete => selectedAthleteIds.has(athlete.id));
@@ -202,6 +257,9 @@ const AdminDashboard: React.FC = () => {
       setChatConversationId(null);
       setChatTarget(null);
       setChatTitle(null);
+      setSelectedGroupId(null);
+      setSelectedGroupTitle(null);
+      setMessagesMode('direct');
       setConvLoading(true);
       const res = await ChatService.listConversationsForUser(profile.id, 'admin', 1, 50) as { data: Conversation[]; total: number };
       const list = res.data || [];
@@ -229,6 +287,16 @@ const AdminDashboard: React.FC = () => {
       }
       if ((res.total || 0) === 0) {
         toast({ title: 'No messages yet', description: 'You will see messages here when you start conversations with athletes.' } as any);
+      }
+      // Load groups in background
+      try {
+        setGroupsLoading(true);
+        const gres = await ChatGroupService.listGroupsForUser(profile.id, 1, 50);
+        setGroups(gres.data || []);
+      } catch (e: any) {
+        // non-fatal
+      } finally {
+        setGroupsLoading(false);
       }
     } catch (e: any) {
       toast({ title: 'Failed to load messages', description: e?.message || 'Please try again.' } as any);
@@ -524,6 +592,14 @@ const AdminDashboard: React.FC = () => {
                     <BarChart3 className="w-4 h-4 mr-2" />
                     View Selected Stats ({selectedAthleteIds.size})
                   </Button>
+                  <Button
+                    onClick={openNewGroupDialog}
+                    disabled={selectedAthleteIds.size === 0}
+                    className="bg-nil-orange hover:bg-nil-navy"
+                  >
+                    <Users className="w-4 h-4 mr-2" />
+                    New Group ({selectedAthleteIds.size})
+                  </Button>
                 </>
               )}
             </div>
@@ -723,6 +799,34 @@ const AdminDashboard: React.FC = () => {
         selectedAthletes={getSelectedAthletes()}
       />
 
+      {/* New Group Dialog */}
+      <Dialog open={isNewGroupOpen} onOpenChange={setIsNewGroupOpen}>
+        <DialogContent className="max-w-md w-full">
+          <DialogHeader>
+            <DialogTitle>Create New Group</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Group title</label>
+              <Input
+                placeholder="Enter a group title"
+                value={newGroupTitle}
+                onChange={(e) => setNewGroupTitle(e.target.value)}
+              />
+            </div>
+            <div className="text-sm text-gray-600">
+              Selected athletes: <span className="font-medium">{selectedAthleteIds.size}</span>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setIsNewGroupOpen(false)}>Cancel</Button>
+              <Button onClick={handleCreateGroup} disabled={creatingGroup} className="bg-nil-orange hover:bg-nil-navy">
+                {creatingGroup ? 'Creating…' : 'Create Group'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Chat Modal */}
       <Dialog
         open={isChatOpen}
@@ -731,6 +835,8 @@ const AdminDashboard: React.FC = () => {
           if (!open) {
             setChatConversationId(null);
             setChatTarget(null);
+            setSelectedGroupId(null);
+            setSelectedGroupTitle(null);
           }
         }}
       >
@@ -742,7 +848,9 @@ const AdminDashboard: React.FC = () => {
                     const name = chatTitle || (chatTarget ? chatTarget.name : null);
                     return name ? `Chat with ${name}` : 'Chat';
                   })()
-                : 'Your Messages'}
+                : selectedGroupId
+                  ? `Group: ${selectedGroupTitle || 'Group'}`
+                  : 'Your Messages'}
             </DialogTitle>
           </DialogHeader>
           {chatConversationId && profile ? (
@@ -758,68 +866,119 @@ const AdminDashboard: React.FC = () => {
               }}
               onMessageSent={handleMessageSent}
             />
+          ) : selectedGroupId && profile ? (
+            <GroupChatWindow
+              groupId={selectedGroupId}
+              currentUserId={profile.id}
+              title={selectedGroupTitle || 'Group'}
+              onTitleChange={(newTitle) => setSelectedGroupTitle(newTitle)}
+              onBack={() => {
+                setSelectedGroupId(null);
+                setSelectedGroupTitle(null);
+              }}
+            />
           ) : (
-            <div className="space-y-3">
-              {convLoading ? (
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>Loading conversations...</span>
-                </div>
-              ) : conversations.length === 0 ? (
-                <div className="text-gray-600">No conversations found.</div>
-              ) : (
-                <div className="divide-y rounded-md border">
-                  {conversations.map((conv) => (
-                    <button
-                      key={conv.id}
-                      onClick={async () => {
-                        try {
-                          setChatConversationId(conv.id);
-                          const otherName = (conv as any).athlete_name as string | undefined;
-                          if (otherName) setChatTitle(otherName);
-                          // Fetch athlete name to ensure title is correct
-                          const athlete = await StudentAthleteService.fetchStudentAthleteByProfileId(conv.athlete_id);
-                          if (athlete) {
-                            setChatTarget(athlete);
-                            if (!otherName && athlete.name) setChatTitle(athlete.name);
-                          }
-                          if (profile?.id) {
-                            try { await ChatService.markConversationRead(conv.id, profile.id); } catch {}
-                          }
-                        } catch {}
-                      }}
-                      className="w-full text-left p-3 hover:bg-gray-50"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="relative w-10 h-10 flex-shrink-0">
-                            {(conv as any).athlete_photo ? (
-                              <img
-                                src={(conv as any).athlete_photo}
-                                alt={(conv as any).athlete_name || 'User avatar'}
-                                className="w-10 h-10 rounded-full object-cover bg-gray-100"
-                                onError={(e) => {
-                                  // Hide image and reveal placeholder sibling
-                                  (e.currentTarget as HTMLImageElement).style.display = 'none';
-                                  const placeholder = (e.currentTarget.nextElementSibling as HTMLElement | null);
-                                  if (placeholder) placeholder.classList.remove('hidden');
-                                }}
-                              />
-                            ) : null}
-                            <div className={(conv as any).athlete_photo ? 'hidden absolute inset-0 flex items-center justify-center rounded-full bg-gradient-to-br from-nil-light-blue to-nil-navy' : 'absolute inset-0 flex items-center justify-center rounded-full bg-gradient-to-br from-nil-light-blue to-nil-navy'}>
-                              <User className="w-5 h-5 text-white opacity-70" />
+            <div className="space-y-4">
+              {/* Toggle */}
+              <div className="inline-flex rounded-md border overflow-hidden">
+                <button
+                  className={`px-3 py-1.5 text-sm ${messagesMode === 'direct' ? 'bg-nil-orange text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                  onClick={() => setMessagesMode('direct')}
+                >
+                  Direct
+                </button>
+                <button
+                  className={`px-3 py-1.5 text-sm border-l ${messagesMode === 'groups' ? 'bg-nil-orange text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                  onClick={async () => {
+                    setMessagesMode('groups');
+                    if (profile?.id && groups.length === 0) {
+                      try {
+                        setGroupsLoading(true);
+                        const gres = await ChatGroupService.listGroupsForUser(profile.id, 1, 50);
+                        setGroups(gres.data || []);
+                      } catch {} finally { setGroupsLoading(false); }
+                    }
+                  }}
+                >
+                  Groups
+                </button>
+              </div>
+
+              {messagesMode === 'direct' ? (
+                <div className="space-y-3">
+                  {convLoading ? (
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span>Loading conversations...</span>
+                    </div>
+                  ) : conversations.length === 0 ? (
+                    <div className="text-gray-600">No conversations found.</div>
+                  ) : (
+                    <div className="divide-y rounded-md border">
+                      {conversations.map((conv) => (
+                        <button
+                          key={conv.id}
+                          onClick={async () => {
+                            try {
+                              setChatConversationId(conv.id);
+                              const otherName = (conv as any).athlete_name as string | undefined;
+                              if (otherName) setChatTitle(otherName);
+                              // Fetch athlete name to ensure title is correct
+                              const athlete = await StudentAthleteService.fetchStudentAthleteByProfileId(conv.athlete_id);
+                              if (athlete) {
+                                setChatTarget(athlete);
+                                if (!otherName && athlete.name) setChatTitle(athlete.name);
+                              }
+                              if (profile?.id) {
+                                try { await ChatService.markConversationRead(conv.id, profile.id); } catch {}
+                              }
+                            } catch {}
+                          }}
+                          className="w-full text-left p-3 hover:bg-gray-50"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="relative w-10 h-10 flex-shrink-0">
+                                {(conv as any).athlete_photo ? (
+                                  <img
+                                    src={(conv as any).athlete_photo}
+                                    alt={(conv as any).athlete_name || 'User avatar'}
+                                    className="w-10 h-10 rounded-full object-cover bg-gray-100"
+                                    onError={(e) => {
+                                      (e.currentTarget as HTMLImageElement).style.display = 'none';
+                                      const placeholder = (e.currentTarget.nextElementSibling as HTMLElement | null);
+                                      if (placeholder) placeholder.classList.remove('hidden');
+                                    }}
+                                  />
+                                ) : null}
+                                <div className={(conv as any).athlete_photo ? 'hidden absolute inset-0 flex items-center justify-center rounded-full bg-gradient-to-br from-nil-light-blue to-nil-navy' : 'absolute inset-0 flex items-center justify-center rounded-full bg-gradient-to-br from-nil-light-blue to-nil-navy'}>
+                                  <User className="w-5 h-5 text-white opacity-70" />
+                                </div>
+                              </div>
+                              <div className="min-w-0">
+                                <div className="font-medium text-gray-900 truncate">{(conv as any).athlete_name || 'Conversation'}</div>
+                                <div className="text-sm text-gray-600 line-clamp-1">Tap to open conversation</div>
+                              </div>
                             </div>
+                            <div className="text-xs text-gray-500 ml-3 flex-shrink-0">{new Date(conv.last_message_at || conv.updated_at || conv.created_at).toLocaleString()}</div>
                           </div>
-                          <div className="min-w-0">
-                            <div className="font-medium text-gray-900 truncate">{(conv as any).athlete_name || 'Conversation'}</div>
-                            <div className="text-sm text-gray-600 line-clamp-1">Tap to open conversation</div>
-                          </div>
-                        </div>
-                        <div className="text-xs text-gray-500 ml-3 flex-shrink-0">{new Date(conv.last_message_at || conv.updated_at || conv.created_at).toLocaleString()}</div>
-                      </div>
-                    </button>
-                  ))}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
+              ) : (
+                <GroupChatList
+                  groups={groups}
+                  loading={groupsLoading}
+                  onOpen={async (g) => {
+                    setSelectedGroupId(g.id);
+                    setSelectedGroupTitle(g.title);
+                    if (profile?.id) {
+                      try { await ChatGroupService.markGroupRead(g.id, profile.id); } catch {}
+                    }
+                  }}
+                />
               )}
             </div>
           )}
