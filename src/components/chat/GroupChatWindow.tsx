@@ -71,6 +71,7 @@ export const GroupChatWindow: React.FC<GroupChatWindowProps> = ({ groupId, curre
     };
   }, [groupId, onTitleChange]);
 
+  // Fetch initial messages
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -84,15 +85,20 @@ export const GroupChatWindow: React.FC<GroupChatWindowProps> = ({ groupId, curre
         if (mounted) setLoading(false);
       }
     })();
-    // realtime subscription
-    const unsubscribe = ChatGroupService.subscribeToGroupMessages(groupId, (m) => {
-      setMessages((prev) => (prev.find((x) => x.id === m.id) ? prev : [...prev, m]));
-    });
-    return () => {
-      mounted = false;
-      unsubscribe?.();
-    };
+    return () => { mounted = false; };
   }, [groupId, currentUserId]);
+
+  // Separate realtime subscription for new messages
+  useEffect(() => {
+    const unsubscribe = ChatGroupService.subscribeToGroupMessages(groupId, (newMessage) => {
+      setMessages((prevMessages) => {
+        // Avoid duplicates - check if message already exists
+        const exists = prevMessages.find((msg) => msg.id === newMessage.id);
+        return exists ? prevMessages : [...prevMessages, newMessage];
+      });
+    });
+    return unsubscribe;
+  }, [groupId]);
 
   // Realtime: watch profiles updates and refresh avatar for participants
   useEffect(() => {
@@ -138,21 +144,6 @@ export const GroupChatWindow: React.FC<GroupChatWindowProps> = ({ groupId, curre
     loadAvatars();
     return () => { active = false; };
   }, [groupId, currentUserId]);
-
-  // Realtime: subscribe to new messages for this group
-  useEffect(() => {
-    console.log('[realtime] setting up subscription in GroupChatWindow for group', groupId);
-    const unsubscribe = ChatGroupService.subscribeToGroupMessages(groupId, (incoming) => {
-      console.log('[realtime] incoming group message', incoming?.id, 'for group', incoming?.group_id);
-      setMessages((prev) => {
-        if (prev.find((m) => m.id === incoming.id)) return prev;
-        return [...prev, incoming];
-      });
-    });
-    return () => {
-      try { unsubscribe?.(); console.log('[realtime] unsubscribed group', groupId); } catch {}
-    };
-  }, [groupId]);
 
   const onSendText = async (content: string) => {
     if (!content.trim()) return;

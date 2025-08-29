@@ -401,20 +401,10 @@ export class ChatGroupService {
       .channel(`group-messages-${groupId}`)
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: GROUP_MESSAGES_TABLE },
-        (payload) => {
-          const m = payload.new as GroupMessage;
-          // Client-side filter for robustness across UUID filter quirks
-          if (m?.group_id === groupId) {
-            onInsert(m);
-          }
-        }
+        { event: 'INSERT', schema: 'public', table: GROUP_MESSAGES_TABLE, filter: `group_id=eq.${groupId}` },
+        (payload) => onInsert(payload.new as GroupMessage)
       )
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          console.debug('[realtime] Subscribed group_messages for', groupId);
-        }
-      });
+      .subscribe();
     return () => supabase.removeChannel(channel);
   }
 }
