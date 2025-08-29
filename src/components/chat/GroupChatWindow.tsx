@@ -149,8 +149,8 @@ export const GroupChatWindow: React.FC<GroupChatWindowProps> = ({ groupId, curre
     if (!content.trim()) return;
     setSending(true);
     try {
-      const msg = await ChatGroupService.sendGroupMessage(groupId, currentUserId, content);
-      setMessages((prev) => [...prev, msg]);
+      await ChatGroupService.sendGroupMessage(groupId, currentUserId, content);
+      // Don't add to state here - let realtime subscription handle it to avoid duplicates
     } finally {
       setSending(false);
     }
@@ -160,8 +160,8 @@ export const GroupChatWindow: React.FC<GroupChatWindowProps> = ({ groupId, curre
     if (!files.length && !content.trim()) return;
     setSending(true);
     try {
-      const msg = await ChatGroupService.sendGroupMessageWithAttachments(groupId, currentUserId, files, content);
-      setMessages((prev) => [...prev, msg]);
+      await ChatGroupService.sendGroupMessageWithAttachments(groupId, currentUserId, files, content);
+      // Don't add to state here - let realtime subscription handle it to avoid duplicates
     } finally {
       setSending(false);
     }
