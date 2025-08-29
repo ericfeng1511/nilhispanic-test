@@ -141,14 +141,16 @@ export const GroupChatWindow: React.FC<GroupChatWindowProps> = ({ groupId, curre
 
   // Realtime: subscribe to new messages for this group
   useEffect(() => {
+    console.log('[realtime] setting up subscription in GroupChatWindow for group', groupId);
     const unsubscribe = ChatGroupService.subscribeToGroupMessages(groupId, (incoming) => {
+      console.log('[realtime] incoming group message', incoming?.id, 'for group', incoming?.group_id);
       setMessages((prev) => {
         if (prev.find((m) => m.id === incoming.id)) return prev;
         return [...prev, incoming];
       });
     });
     return () => {
-      try { unsubscribe?.(); } catch {}
+      try { unsubscribe?.(); console.log('[realtime] unsubscribed group', groupId); } catch {}
     };
   }, [groupId]);
 
