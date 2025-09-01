@@ -145,6 +145,22 @@ const AdminDashboard: React.FC = () => {
     });
   };
 
+  // When a message is sent inside GroupChatWindow, update the groups list ordering
+  const handleGroupMessageSent = (groupId: string, createdAt: string) => {
+    setGroups((prev) => {
+      if (!prev || prev.length === 0) return prev;
+      const updated = prev.map((g) =>
+        g.id === groupId ? { ...g, last_message_at: createdAt } : g
+      );
+      // Sort by last_message_at desc
+      return updated.sort((a, b) => {
+        const aTime = new Date(a.last_message_at || a.created_at).getTime();
+        const bTime = new Date(b.last_message_at || b.created_at).getTime();
+        return bTime - aTime;
+      });
+    });
+  };
+
   // Open a specific conversation if openChat query param is present
   useEffect(() => {
     const convoId = searchParams.get('openChat');
@@ -884,7 +900,25 @@ const AdminDashboard: React.FC = () => {
               groupId={selectedGroupId}
               currentUserId={profile.id}
               title={selectedGroupTitle || 'Group'}
-              onTitleChange={(newTitle) => setSelectedGroupTitle(newTitle)}
+              onTitleChange={(newTitle) => {
+                setSelectedGroupTitle(newTitle);
+                // Update the groups list to reflect the new title and timestamp
+                const now = new Date().toISOString();
+                setGroups(prevGroups => {
+                  const updated = prevGroups.map(group => 
+                    group.id === selectedGroupId 
+                      ? { ...group, title: newTitle, last_message_at: now }
+                      : group
+                  );
+                  // Re-sort by last_message_at to maintain proper ordering
+                  return updated.sort((a, b) => {
+                    const aTime = new Date(a.last_message_at || a.created_at).getTime();
+                    const bTime = new Date(b.last_message_at || b.created_at).getTime();
+                    return bTime - aTime;
+                  });
+                });
+              }}
+              onGroupMessageSent={handleGroupMessageSent}
               onBack={() => {
                 setSelectedGroupId(null);
                 setSelectedGroupTitle(null);

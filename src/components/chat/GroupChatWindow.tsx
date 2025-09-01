@@ -11,6 +11,7 @@ interface GroupChatWindowProps {
   title?: string;
   onBack?: () => void;
   onTitleChange?: (newTitle: string) => void;
+  onGroupMessageSent?: (groupId: string, createdAt: string) => void;
 }
 
 interface GroupSettingsProps {
@@ -21,7 +22,7 @@ interface GroupSettingsProps {
   onTitleUpdate: (newTitle: string) => void;
 }
 
-export const GroupChatWindow: React.FC<GroupChatWindowProps> = ({ groupId, currentUserId, title, onBack, onTitleChange }) => {
+export const GroupChatWindow: React.FC<GroupChatWindowProps> = ({ groupId, currentUserId, title, onBack, onTitleChange, onGroupMessageSent }) => {
   const [messages, setMessages] = useState<GroupMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -40,20 +41,6 @@ export const GroupChatWindow: React.FC<GroupChatWindowProps> = ({ groupId, curre
   }, [title]);
 
   useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        setLoading(true);
-        const res = await ChatGroupService.fetchGroupMessages(groupId, 1, 200);
-        if (mounted) setMessages(res.data);
-        // mark read best-effort
-        if (mounted) ChatGroupService.markGroupRead(groupId, currentUserId).catch(() => {});
-      } catch (e) {
-        // ignore
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    })();
     // Realtime: listen for group title changes so all members see updates instantly
     const channel = supabase
       .channel(`group-convo-${groupId}`)
@@ -228,7 +215,11 @@ export const GroupChatWindow: React.FC<GroupChatWindowProps> = ({ groupId, curre
     if (!content.trim()) return;
     setSending(true);
     try {
-      await ChatGroupService.sendGroupMessage(groupId, currentUserId, content);
+      const message = await ChatGroupService.sendGroupMessage(groupId, currentUserId, content);
+      // Notify parent about the new message for timestamp sync
+      if (onGroupMessageSent && message.created_at) {
+        onGroupMessageSent(groupId, message.created_at);
+      }
       // Don't add to state here - let realtime subscription handle it to avoid duplicates
     } finally {
       setSending(false);
@@ -239,12 +230,30 @@ export const GroupChatWindow: React.FC<GroupChatWindowProps> = ({ groupId, curre
     if (!files.length && !content.trim()) return;
     setSending(true);
     try {
-      await ChatGroupService.sendGroupMessageWithAttachments(groupId, currentUserId, files, content);
+      const message = await ChatGroupService.sendGroupMessageWithAttachments(groupId, currentUserId, files, content);
+      // Notify parent about the new message for timestamp sync
+      if (onGroupMessageSent && message.created_at) {
+        onGroupMessageSent(groupId, message.created_at);
+      }
       // Don't add to state here - let realtime subscription handle it to avoid duplicates
     } finally {
       setSending(false);
     }
   };
+
+  // Track if user is near bottom to decide auto-scroll behavior on new messages
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const [isAtBottom, setIsAtBottom] = useState(true);
+  const onScroll = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const threshold = 64; // px tolerance from bottom
+    setIsAtBottom(el.scrollTop + el.clientHeight >= el.scrollHeight - threshold);
+  };
+
+  // Decide if we should auto-scroll on new messages: if user is at bottom or the last message is mine
+  const lastMsg = messages.length > 0 ? messages[messages.length - 1] : undefined;
+  const shouldAutoScroll = isAtBottom || (lastMsg && String(lastMsg.sender_id) === String(currentUserId));
 
   return (
     <div className="flex flex-col h-[70vh] bg-white rounded-md border">
@@ -274,7 +283,7 @@ export const GroupChatWindow: React.FC<GroupChatWindowProps> = ({ groupId, curre
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-1 bg-gray-50">
+      <div ref={scrollRef} onScroll={onScroll} className="flex-1 overflow-y-auto p-4 space-y-1 bg-gray-50">
         {loading ? (
           <div className="text-gray-600">Loading messages...</div>
         ) : messages.length === 0 ? (
@@ -286,6 +295,7 @@ export const GroupChatWindow: React.FC<GroupChatWindowProps> = ({ groupId, curre
             avatars={avatars}
             names={displayNames}
             roles={participantRoles}
+            shouldAutoScroll={!!shouldAutoScroll}
           />
         )}
       </div>
@@ -331,10 +341,14 @@ const AvatarBubble: React.FC<{ src?: string }> = ({ src }) => {
   );
 };
 
-const GroupMessageList: React.FC<{ messages: GroupMessage[]; currentUserId: string; avatars?: Record<string, string | undefined>; names?: Record<string, string>; roles?: Record<string, 'owner'|'admin'|'member'> }>
-= ({ messages, currentUserId, avatars, names, roles }) => {
+const GroupMessageList: React.FC<{ messages: GroupMessage[]; currentUserId: string; avatars?: Record<string, string | undefined>; names?: Record<string, string>; roles?: Record<string, 'owner'|'admin'|'member'>; shouldAutoScroll?: boolean }>
+= ({ messages, currentUserId, avatars, names, roles, shouldAutoScroll }) => {
   const endRef = useRef<HTMLDivElement | null>(null);
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages.length]);
+  useEffect(() => {
+    if (shouldAutoScroll) {
+      endRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages.length, shouldAutoScroll]);
 
   return (
     <div>
@@ -528,8 +542,16 @@ const GroupSettings: React.FC<GroupSettingsProps> = ({ groupId, title, currentUs
   const [newTitle, setNewTitle] = useState(title || '');
   const [saving, setSaving] = useState(false);
   const [loadingAdmin, setLoadingAdmin] = useState(true);
+  const [members, setMembers] = useState<Array<{
+    user_id: string;
+    role: 'owner' | 'admin' | 'member';
+    full_name: string;
+    photo?: string;
+    profile_role: 'admin' | 'athlete' | 'brand';
+  }>>([]);
+  const [loadingMembers, setLoadingMembers] = useState(true);
 
-  // Check if current user is admin/owner
+  // Check if current user is admin/owner and load members
   useEffect(() => {
     const checkAdminStatus = async () => {
       try {
@@ -542,7 +564,21 @@ const GroupSettings: React.FC<GroupSettingsProps> = ({ groupId, title, currentUs
         setLoadingAdmin(false);
       }
     };
+
+    const loadMembers = async () => {
+      try {
+        const memberDetails = await ChatGroupService.getGroupParticipantsWithDetails(groupId);
+        setMembers(memberDetails);
+      } catch (error) {
+        console.warn('Failed to load group members:', error);
+        setMembers([]);
+      } finally {
+        setLoadingMembers(false);
+      }
+    };
+
     checkAdminStatus();
+    loadMembers();
   }, [groupId, currentUserId]);
 
   const handleSaveTitle = async () => {
@@ -646,6 +682,58 @@ const GroupSettings: React.FC<GroupSettingsProps> = ({ groupId, title, currentUs
                 <p className="text-xs text-gray-500 font-mono">{groupId}</p>
               </div>
             </div>
+          </div>
+
+          {/* Members Section */}
+          <div>
+            <h3 className="font-medium text-gray-900 mb-2">Members ({members.length})</h3>
+            {loadingMembers ? (
+              <div className="text-sm text-gray-500">Loading members...</div>
+            ) : (
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {members.map((member) => (
+                  <div key={member.user_id} className="flex items-center gap-3 p-2 rounded-md bg-gray-50">
+                    {/* Avatar */}
+                    <div className="w-8 h-8 rounded-full overflow-hidden bg-gradient-to-br from-nil-light-blue to-nil-navy flex items-center justify-center flex-shrink-0">
+                      {member.photo ? (
+                        <img 
+                          src={member.photo} 
+                          alt={member.full_name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                            (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                          }}
+                        />
+                      ) : null}
+                      <Users className={`w-4 h-4 text-white opacity-80 ${member.photo ? 'hidden' : ''}`} />
+                    </div>
+                    
+                    {/* Member Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-sm text-gray-900 truncate">
+                          {member.full_name}
+                        </span>
+                        {member.role === 'owner' && (
+                          <span className="text-xs px-2 py-0.5 bg-nil-orange text-white rounded-full">
+                            Owner
+                          </span>
+                        )}
+                        {member.role === 'admin' && (
+                          <span className="text-xs px-2 py-0.5 bg-nil-navy text-white rounded-full">
+                            Admin
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs text-gray-500 capitalize">
+                        {member.profile_role}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
           
         </div>

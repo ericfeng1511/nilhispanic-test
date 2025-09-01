@@ -279,6 +279,73 @@ export class ChatGroupService {
       .eq('user_id', userId);
   }
 
+  // Fetch group participants with full details (name, role, photo)
+  static async getGroupParticipantsWithDetails(groupId: string): Promise<Array<{
+    user_id: string;
+    role: 'owner' | 'admin' | 'member';
+    full_name: string;
+    photo?: string;
+    profile_role: 'admin' | 'athlete' | 'brand';
+  }>> {
+    try {
+      // Get participants with roles
+      const { data: participants, error: participantError } = await supabase
+        .from(GROUP_PARTICIPANTS_TABLE)
+        .select('user_id, role')
+        .eq('group_id', groupId);
+
+      if (participantError || !participants) {
+        console.warn('Failed to fetch group participants:', participantError?.message);
+        return [];
+      }
+
+      const userIds = participants.map((p: any) => p.user_id as string);
+      if (userIds.length === 0) return [];
+
+      // Get profile details
+      const { data: profiles, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, full_name, role')
+        .in('id', userIds);
+
+      if (profileError || !profiles) {
+        console.warn('Failed to fetch participant profiles:', profileError?.message);
+        return [];
+      }
+
+      // Get photos for athletes
+      const { data: athletes, error: athleteError } = await supabase
+        .from('student_athletes')
+        .select('profile_id, photo')
+        .in('profile_id', userIds);
+
+      const photoMap: Record<string, string> = {};
+      if (!athleteError && athletes) {
+        for (const a of athletes) {
+          const url = (a as any).photo;
+          if (url && String(url).trim() !== '') {
+            photoMap[(a as any).profile_id] = String(url);
+          }
+        }
+      }
+
+      // Combine all data
+      return participants.map((p: any) => {
+        const profile = profiles.find((prof: any) => prof.id === p.user_id);
+        return {
+          user_id: p.user_id,
+          role: p.role,
+          full_name: profile?.full_name || 'Unknown',
+          photo: photoMap[p.user_id],
+          profile_role: profile?.role || 'athlete'
+        };
+      });
+    } catch (error) {
+      console.error('Failed to fetch group participants with details:', error);
+      return [];
+    }
+  }
+
   // Fetch group participants with their profile photos
   static async getGroupParticipantsWithPhotos(groupId: string): Promise<Record<string, string | undefined>> {
     try {
