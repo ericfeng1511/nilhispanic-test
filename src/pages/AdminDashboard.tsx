@@ -400,6 +400,19 @@ const AdminDashboard: React.FC = () => {
           </Button>
         </div>
 
+        {/* Mobile Messages button (visible on small screens) */}
+        <div className="sm:hidden mb-4">
+          <Button onClick={handleOpenMessages} className="relative w-full bg-nil-orange hover:bg-nil-navy inline-flex items-center justify-center gap-2">
+            <MessageSquare className="w-4 h-4" />
+            Messages
+            {unreadCount > 0 && (
+              <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-medium leading-none text-white bg-red-600 rounded-full">
+                {unreadCount}
+              </span>
+            )}
+          </Button>
+        </div>
+
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as TabType)} className="mb-8">
           <TabsList className="grid w-full max-w-3xl grid-cols-3">
