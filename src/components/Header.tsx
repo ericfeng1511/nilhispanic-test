@@ -261,7 +261,10 @@ const Header = () => {
       
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden fixed left-0 right-0 top-[64px] bottom-0 bg-white shadow-md animate-fade-in overflow-y-auto overscroll-contain">
+        <div
+          className="md:hidden fixed left-0 right-0 top-[64px] bottom-0 bg-white shadow-md animate-fade-in overflow-y-auto overscroll-contain"
+          style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 28px)' }}
+        >
           <nav className="flex flex-col py-4">
             <Link to="/" className="px-8 py-3 hover:bg-nil-light-gray">About</Link>
             <Link to="/for-brands" className="px-8 py-3 hover:bg-nil-light-gray">For Brands</Link>
@@ -364,7 +367,7 @@ const Header = () => {
                   {/* Logout Button */}
                   <Button 
                     onClick={handleLogout}
-                    className="bg-red-500 text-white hover:bg-red-600 transition-colors w-full h-12 touch-manipulation font-medium flex items-center justify-center space-x-2"
+                    className="bg-red-500 text-white hover:bg-red-600 transition-colors w-full h-12 touch-manipulation font-medium flex items-center justify-center space-x-2 mb-8"
                   >
                     <LogOut size={16} />
                     <span>Logout</span>
