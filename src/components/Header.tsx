@@ -58,6 +58,18 @@ const Header = () => {
     load();
   }, [previewsOpen, user?.id, profile?.role]);
 
+  // Lock background scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.classList.add('overflow-hidden');
+    } else {
+      document.body.classList.remove('overflow-hidden');
+    }
+    return () => {
+      document.body.classList.remove('overflow-hidden');
+    };
+  }, [mobileMenuOpen]);
+
   const handleLogout = () => {
     // 1. Clear UI state immediately
     setMobileMenuOpen(false);
@@ -249,7 +261,7 @@ const Header = () => {
       
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white shadow-md mt-2 animate-fade-in">
+        <div className="md:hidden fixed left-0 right-0 top-[64px] bottom-0 bg-white shadow-md animate-fade-in overflow-y-auto overscroll-contain">
           <nav className="flex flex-col py-4">
             <Link to="/" className="px-8 py-3 hover:bg-nil-light-gray">About</Link>
             <Link to="/for-brands" className="px-8 py-3 hover:bg-nil-light-gray">For Brands</Link>
