@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -39,6 +39,9 @@ const Header = () => {
   const [previewsOpen, setPreviewsOpen] = useState(false);
   const [loadingPreviews, setLoadingPreviews] = useState(false);
   const [previews, setPreviews] = useState<Array<{ conversation_id: string; latest_message: any; unread_count: number }>>([]);
+  const headerRef = useRef<HTMLElement | null>(null);
+  const [menuTop, setMenuTop] = useState<number>(0);
+  const scrollYRef = useRef<number>(0);
 
   // Load previews when dropdown opens
   useEffect(() => {
@@ -58,6 +61,52 @@ const Header = () => {
     load();
   }, [previewsOpen, user?.id, profile?.role]);
 
+  // Lock background scroll when mobile menu is open (robust iOS Safari fix)
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    // Compute header height to position the fixed panel
+    const h = headerRef.current?.getBoundingClientRect().bottom ?? 80;
+    setMenuTop(h);
+
+    // Record current scroll and lock body with fixed positioning
+    scrollYRef.current = window.scrollY || window.pageYOffset || 0;
+    const bodyStyle = document.body.style as CSSStyleDeclaration & { top?: string };
+    const prev = {
+      position: bodyStyle.position,
+      top: bodyStyle.top,
+      width: bodyStyle.width,
+      overflow: bodyStyle.overflow,
+    };
+    bodyStyle.position = 'fixed';
+    bodyStyle.top = `-${scrollYRef.current}px`;
+    bodyStyle.width = '100%';
+    bodyStyle.overflow = 'hidden';
+    return () => {
+      // Restore body styles and scroll position
+      bodyStyle.position = prev.position;
+      bodyStyle.top = prev.top as string;
+      bodyStyle.width = prev.width;
+      bodyStyle.overflow = prev.overflow;
+      window.scrollTo(0, scrollYRef.current);
+    };
+  }, [mobileMenuOpen]);
+
+  // Recompute menu top on resize/orientation changes while open
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const update = () => {
+      const h = headerRef.current?.getBoundingClientRect().bottom ?? 80;
+      setMenuTop(h);
+    };
+    update();
+    window.addEventListener('resize', update);
+    window.addEventListener('orientationchange', update);
+    return () => {
+      window.removeEventListener('resize', update);
+      window.removeEventListener('orientationchange', update);
+    };
+  }, [mobileMenuOpen]);
+
   const handleLogout = () => {
     // 1. Clear UI state immediately
     setMobileMenuOpen(false);
@@ -69,7 +118,7 @@ const Header = () => {
   };
 
   return (
-    <header className="py-4 bg-white fixed w-full z-50 shadow-md">
+    <header ref={headerRef} className="py-4 bg-white fixed w-full z-50 shadow-md">
       <div className="container-custom flex justify-between items-center">
         <div className="flex items-center">
           <a href="/" aria-label="Go to homepage">
@@ -249,11 +298,23 @@ const Header = () => {
       
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div
-          className="md:hidden bg-white shadow-md mt-2 animate-fade-in"
-          style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 96px)' }}
-        >
-          <nav className="flex flex-col py-4">
+        <>
+          {/* Backdrop to block background taps/scroll */}
+          <div
+            className="fixed inset-0 bg-black/30 z-40 md:hidden"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-hidden="true"
+          />
+          <div
+            className="fixed left-0 right-0 md:hidden bg-white shadow-md animate-fade-in overflow-y-auto overscroll-contain z-50"
+            style={{
+              top: `${menuTop}px`,
+              height: `calc(100dvh - ${menuTop}px)`,
+              paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 96px)',
+              WebkitOverflowScrolling: 'touch'
+            }}
+          >
+            <nav className="flex flex-col py-4">
             <Link to="/" className="px-8 py-3 hover:bg-nil-light-gray">About</Link>
             <Link to="/for-brands" className="px-8 py-3 hover:bg-nil-light-gray">For Brands</Link>
             <Link to="/for-athletes" className="px-8 py-3 hover:bg-nil-light-gray">For Athletes</Link>
@@ -372,8 +433,9 @@ const Header = () => {
                 </Button>
               )}
             </div>
-          </nav>
-        </div>
+            </nav>
+          </div>
+        </>
       )}
       
       <AuthModal 
