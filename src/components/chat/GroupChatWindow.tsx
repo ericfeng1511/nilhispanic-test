@@ -550,6 +550,7 @@ const GroupSettings: React.FC<GroupSettingsProps> = ({ groupId, title, currentUs
     profile_role: 'admin' | 'athlete' | 'brand';
   }>>([]);
   const [loadingMembers, setLoadingMembers] = useState(true);
+  const [removingId, setRemovingId] = useState<string | null>(null);
 
   // Check if current user is admin/owner and load members
   useEffect(() => {
@@ -605,6 +606,40 @@ const GroupSettings: React.FC<GroupSettingsProps> = ({ groupId, title, currentUs
   const handleCancelEdit = () => {
     setIsEditingTitle(false);
     setNewTitle(title || '');
+  };
+
+  const refreshMembers = async () => {
+    setLoadingMembers(true);
+    try {
+      const memberDetails = await ChatGroupService.getGroupParticipantsWithDetails(groupId);
+      setMembers(memberDetails);
+    } catch (error) {
+      console.warn('Failed to refresh members:', error);
+      setMembers([]);
+    } finally {
+      setLoadingMembers(false);
+    }
+  };
+
+  const handleRemoveMember = async (memberId: string, memberName: string) => {
+    if (!isAdmin) return;
+    // Pre-check: block if only 2 members and target is the only athlete
+    const athleteCount = members.filter(m => m.profile_role === 'athlete').length;
+    if (members.length === 2 && athleteCount === 1) {
+      alert('Cannot remove the last student athlete when only two members remain.');
+      return;
+    }
+    if (!confirm(`Remove ${memberName || 'this member'} from the group?`)) return;
+    setRemovingId(memberId);
+    try {
+      await ChatGroupService.removeGroupParticipant(groupId, memberId, currentUserId);
+      await refreshMembers();
+    } catch (e: any) {
+      const msg = e?.message || 'Failed to remove member.';
+      alert(msg);
+    } finally {
+      setRemovingId(null);
+    }
   };
 
   return (
@@ -730,6 +765,18 @@ const GroupSettings: React.FC<GroupSettingsProps> = ({ groupId, title, currentUs
                         {member.profile_role}
                       </div>
                     </div>
+                    {/* Actions */}
+                    {!loadingAdmin && isAdmin && member.profile_role === 'athlete' ? (
+                      <div className="flex-shrink-0">
+                        <button
+                          onClick={() => handleRemoveMember(member.user_id, member.full_name)}
+                          disabled={removingId === member.user_id}
+                          className="px-2 py-1 text-xs rounded-md border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-50"
+                        >
+                          {removingId === member.user_id ? 'Removing...' : 'Remove'}
+                        </button>
+                      </div>
+                    ) : null}
                   </div>
                 ))}
               </div>

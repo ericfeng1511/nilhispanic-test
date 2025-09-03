@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useAuth } from '@/contexts/AuthContext';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
@@ -29,8 +30,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     email: '',
     password: '',
     fullName: '',
+    confirmPassword: '',
     role: 'athlete' as 'athlete' | 'brand'
   });
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const { signIn, signUp, resendVerification } = useAuth();
 
@@ -38,6 +41,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    // Prevent account creation if passwords do not match
+    if (!isLogin && formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match.');
+      setLoading(false);
+      return;
+    }
+
+    // Require Terms & Conditions acceptance
+    if (!isLogin && !termsAccepted) {
+      setError('You must accept the Terms and Conditions.');
+      setLoading(false);
+      return;
+    }
 
     try {
       let result;
@@ -70,7 +87,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         // Success - close modal and hard refresh page
         console.log('Auth successful, refreshing page...');
         onClose();
-        setFormData({ email: '', password: '', fullName: '', role: 'athlete' });
+        setFormData({ email: '', password: '', fullName: '', confirmPassword: '', role: 'athlete' });
+        setTermsAccepted(false);
         setError(null);
         setVerificationSent(false);
         setPendingEmail(null);
@@ -94,7 +112,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   };
 
   const resetForm = () => {
-    setFormData({ email: '', password: '', fullName: '', role: 'athlete' });
+    setFormData({ email: '', password: '', fullName: '', confirmPassword: '', role: 'athlete' });
+    setTermsAccepted(false);
     setError(null);
     setShowPassword(false);
     setVerificationSent(false);
@@ -243,6 +262,33 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
           {!isLogin && (
             <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <div className="relative">
+                <Input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showPassword ? 'text' : 'password'}
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  required
+                  className="h-12 text-base pr-12"
+                  placeholder="Re-enter your password"
+                  minLength={6}
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {!isLogin && (
+            <div className="space-y-2">
               <Label htmlFor="role">I am a...</Label>
               <select
                 id="role"
@@ -254,6 +300,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 <option value="athlete">Student-Athlete</option>
                 <option value="brand">Brand Representative</option>
               </select>
+            </div>
+          )}
+
+          {!isLogin && (
+            <div className="flex items-start space-x-3">
+              <Checkbox id="terms" checked={termsAccepted} onCheckedChange={(v) => setTermsAccepted(Boolean(v))} />
+              <div className="grid gap-1 leading-tight">
+                <label htmlFor="terms" className="text-sm text-gray-700">
+                  I agree to the Terms and Conditions
+                </label>
+              </div>
             </div>
           )}
 

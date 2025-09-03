@@ -79,7 +79,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const role = userMetadata?.role;
     
     if (role !== 'athlete') {
-      console.log('🚫 User is not an athlete, skipping student athlete creation');
+      console.log('User is not an athlete, skipping student athlete creation');
       return;
     }
 
@@ -94,17 +94,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .single();
 
       if (checkError && checkError.code !== 'PGRST116') {
-        console.error('❌ Error checking existing student athlete:', checkError);
+        console.error('Error checking existing student athlete:', checkError);
         return;
       }
 
       if (existingAthlete) {
-        console.log('✅ Student athlete entry already exists, skipping creation');
+        console.log('Student athlete entry already exists, skipping creation');
         return;
       }
 
-      console.log('🏃‍♂️ Creating student athlete entry for verified user...');
-      console.log('📝 User details:', {
+      console.log('Creating student athlete entry for verified user...');
+      console.log('User details:', {
         userId: userId,
         fullName: userMetadata?.full_name,
         role: role
@@ -115,7 +115,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         name: userMetadata?.full_name || 'Unknown'
       };
       
-      console.log('📊 Insert data:', insertData);
+      console.log('Insert data:', insertData);
       
       const { data: insertResult, error: athleteError } = await supabase
         .from('student_athletes')
@@ -123,16 +123,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .select();
 
       if (athleteError) {
-        console.error('❌ Error creating student athlete entry (post-verification):');
+        console.error('Error creating student athlete entry (post-verification):');
         console.error('Error details:', athleteError);
         console.error('Error code:', athleteError.code);
         console.error('Error message:', athleteError.message);
       } else {
-        console.log('✅ Student athlete entry created successfully (post-verification)!');
-        console.log('📋 Inserted record:', insertResult);
+        console.log('Student athlete entry created successfully (post-verification)!');
+        console.log('Inserted record:', insertResult);
       }
     } catch (error) {
-      console.error('💥 Exception in createStudentAthleteIfNeeded:', error);
+      console.error('Exception in createStudentAthleteIfNeeded:', error);
     }
   };
 
@@ -150,7 +150,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Try to create student athlete entry if needed (for post-verification)
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        console.log('🔄 Attempting post-verification student athlete creation...');
+        console.log('Attempting post-verification student athlete creation...');
         createStudentAthleteIfNeeded(session.user.id, session.user.user_metadata).catch(error => {
           console.error('Failed to create student athlete entry post-verification:', error);
         });
@@ -207,6 +207,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signUp = async (email: string, password: string, fullName: string, role: 'athlete' | 'brand' | 'admin' = 'athlete') => {
     try {
       console.log('Attempting signup for:', email, 'with role:', role);
+
+      // Preferred preflight: secure RPC that bypasses RLS safely
+      try {
+        const { data: existsFlag, error: rpcError } = await supabase
+          .rpc('email_exists', { p_email: email.toLowerCase() });
+
+        if (!rpcError && existsFlag === true) {
+          return {
+            error: { message: 'An account with this email already exists. Please sign in instead.' },
+          };
+        }
+      } catch (rpcErr) {
+        console.warn('RPC email_exists precheck failed (will try fallback/select):', rpcErr);
+      }
+
+      // Preflight: check if email already exists in profiles
+      try {
+        const { data: existingProfile, error: profileCheckError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('email', email)
+          .limit(1)
+          .maybeSingle();
+
+        if (!profileCheckError && existingProfile) {
+          return {
+            error: { message: 'An account with this email already exists. Please sign in' },
+          };
+        }
+        // If RLS blocks this read, continue to normal signup and rely on auth-level guard below
+      } catch (precheckErr) {
+        console.warn('Email precheck failed (continuing to auth signup):', precheckErr);
+      }
       
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -221,10 +254,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       console.log('Signup result:', { error, user: data.user?.id, session: !!data.session });
 
+      // Guard: email already registered
+      if (error) {
+        const rawMsg = (error as any)?.message || '';
+        const msg = rawMsg.toLowerCase();
+        const status = (error as any)?.status || (error as any)?.statusCode;
+        const isDuplicate =
+          msg.includes('already registered') ||
+          msg.includes('user already exists') ||
+          msg.includes('email address is already registered') ||
+          status === 422;
+
+        if (isDuplicate) {
+          return {
+            error: {
+              ...error,
+              message: 'An account with this email already exists. Please sign in or use “Forgot password.”',
+            },
+          };
+        }
+        return { error };
+      }
+
       // If signup was successful and user is an athlete, create student athlete entry
-      if (!error && data.user && role === 'athlete') {
-        console.log('🏃‍♂️ User is an athlete - proceeding to create student athlete entry');
-        console.log('📝 User details:', {
+      if (data.user && role === 'athlete') {
+        console.log('User is an athlete - proceeding to create student athlete entry');
+        console.log('User details:', {
           userId: data.user.id,
           email: data.user.email,
           fullName: fullName,
@@ -232,14 +287,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
         
         try {
-          console.log('🔄 Attempting to insert into student_athletes table...');
+          console.log('Attempting to insert into student_athletes table...');
           
           const insertData = {
             profile_id: data.user.id,
             name: fullName
           };
           
-          console.log('📊 Insert data:', insertData);
+          console.log('Insert data:', insertData);
           
           const { data: insertResult, error: athleteError } = await supabase
             .from('student_athletes')
@@ -247,7 +302,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             .select(); // Add select to see what was inserted
 
           if (athleteError) {
-            console.error('❌ Error creating student athlete entry:');
+            console.error('Error creating student athlete entry:');
             console.error('Error details:', athleteError);
             console.error('Error code:', athleteError.code);
             console.error('Error message:', athleteError.message);
@@ -255,11 +310,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // Don't fail the signup if student athlete creation fails
             // The user account was created successfully
           } else {
-            console.log('✅ Student athlete entry created successfully!');
-            console.log('📋 Inserted record:', insertResult);
+            console.log('Student athlete entry created successfully!');
+            console.log('Inserted record:', insertResult);
           }
         } catch (athleteCreationError) {
-          console.error('💥 Exception creating student athlete entry:');
+          console.error('Exception creating student athlete entry:');
           console.error('Exception details:', athleteCreationError);
           console.error('Exception stack:', athleteCreationError.stack);
           // Don't fail the signup if student athlete creation fails
@@ -267,9 +322,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       // If signup was successful and user is a brand representative, create brand representative entry
-      if (!error && data.user && role === 'brand') {
-        console.log('🏢 User is a brand representative - proceeding to create brand representative entry');
-        console.log('📝 User details:', {
+      if (data.user && role === 'brand') {
+        console.log('User is a brand representative - proceeding to create brand representative entry');
+        console.log('User details:', {
           userId: data.user.id,
           email: data.user.email,
           fullName: fullName,
@@ -277,7 +332,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
         
         try {
-          console.log('🔄 Attempting to insert into brand_representatives table...');
+          console.log('Attempting to insert into brand_representatives table...');
           
           const insertData = {
             profile_id: data.user.id,
@@ -285,7 +340,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             email: email
           };
           
-          console.log('📊 Insert data:', insertData);
+          console.log('Insert data:', insertData);
           
           const { data: insertResult, error: brandError } = await supabase
             .from('brand_representatives')
@@ -293,7 +348,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             .select(); // Add select to see what was inserted
 
           if (brandError) {
-            console.error('❌ Error creating brand representative entry:');
+            console.error('Error creating brand representative entry:');
             console.error('Error details:', brandError);
             console.error('Error code:', brandError.code);
             console.error('Error message:', brandError.message);
@@ -301,20 +356,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // Don't fail the signup if brand representative creation fails
             // The user account was created successfully
           } else {
-            console.log('✅ Brand representative entry created successfully!');
-            console.log('📋 Inserted record:', insertResult);
+            console.log('Brand representative entry created successfully!');
+            console.log('Inserted record:', insertResult);
           }
         } catch (brandCreationError) {
-          console.error('💥 Exception creating brand representative entry:');
+          console.error('Exception creating brand representative entry:');
           console.error('Exception details:', brandCreationError);
           console.error('Exception stack:', brandCreationError.stack);
           // Don't fail the signup if brand representative creation fails
         }
       }
       
-      if (!error && data.user && role !== 'athlete' && role !== 'brand') {
-        console.log('ℹ️ Skipping automatic table entry creation:');
-        console.log('- Signup error:', !!error);
+      if (data.user && role !== 'athlete' && role !== 'brand') {
+        console.log('Skipping automatic table entry creation:');
+        console.log('- Signup error:', false);
         console.log('- User created:', !!data.user);
         console.log('- Role:', role, '(not athlete or brand)');
       }
@@ -322,7 +377,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Check if user needs to verify email
       const needsVerification = data.user && !data.session;
 
-      return { error, needsVerification };
+      return { error: null, needsVerification };
     } catch (error) {
       console.error('Signup error:', error);
       return { error };

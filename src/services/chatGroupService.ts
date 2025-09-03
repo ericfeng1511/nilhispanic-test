@@ -183,7 +183,7 @@ export class ChatGroupService {
     files: File[],
     content?: string | null
   ): Promise<GroupMessage> {
-    // 1) Create message first
+    // 1) Create message first (like direct messages)
     const { data: msg, error: mErr } = await supabase
       .from(GROUP_MESSAGES_TABLE)
       .insert({ group_id: groupId, sender_id: senderId, content: content ?? '' })
@@ -193,9 +193,20 @@ export class ChatGroupService {
 
     // 2) Upload files + create attachment rows
     const atts: GroupMessageAttachment[] = [];
-    for (const f of files) {
-      const att = await this.uploadGroupAttachment(f, groupId, (msg as any).id);
-      atts.push(att);
+    try {
+      for (const f of files) {
+        const att = await this.uploadGroupAttachment(f, groupId, (msg as any).id);
+        atts.push(att);
+      }
+    } catch (e) {
+      // Prevent a blank message when uploads fail: delete the created message
+      try {
+        await supabase
+          .from(GROUP_MESSAGES_TABLE)
+          .delete()
+          .eq('id', (msg as any).id);
+      } catch {}
+      throw e;
     }
 
     // 3) Update last_message_at (ignore errors)
@@ -214,7 +225,8 @@ export class ChatGroupService {
   ): Promise<GroupMessageAttachment> {
     const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
     const ts = Date.now();
-    const path = `group/${groupId}/${messageId}/${ts}-${safe}`;
+    // Match direct messages path scheme to avoid storage issues
+    const path = `${groupId}/${messageId}/${ts}-${safe}`;
 
     const { error: upErr } = await supabase.storage
       .from(ATTACHMENTS_BUCKET)
@@ -446,12 +458,10 @@ export class ChatGroupService {
         .eq('group_id', groupId)
         .eq('user_id', userId)
         .single();
-
       if (error) {
         console.warn('Failed to check group admin status:', error.message);
         return false;
       }
-
       return data?.role === 'admin' || data?.role === 'owner';
     } catch (error) {
       console.warn('Error checking group admin status:', error);
@@ -459,7 +469,58 @@ export class ChatGroupService {
     }
   }
 
-  // Realtime subscriptions ----------------------------------------------------
+  // Remove a participant (admin/owner only). Blocks removing the last athlete when only two members (owner + athlete) remain.
+  static async removeGroupParticipant(
+    groupId: string,
+    targetUserId: string,
+    requesterId: string
+  ): Promise<void> {
+    // Ensure requester is admin/owner
+    const isAdmin = await this.isGroupAdmin(groupId, requesterId);
+    if (!isAdmin) {
+      throw new Error('Only group admins can remove members');
+    }
+
+    // Load members with details to evaluate constraints
+    const members = await this.getGroupParticipantsWithDetails(groupId);
+    const owner = members.find((m) => m.role === 'owner');
+    const target = members.find((m) => m.user_id === targetUserId);
+    if (!target) throw new Error('Member not found');
+
+    // Only allow removing student athletes via this method
+    if (target.profile_role !== 'athlete') {
+      throw new Error('Only student athletes can be removed');
+    }
+
+    // If only two members remain and they are owner (admin) and a single athlete, block removing the athlete
+    if (members.length === 2 && owner && target.profile_role === 'athlete') {
+      throw new Error('Cannot remove the last student athlete when only two members remain');
+    }
+
+    // Proceed with removal
+    const { error: delErr } = await supabase
+      .from(GROUP_PARTICIPANTS_TABLE)
+      .delete()
+      .eq('group_id', groupId)
+      .eq('user_id', targetUserId);
+    if (delErr) throw new Error(`Failed to remove member: ${delErr.message}`);
+
+    // Post a system message to notify removal (best-effort)
+    try {
+      const systemText = `[system] ${target.full_name || 'A member'} was removed from the group`;
+      const { data: msg } = await supabase
+        .from(GROUP_MESSAGES_TABLE)
+        .insert({ group_id: groupId, sender_id: requesterId, content: systemText })
+        .select('*')
+        .single();
+      if (msg) {
+        await supabase
+          .from(GROUP_CONVERSATIONS_TABLE)
+          .update({ last_message_at: (msg as any).created_at })
+          .eq('id', groupId);
+      }
+    } catch {}
+  }
   static subscribeToGroupMessages(
     groupId: string,
     onInsert: (message: GroupMessage) => void
@@ -483,7 +544,29 @@ export class ChatGroupService {
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: GROUP_MESSAGES_TABLE, filter: `group_id=eq.${groupId}` },
-        (payload) => onInsert(payload.new as GroupMessage)
+        async (payload) => {
+          const base = payload.new as GroupMessage;
+          // Attempt to fetch attachments that may arrive shortly after message insert
+          let enriched: GroupMessage = base;
+          try {
+            const maxTries = 4; // total ~600-800ms with delays below
+            for (let i = 0; i < maxTries; i++) {
+              const { data: atts, error: aErr } = await supabase
+                .from(GROUP_ATTACHMENTS_TABLE)
+                .select('*')
+                .eq('message_id', base.id);
+              if (!aErr && atts && atts.length > 0) {
+                enriched = { ...base, attachments: atts as GroupMessageAttachment[] };
+                break;
+              }
+              // small delay before retry; attachments can be inserted milliseconds after message
+              await new Promise((res) => setTimeout(res, 200));
+            }
+          } catch {
+            // fall back to base message
+          }
+          onInsert(enriched);
+        }
       )
       .subscribe();
     // Return a void cleanup function to satisfy React typings
