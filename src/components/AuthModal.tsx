@@ -149,7 +149,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     <>
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="mx-4 w-[92vw] max-w-[92vw] sm:max-w-[425px] max-h-[90vh] overflow-y-auto overscroll-contain"
+        className="w-full sm:max-w-[425px] max-h-[90vh] overflow-y-auto overscroll-contain px-4"
+        style={{ WebkitOverflowScrolling: 'touch' }}
       >
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-nil-navy">
@@ -311,9 +312,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           )}
 
           {!isLogin && (
-            <div className="flex items-start space-x-3">
-              <Checkbox id="terms" checked={termsAccepted} onCheckedChange={(v) => setTermsAccepted(Boolean(v))} />
-              <div className="grid gap-1 leading-tight">
+            <div className="flex items-center space-x-3">
+              <Checkbox
+                id="terms"
+                checked={termsAccepted}
+                onCheckedChange={(v) => setTermsAccepted(Boolean(v))}
+                className="h-4 w-4 shrink-0"
+              />
+              <div className="grid gap-1 leading-5">
                 <div className="text-sm text-gray-700">
                   <label htmlFor="terms" className="cursor-pointer mr-1">I agree to the</label>
                   <button
