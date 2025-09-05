@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -34,8 +34,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     role: 'athlete' as 'athlete' | 'brand'
   });
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
 
   const { signIn, signUp, resendVerification } = useAuth();
+
+  // Lazy-load the scroll-only PDF viewer to keep main bundle light
+  const TermsPdfViewer = lazy(() => import('./TermsPdfViewer'));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -142,6 +146,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   };
 
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px] mx-4">
         <DialogHeader>
@@ -307,9 +312,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             <div className="flex items-start space-x-3">
               <Checkbox id="terms" checked={termsAccepted} onCheckedChange={(v) => setTermsAccepted(Boolean(v))} />
               <div className="grid gap-1 leading-tight">
-                <label htmlFor="terms" className="text-sm text-gray-700">
-                  I agree to the Terms and Conditions
-                </label>
+                <div className="text-sm text-gray-700">
+                  <label htmlFor="terms" className="cursor-pointer mr-1">I agree to the</label>
+                  <button
+                    type="button"
+                    onClick={() => setShowTerms(true)}
+                    className="text-nil-navy hover:text-nil-orange underline underline-offset-2 font-medium"
+                  >
+                    Terms and Conditions
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -351,5 +363,25 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         )}
       </DialogContent>
     </Dialog>
+
+    {/* Terms and Conditions Modal
+        To use: place your PDF at public/terms/terms.pdf
+      */}
+    <Dialog open={showTerms} onOpenChange={setShowTerms}>
+      <DialogContent className="sm:max-w-[560px] mx-4">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-bold text-nil-navy">Terms and Conditions</DialogTitle>
+          <DialogDescription>
+            View the full Terms and Conditions below.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="w-full h-[70vh] max-h-[70vh]">
+          <Suspense fallback={<div className="p-4 text-sm text-gray-600">Loading terms...</div>}>
+            <TermsPdfViewer fileUrl="/terms/terms.pdf" />
+          </Suspense>
+        </div>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 };
