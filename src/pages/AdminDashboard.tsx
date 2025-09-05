@@ -19,7 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Users, Database, RefreshCw, AlertCircle, Shield, GraduationCap, Building2, ArrowLeft, CheckSquare, Square, BarChart3, MessageSquare, User } from 'lucide-react';
+import { Loader2, Users, Database, RefreshCw, AlertCircle, Shield, GraduationCap, Building2, ArrowLeft, CheckSquare, Square, BarChart3, MessageSquare, User, Plus } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import ChatWindow from '@/components/chat/ChatWindow';
@@ -61,6 +61,13 @@ const AdminDashboard: React.FC = () => {
   const [groupsLoading, setGroupsLoading] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [selectedGroupTitle, setSelectedGroupTitle] = useState<string | null>(null);
+  // New Message dialog state
+  const [isNewMessageOpen, setIsNewMessageOpen] = useState(false);
+  const [newMessageMode, setNewMessageMode] = useState<'direct' | 'group'>('direct');
+  const [newMessageCreatingId, setNewMessageCreatingId] = useState<string | null>(null);
+  const [newGroupSelected, setNewGroupSelected] = useState<Set<string>>(new Set());
+  const [newGroupTitleInput, setNewGroupTitleInput] = useState('');
+  const [newGroupCreating, setNewGroupCreating] = useState(false);
   
   const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -856,6 +863,204 @@ const AdminDashboard: React.FC = () => {
         </DialogContent>
       </Dialog>
 
+      {/* New Message Dialog */}
+      <Dialog open={isNewMessageOpen} onOpenChange={setIsNewMessageOpen}>
+        <DialogContent className="max-w-lg w-full">
+          <DialogHeader>
+            <DialogTitle>Start New Message</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            {/* Mode toggle: Direct vs Group */}
+            <div className="flex items-center justify-between">
+              <div className="inline-flex rounded-md border overflow-hidden">
+                <button
+                  className={`px-3 py-1.5 text-sm ${newMessageMode === 'direct' ? 'bg-nil-orange text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                  onClick={() => setNewMessageMode('direct')}
+                >
+                  Direct
+                </button>
+                <button
+                  className={`px-3 py-1.5 text-sm border-l ${newMessageMode === 'group' ? 'bg-nil-orange text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                  onClick={() => setNewMessageMode('group')}
+                >
+                  Group
+                </button>
+              </div>
+              <div className="text-xs text-gray-500">
+                {newMessageMode === 'group' ? 'Group selection (coming soon)' : 'Direct message'}
+              </div>
+            </div>
+            <div className="max-h-96 overflow-y-auto divide-y rounded-md border">
+              {allAthletes.filter(a => !!a.profile_id && a.profile_id.trim() !== '').length === 0 ? (
+                <div className="p-4 text-gray-600">No athletes with profiles available.</div>
+              ) : (
+                allAthletes
+                  .filter(a => !!a.profile_id && a.profile_id.trim() !== '')
+                  .map((athlete) => (
+                    <div key={athlete.id} className="p-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3 min-w-0">
+                          {newMessageMode === 'group' && (
+                            <input
+                              type="checkbox"
+                              className="h-4 w-4"
+                              aria-label="Select for group chat"
+                              checked={newGroupSelected.has(athlete.profile_id as string)}
+                              onChange={(e) => {
+                                const next = new Set(newGroupSelected);
+                                const uid = String(athlete.profile_id);
+                                if (e.currentTarget.checked) next.add(uid); else next.delete(uid);
+                                setNewGroupSelected(next);
+                              }}
+                            />
+                          )}
+                          <div className="relative w-10 h-10 flex-shrink-0">
+                            {athlete.photo ? (
+                              <img
+                                src={athlete.photo}
+                                alt={athlete.name || 'Athlete avatar'}
+                                className="w-10 h-10 rounded-full object-cover bg-gray-100"
+                                onError={(e) => {
+                                  (e.currentTarget as HTMLImageElement).style.display = 'none';
+                                  const placeholder = (e.currentTarget.nextElementSibling as HTMLElement | null);
+                                  if (placeholder) placeholder.classList.remove('hidden');
+                                }}
+                              />
+                            ) : null}
+                            <div className={athlete.photo ? 'hidden absolute inset-0 flex items-center justify-center rounded-full bg-gradient-to-br from-nil-light-blue to-nil-navy' : 'absolute inset-0 flex items-center justify-center rounded-full bg-gradient-to-br from-nil-light-blue to-nil-navy'}>
+                              <User className="w-5 h-5 text-white opacity-70" />
+                            </div>
+                          </div>
+                          <div className="min-w-0">
+                            <div className="font-medium text-gray-900 truncate">{athlete.name || 'Unnamed Athlete'}</div>
+                            <div className="text-xs text-gray-600 truncate">
+                              {[athlete.sport, athlete.college].filter(Boolean).join(' • ')}
+                            </div>
+                          </div>
+                        </div>
+                        {/* Actions */}
+                        {newMessageMode === 'direct' ? (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            aria-label="Start new message"
+                            disabled={!profile?.id || !athlete.profile_id || newMessageCreatingId === athlete.id}
+                            onClick={async () => {
+                              if (!profile?.id || !athlete.profile_id) return;
+                              try {
+                                setNewMessageCreatingId(athlete.id);
+                                const conv = await ChatService.getOrCreateConversation({
+                                  admin_id: profile.id,
+                                  athlete_id: athlete.profile_id,
+                                });
+                                // Open the conversation in the chat window
+                                setIsNewMessageOpen(false);
+                                setChatConversationId(conv.id);
+                                setChatTitle(athlete.name);
+                                setChatTarget(athlete);
+                                // Optionally mark as read for admin
+                                try { await ChatService.markConversationRead(conv.id, profile.id); } catch {}
+                              } catch (e: any) {
+                                toast({
+                                  title: 'Failed to start chat',
+                                  description: e?.message || 'Please try again.',
+                                  variant: 'destructive',
+                                } as any);
+                              } finally {
+                                setNewMessageCreatingId(null);
+                              }
+                            }}
+                          >
+                            <Plus className={newMessageCreatingId === athlete.id ? 'w-4 h-4 opacity-50' : 'w-4 h-4'} />
+                          </Button>
+                        ) : (
+                          <div className="text-xs text-gray-500 select-none">
+                            {newGroupSelected.has(String(athlete.profile_id)) ? 'Selected' : ''}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))
+              )}
+            </div>
+            {/* Group creation controls */}
+            {newMessageMode === 'group' && (
+              <div className="space-y-2 pt-3">
+                <input
+                  type="text"
+                  className="w-full rounded-md border px-3 py-2 text-sm"
+                  placeholder="Group title (optional)"
+                  value={newGroupTitleInput}
+                  onChange={(e) => setNewGroupTitleInput(e.currentTarget.value)}
+                />
+                <div className="flex items-center justify-between text-xs text-gray-600">
+                  <span>{newGroupSelected.size} selected</span>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setNewGroupSelected(new Set())}
+                      disabled={newGroupCreating || newGroupSelected.size === 0}
+                    >
+                      Clear
+                    </Button>
+                    <Button
+                      className="bg-nil-orange hover:bg-nil-navy"
+                      size="sm"
+                      disabled={newGroupCreating || newGroupSelected.size < 2 || !profile?.id}
+                      onClick={async () => {
+                        if (!profile?.id) return;
+                        if (newGroupSelected.size < 2) return;
+                        try {
+                          setNewGroupCreating(true);
+                          // Build title if empty
+                          let title = newGroupTitleInput.trim();
+                          if (!title) {
+                            const names: string[] = [];
+                            for (const a of allAthletes) {
+                              if (a.profile_id && newGroupSelected.has(String(a.profile_id))) {
+                                if (a.name) names.push(a.name);
+                              }
+                            }
+                            title = names.slice(0, 3).join(', ') + (names.length > 3 ? '…' : '');
+                            if (!title) title = 'Group chat';
+                          }
+                          const participantIds = Array.from(newGroupSelected);
+                          const res = await ChatGroupService.createGroup(title, profile.id, participantIds);
+                          // Reset selection and close dialog
+                          setNewGroupSelected(new Set());
+                          setNewGroupTitleInput('');
+                          setIsNewMessageOpen(false);
+                          // Switch to the newly created group in chat modal
+                          setMessagesMode('groups');
+                          setSelectedGroupId(res.conversation.id);
+                          setSelectedGroupTitle(res.conversation.title || title);
+                          // Best-effort: refresh groups list
+                          try {
+                            const gres = await ChatGroupService.listGroupsForUser(profile.id, 1, 50);
+                            setGroups(gres.data || []);
+                          } catch {}
+                        } catch (e: any) {
+                          toast({
+                            title: 'Failed to create group',
+                            description: e?.message || 'Please try again.',
+                            variant: 'destructive',
+                          } as any);
+                        } finally {
+                          setNewGroupCreating(false);
+                        }
+                      }}
+                    >
+                      {newGroupCreating ? 'Creating…' : 'Create Group'}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Chat Modal */}
       <Dialog
         open={isChatOpen}
@@ -871,16 +1076,18 @@ const AdminDashboard: React.FC = () => {
       >
         <DialogContent className="max-w-3xl w-full">
           <DialogHeader>
-            <DialogTitle>
-              {chatConversationId
-                ? (() => {
-                    const name = chatTitle || (chatTarget ? chatTarget.name : null);
-                    return name ? `Chat with ${name}` : 'Chat';
-                  })()
-                : selectedGroupId
-                  ? `Group: ${selectedGroupTitle || 'Group'}`
-                  : 'Your Messages'}
-            </DialogTitle>
+            <div className="flex items-center justify-between">
+              <DialogTitle>
+                {chatConversationId
+                  ? (() => {
+                      const name = chatTitle || (chatTarget ? chatTarget.name : null);
+                      return name ? `Chat with ${name}` : 'Chat';
+                    })()
+                  : selectedGroupId
+                    ? `Group: ${selectedGroupTitle || 'Group'}`
+                    : 'Your Messages'}
+              </DialogTitle>
+            </div>
           </DialogHeader>
           {chatConversationId && profile ? (
             <ChatWindow
@@ -926,29 +1133,43 @@ const AdminDashboard: React.FC = () => {
             />
           ) : (
             <div className="space-y-4">
-              {/* Toggle */}
-              <div className="inline-flex rounded-md border overflow-hidden">
-                <button
-                  className={`px-3 py-1.5 text-sm ${messagesMode === 'direct' ? 'bg-nil-orange text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
-                  onClick={() => setMessagesMode('direct')}
-                >
-                  Direct
-                </button>
-                <button
-                  className={`px-3 py-1.5 text-sm border-l ${messagesMode === 'groups' ? 'bg-nil-orange text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
-                  onClick={async () => {
-                    setMessagesMode('groups');
-                    if (profile?.id && groups.length === 0) {
-                      try {
-                        setGroupsLoading(true);
-                        const gres = await ChatGroupService.listGroupsForUser(profile.id, 1, 50);
-                        setGroups(gres.data || []);
-                      } catch {} finally { setGroupsLoading(false); }
-                    }
-                  }}
-                >
-                  Groups
-                </button>
+              {/* Toggle and New Message Button */}
+              <div className="flex items-center justify-between">
+                <div className="inline-flex rounded-md border overflow-hidden">
+                  <button
+                    className={`px-3 py-1.5 text-sm ${messagesMode === 'direct' ? 'bg-nil-orange text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                    onClick={() => setMessagesMode('direct')}
+                  >
+                    Direct
+                  </button>
+                  <button
+                    className={`px-3 py-1.5 text-sm border-l ${messagesMode === 'groups' ? 'bg-nil-orange text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                    onClick={async () => {
+                      setMessagesMode('groups');
+                      if (profile?.id && groups.length === 0) {
+                        try {
+                          setGroupsLoading(true);
+                          const gres = await ChatGroupService.listGroupsForUser(profile.id, 1, 50);
+                          setGroups(gres.data || []);
+                        } catch {} finally { setGroupsLoading(false); }
+                      }
+                    }}
+                  >
+                    Groups
+                  </button>
+                </div>
+                {!chatConversationId && !selectedGroupId && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="rounded-full"
+                    onClick={() => setIsNewMessageOpen(true)}
+                    aria-label="Create new message"
+                    title="Create new message"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                )}
               </div>
 
               {messagesMode === 'direct' ? (
