@@ -247,37 +247,6 @@ const AthleteDashboard: React.FC = () => {
       }
     };
 
-  // Realtime: update groups dynamically when this athlete is added to a new group
-  useEffect(() => {
-    if (!profile?.id) return;
-    const channel = supabase
-      .channel(`grp-participants-${profile.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'group_participants',
-          filter: `user_id=eq.${profile.id}`,
-        },
-        async () => {
-          try {
-            const gres = await ChatGroupService.listGroupsForUser(profile.id, 1, 50);
-            setGroups(gres.data || []);
-          } catch {
-            // ignore
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      try { supabase.removeChannel(channel); } catch {}
-    };
-  }, [profile?.id]);
-
- 
-
     const loadSchoolData = async () => {
       const sid = (currentAthleteData as any).school_id as number | undefined;
       if (sid) {
