@@ -148,7 +148,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   return (
     <>
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] mx-4">
+      <DialogContent
+        className="mx-4 w-[92vw] max-w-[92vw] sm:max-w-[425px] max-h-[90vh] overflow-y-auto overscroll-contain"
+      >
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-nil-navy">
             {verificationSent ? 'Check Your Email' : (isLogin ? 'Welcome Back' : 'Create Account')}
