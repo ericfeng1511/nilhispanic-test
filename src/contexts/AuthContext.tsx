@@ -2,6 +2,9 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabaseClient';
 
+// Always redirect verified email links to the specified deployment URL
+const EMAIL_REDIRECT_URL = 'https://nilhispanic-git-admin-dashboard-nil-hispanic.vercel.app/';
+
 interface Profile {
   id: string;
   email: string;
@@ -245,6 +248,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email,
         password,
         options: {
+          emailRedirectTo: EMAIL_REDIRECT_URL,
           data: {
             full_name: fullName,
             role: role,
@@ -463,6 +467,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email: email,
+        options: {
+          emailRedirectTo: EMAIL_REDIRECT_URL,
+        },
       });
 
       return { error };
