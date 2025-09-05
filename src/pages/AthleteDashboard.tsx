@@ -276,6 +276,8 @@ const AthleteDashboard: React.FC = () => {
     };
   }, [profile?.id]);
 
+ 
+
     const loadSchoolData = async () => {
       const sid = (currentAthleteData as any).school_id as number | undefined;
       if (sid) {
