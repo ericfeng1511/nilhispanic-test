@@ -91,7 +91,13 @@ export const GroupChatWindow: React.FC<GroupChatWindowProps> = ({ groupId, curre
       setMessages((prevMessages) => {
         // Avoid duplicates - check if message already exists
         const exists = prevMessages.find((msg) => msg.id === newMessage.id);
-        return exists ? prevMessages : [...prevMessages, newMessage];
+        if (exists) return prevMessages;
+        const next = [...prevMessages, newMessage].sort((a, b) => {
+          const ta = new Date(a.created_at).getTime();
+          const tb = new Date(b.created_at).getTime();
+          return ta - tb;
+        });
+        return next;
       });
     });
     return unsubscribe;

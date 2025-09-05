@@ -546,10 +546,14 @@ export class ChatGroupService {
         { event: 'INSERT', schema: 'public', table: GROUP_MESSAGES_TABLE, filter: `group_id=eq.${groupId}` },
         async (payload) => {
           const base = payload.new as GroupMessage;
+          if (typeof window !== 'undefined') {
+            try { console.debug('[GroupRealtime] INSERT group_message', { groupId, id: (base as any)?.id }); } catch {}
+          }
           // Attempt to fetch attachments that may arrive shortly after message insert
           let enriched: GroupMessage = base;
           try {
-            const maxTries = 4; // total ~600-800ms with delays below
+            // Increase retries and delay to better capture uploads that complete seconds after message insert
+            const maxTries = 10; // ~5 seconds total with 500ms delay
             for (let i = 0; i < maxTries; i++) {
               const { data: atts, error: aErr } = await supabase
                 .from(GROUP_ATTACHMENTS_TABLE)
@@ -560,7 +564,7 @@ export class ChatGroupService {
                 break;
               }
               // small delay before retry; attachments can be inserted milliseconds after message
-              await new Promise((res) => setTimeout(res, 200));
+              await new Promise((res) => setTimeout(res, 500));
             }
           } catch {
             // fall back to base message
