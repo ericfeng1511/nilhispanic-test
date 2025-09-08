@@ -7,7 +7,7 @@
  * @param year - The year abbreviation (FR, SO, JR, SR, GR, RFR)
  * @returns Formatted string like "Freshman (FR)" or "N/A" for null/empty values
  */
-export const formatAcademicYear = (year: string): string => {
+export const formatAcademicYear = (year: string | null | undefined): string => {
   // Handle null, undefined, empty string, or whitespace-only values
   if (!year || year.trim() === '') {
     return 'N/A';
@@ -28,9 +28,14 @@ export const formatAcademicYear = (year: string): string => {
 /**
  * Format gender abbreviation to full name
  * @param gender - The gender abbreviation (M, F)
- * @returns Formatted string like "Male" or "Female"
+ * @returns Formatted string like "Male" or "Female" or "N/A" for null/empty values
  */
-export const formatGender = (gender: string): string => {
+export const formatGender = (gender: string | null | undefined): string => {
+  // Handle null, undefined, empty string, or whitespace-only values
+  if (!gender || gender.trim() === '') {
+    return 'N/A';
+  }
+
   const genderMap: Record<string, string> = {
     'M': 'Male',
     'F': 'Female',
