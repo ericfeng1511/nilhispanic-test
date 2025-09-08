@@ -16,6 +16,7 @@ interface AthleteFiltersProps {
   uniqueColleges: string[];
   uniqueGenders: string[];
   uniqueYears: string[];
+  uniqueStates: string[];
   uniqueTotalSmRanges: string[];
   totalResults: number;
   isLoading?: boolean;
@@ -29,6 +30,7 @@ export const AthleteFilters: React.FC<AthleteFiltersProps> = ({
   uniqueColleges,
   uniqueGenders,
   uniqueYears,
+  uniqueStates,
   uniqueTotalSmRanges,
   totalResults,
   isLoading = false
@@ -37,6 +39,7 @@ export const AthleteFilters: React.FC<AthleteFiltersProps> = ({
   const [collegesOpen, setCollegesOpen] = useState(false);
   const [gendersOpen, setGendersOpen] = useState(false);
   const [yearsOpen, setYearsOpen] = useState(false);
+  const [statesOpen, setStatesOpen] = useState(false);
   const [totalSmRangesOpen, setTotalSmRangesOpen] = useState(false);
 
   const handleSearchChange = (value: string) => {
@@ -91,6 +94,18 @@ export const AthleteFilters: React.FC<AthleteFiltersProps> = ({
     });
   };
 
+  const handleStateToggle = (state: string) => {
+    const currentStates = filters.states || [];
+    const updatedStates = currentStates.includes(state)
+      ? currentStates.filter(s => s !== state)
+      : [...currentStates, state];
+    
+    onFiltersChange({
+      ...filters,
+      states: updatedStates.length > 0 ? updatedStates : undefined,
+    });
+  };
+
   const handleTotalSmRangeToggle = (range: string) => {
     const currentRanges = filters.totalSmRanges || [];
     const updatedRanges = currentRanges.includes(range)
@@ -108,6 +123,7 @@ export const AthleteFilters: React.FC<AthleteFiltersProps> = ({
     (filters.colleges && filters.colleges.length > 0) ||
     (filters.genders && filters.genders.length > 0) ||
     (filters.years && filters.years.length > 0) ||
+    (filters.states && filters.states.length > 0) ||
     (filters.totalSmRanges && filters.totalSmRanges.length > 0);
 
   return (
@@ -168,6 +184,43 @@ export const AthleteFilters: React.FC<AthleteFiltersProps> = ({
                       className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                     >
                       {sport}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          {/* States Multi-Select Filter */}
+          <Popover open={statesOpen} onOpenChange={setStatesOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={statesOpen}
+                className="justify-between"
+                disabled={isLoading}
+              >
+                {filters.states && filters.states.length > 0
+                  ? `${filters.states.length} state${filters.states.length > 1 ? 's' : ''} selected`
+                  : 'All States'}
+                <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[200px] p-0">
+              <div className="max-h-[200px] overflow-y-auto p-2">
+                {uniqueStates.map((state) => (
+                  <div key={state} className="flex items-center space-x-2 p-2 hover:bg-gray-100 rounded">
+                    <Checkbox
+                      id={`state-${state}`}
+                      checked={filters.states?.includes(state) || false}
+                      onCheckedChange={() => handleStateToggle(state)}
+                    />
+                    <label
+                      htmlFor={`state-${state}`}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    >
+                      {state}
                     </label>
                   </div>
                 ))}
@@ -388,6 +441,17 @@ export const AthleteFilters: React.FC<AthleteFiltersProps> = ({
                 Year: {formatAcademicYear(year)}
                 <button
                   onClick={() => handleYearToggle(year)}
+                  className="hover:bg-nil-orange/30 rounded-full p-0.5"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            ))}
+            {filters.states && filters.states.map((state) => (
+              <span key={state} className="inline-flex items-center gap-1 px-2 py-1 bg-nil-orange/20 text-nil-orange rounded-md text-sm">
+                State: {state}
+                <button
+                  onClick={() => handleStateToggle(state)}
                   className="hover:bg-nil-orange/30 rounded-full p-0.5"
                 >
                   <X className="w-3 h-3" />

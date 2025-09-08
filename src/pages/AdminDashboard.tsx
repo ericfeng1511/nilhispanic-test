@@ -82,6 +82,7 @@ const AdminDashboard: React.FC = () => {
     uniqueColleges,
     uniqueGenders,
     uniqueYears,
+    uniqueStates,
     uniqueTotalSmRanges,
     filters: athleteFilters,
     isLoading: athletesLoading,
@@ -596,6 +597,7 @@ const AdminDashboard: React.FC = () => {
               uniqueColleges={uniqueColleges}
               uniqueGenders={uniqueGenders}
               uniqueYears={uniqueYears}
+              uniqueStates={uniqueStates}
               uniqueTotalSmRanges={uniqueTotalSmRanges}
               totalResults={totalAthletes}
               isLoading={athletesLoading}
@@ -1160,14 +1162,14 @@ const AdminDashboard: React.FC = () => {
                 </div>
                 {!chatConversationId && !selectedGroupId && (
                   <Button
-                    variant="ghost"
-                    size="sm"
-                    className="rounded-full"
                     onClick={() => setIsNewMessageOpen(true)}
-                    aria-label="Create new message"
-                    title="Create new message"
+                    className="bg-nil-orange hover:bg-nil-navy inline-flex items-center gap-2"
+                    size="sm"
+                    aria-label="New Message"
+                    title="New Message"
                   >
                     <Plus className="w-4 h-4" />
+                    New Message
                   </Button>
                 )}
               </div>

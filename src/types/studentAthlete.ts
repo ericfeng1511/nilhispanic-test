@@ -6,6 +6,7 @@ export interface StudentAthlete {
   year: string; // FR, SO, JR, SR
   college: string;
   hometown: string;
+  state?: string; // Two-letter state abbreviation (e.g., CA, TX)
   city_id?: number; // FK to cities.id (nullable during migration)
   school_id?: number; // FK to schools.id (nullable during migration)
   gender: string; // M or F
@@ -28,6 +29,7 @@ export interface StudentAthleteFilters {
   genders?: string[]; // Multi-select gender filter
   years?: string[]; // Multi-select academic year filter
   totalSmRanges?: string[]; // Multi-select social media range filter
+  states?: string[]; // Multi-select state filter using two-letter abbreviations
   search?: string;
 }
 

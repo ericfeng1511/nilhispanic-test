@@ -2,8 +2,8 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabaseClient';
 
-// Always redirect verified email links to the specified deployment URL
-const EMAIL_REDIRECT_URL = 'https://nilhispanic-git-admin-dashboard-nil-hispanic.vercel.app/';
+// Always redirect verified email links to the live site
+const EMAIL_REDIRECT_URL = 'https://nilhispanic.com/';
 
 interface Profile {
   id: string;
@@ -263,20 +263,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const rawMsg = (error as any)?.message || '';
         const msg = rawMsg.toLowerCase();
         const status = (error as any)?.status || (error as any)?.statusCode;
+        const code = (error as any)?.code;
+        const reasons = (error as any)?.reasons;
+
+        // Handle weak password explicitly
+        const isWeakPassword =
+          code === 'weak_password' ||
+          msg.includes('weak password') ||
+          (Array.isArray(reasons) && reasons.length > 0);
+
+        if (isWeakPassword) {
+          return {
+            error: {
+              ...error,
+              message:
+                'Weak password. Your password must be at least 6 characters and include at least one letter and one number.',
+            },
+          };
+        }
+
+        // Handle duplicate email without over-catching all 422s
         const isDuplicate =
           msg.includes('already registered') ||
           msg.includes('user already exists') ||
           msg.includes('email address is already registered') ||
-          status === 422;
+          code === 'user_already_exists';
 
         if (isDuplicate) {
           return {
             error: {
               ...error,
-              message: 'An account with this email already exists. Please sign in or use “Forgot password.”',
+              message:
+                'An account with this email already exists. Please sign in or use “Forgot password.”',
             },
           };
         }
+
         return { error };
       }
 

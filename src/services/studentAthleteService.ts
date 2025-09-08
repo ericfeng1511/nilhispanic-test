@@ -115,6 +115,15 @@ export class StudentAthleteService {
       );
     }
 
+    // Multi-select states filter (two-letter abbreviations)
+    if (filters.states && filters.states.length > 0) {
+      const selectedStates = filters.states.map(s => (s || '').trim().toUpperCase());
+      filteredAthletes = filteredAthletes.filter(athlete => {
+        const aState = (athlete.state || '').trim().toUpperCase();
+        return aState !== '' && selectedStates.some(s => s === aState);
+      });
+    }
+
     // Multi-select social media range filter
     if (filters.totalSmRanges && filters.totalSmRanges.length > 0) {
       filteredAthletes = filteredAthletes.filter(athlete =>
@@ -227,6 +236,18 @@ export class StudentAthleteService {
       // If neither is in the order array, sort alphabetically
       return a.localeCompare(b);
     });
+  }
+
+  /**
+   * Get unique states (two-letter abbreviations) from all athletes
+   */
+  static getUniqueStates(allAthletes: StudentAthlete[]): string[] {
+    const states = new Set(
+      allAthletes
+        .map(a => (a.state ? String(a.state).trim().toUpperCase() : ''))
+        .filter((s): s is string => !!s && s.length === 2)
+    );
+    return Array.from(states).sort();
   }
 
   /**

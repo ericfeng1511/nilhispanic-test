@@ -97,6 +97,11 @@ export const useStudentAthletes = () => {
     return StudentAthleteService.getUniqueYears(allAthletes);
   }, [allAthletes]);
 
+  // Get unique states for filter dropdown
+  const uniqueStates = useMemo(() => {
+    return StudentAthleteService.getUniqueStates(allAthletes);
+  }, [allAthletes]);
+
   // Get unique social media ranges for filter dropdown
   const uniqueTotalSmRanges = useMemo(() => {
     return StudentAthleteService.getUniqueTotalSmRanges(allAthletes);
@@ -146,6 +151,7 @@ export const useStudentAthletes = () => {
     uniqueColleges,
     uniqueGenders,
     uniqueYears,
+    uniqueStates,
     uniqueTotalSmRanges,
     filters,
     

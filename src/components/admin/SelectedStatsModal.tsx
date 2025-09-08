@@ -93,8 +93,7 @@ const calculateStats = (athletes: StudentAthlete[]): AggregatedStats => {
         .reduce((sum, a) => sum + (a.total_followers || 0), 0);
       return { college, count, followers: collegeFollowers };
     })
-    .sort((a, b) => b.followers - a.followers)
-    .slice(0, 5);
+    .sort((a, b) => b.followers - a.followers);
 
   return stats;
 };
