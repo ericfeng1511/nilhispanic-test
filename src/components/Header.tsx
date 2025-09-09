@@ -250,13 +250,67 @@ const Header = () => {
           )}
         </nav>
         
-        {/* Mobile Menu Button */}
-        <button 
-          className="md:hidden p-2 rounded-md text-nil-navy" 
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        >
-          <Menu size={24} />
-        </button>
+        {/* Mobile Actions: Login/User + Hamburger */}
+        <div className="md:hidden flex items-center gap-2">
+          {loading ? (
+            <div className="w-20 h-9 rounded-md bg-gray-200 animate-pulse" aria-label="Loading" />
+          ) : user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className="flex items-center gap-2 px-3 h-9 rounded-md border border-gray-200 text-sm text-nil-navy hover:text-nil-orange hover:border-nil-orange transition-colors"
+                  aria-label="User menu"
+                >
+                  <User size={16} />
+                  <span className="max-w-[110px] truncate">{profile?.full_name || user.email}</span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52 p-1">
+                {profile?.role === 'admin' && (
+                  <DropdownMenuItem asChild>
+                    <Link to="/admin/dashboard">Dashboard</Link>
+                  </DropdownMenuItem>
+                )}
+                {profile?.role === 'athlete' && (
+                  <DropdownMenuItem asChild>
+                    <Link to="/athlete/dashboard">Dashboard</Link>
+                  </DropdownMenuItem>
+                )}
+                {profile?.role === 'brand' && (
+                  <DropdownMenuItem asChild>
+                    <Link to="/brand/dashboard">Dashboard</Link>
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleLogout();
+                  }}
+                  className="text-red-600 focus:text-red-700"
+                >
+                  <LogOut size={14} className="mr-2" /> Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <button
+              className="px-3 h-9 rounded-md bg-nil-orange text-white text-sm hover:bg-nil-navy transition-colors"
+              onClick={() => setAuthModalOpen(true)}
+              aria-label="Login or Signup"
+            >
+              Login
+            </button>
+          )}
+
+          <button 
+            className="p-2 rounded-md text-nil-navy" 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Open menu"
+          >
+            <Menu size={24} />
+          </button>
+        </div>
       </div>
       
       {/* Mobile Menu */}
