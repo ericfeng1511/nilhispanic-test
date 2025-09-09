@@ -255,17 +255,64 @@ const Header = () => {
           {loading ? (
             <div className="w-20 h-9 rounded-md bg-gray-200 animate-pulse" aria-label="Loading" />
           ) : user ? (
-            <DropdownMenu>
+            <DropdownMenu onOpenChange={setPreviewsOpen}>
               <DropdownMenuTrigger asChild>
                 <button
-                  className="flex items-center gap-2 px-3 h-9 rounded-md border border-gray-200 text-sm text-nil-navy hover:text-nil-orange hover:border-nil-orange transition-colors"
+                  className="relative flex items-center gap-2 px-3 h-9 rounded-md border border-gray-200 text-sm text-nil-navy hover:text-nil-orange hover:border-nil-orange transition-colors"
                   aria-label="User menu"
                 >
                   <User size={16} />
                   <span className="max-w-[110px] truncate">{profile?.full_name || user.email}</span>
+                  {(profile?.role === 'admin' || profile?.role === 'athlete') && unreadCount > 0 && (
+                    <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[11px] leading-[18px] font-semibold">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-52 p-1">
+                {/* Notifications Preview (mobile) */}
+                <div className="py-2">
+                  <div className="px-2 pb-1 text-xs font-semibold text-nil-navy">Unread messages</div>
+                  {loadingPreviews ? (
+                    <div className="px-2 py-2 text-xs text-gray-500">Loading...</div>
+                  ) : previews.length === 0 ? (
+                    <div className="px-2 py-2 text-xs text-gray-500">No unread messages</div>
+                  ) : (
+                    <div className="max-h-64 overflow-auto">
+                      {previews.map((p) => (
+                        <button
+                          key={p.conversation_id}
+                          onClick={async () => {
+                            setPreviewsOpen(false);
+                            const target = profile.role === 'admin' ? '/admin/dashboard' : '/athlete/dashboard';
+                            try { await ChatService.markConversationRead(p.conversation_id, user!.id); } catch {}
+                            navigate(`${target}?openChat=${p.conversation_id}`);
+                          }}
+                          className="w-full text-left px-2 py-2 rounded hover:bg-gray-50 flex items-start gap-2"
+                        >
+                          <span className="mt-0.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] leading-[18px] font-semibold">
+                            {p.unread_count > 99 ? '99+' : p.unread_count}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs font-medium text-gray-900 truncate">Conversation</div>
+                            <div className="text-[11px] text-gray-600 truncate">{p.latest_message?.content || 'New message'}</div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  <div className="border-t mt-2" />
+                  <div className="px-2 py-2">
+                    <Link
+                      to={profile.role === 'admin' ? '/admin/dashboard' : '/athlete/dashboard'}
+                      className="text-xs text-nil-orange hover:underline"
+                    >
+                      View all messages
+                    </Link>
+                  </div>
+                </div>
+                <DropdownMenuSeparator />
                 {profile?.role === 'admin' && (
                   <DropdownMenuItem asChild>
                     <Link to="/admin/dashboard">Dashboard</Link>
