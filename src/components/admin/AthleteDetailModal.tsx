@@ -23,13 +23,20 @@ export const AthleteDetailModal: React.FC<AthleteDetailModalProps> = ({
   const [formattedCity, setFormattedCity] = useState<string>('N/A');
   const [schoolName, setSchoolName] = useState<string>('');
 
-  // Reset image state when athlete changes
+  // Determine if the athlete has a valid photo URL
+  const hasPhoto = !!(athlete?.photo && String(athlete.photo).trim() !== '');
+
+  // Reset image state when athlete or photo changes
   useEffect(() => {
-    if (athlete) {
+    if (!athlete) return;
+    if (hasPhoto) {
       setImageError(false);
       setImageLoading(true);
+    } else {
+      setImageError(true);
+      setImageLoading(false);
     }
-  }, [athlete]);
+  }, [athlete?.id, athlete?.photo, hasPhoto]);
 
   // Load formatted hometown from city_id
   useEffect(() => {
@@ -136,13 +143,13 @@ export const AthleteDetailModal: React.FC<AthleteDetailModalProps> = ({
           {/* Photo Section */}
           <div className="space-y-4">
             <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
-              {imageLoading && (
+              {imageLoading && hasPhoto && (
                 <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-nil-orange"></div>
                 </div>
               )}
               
-              {!imageError ? (
+              {!imageError && hasPhoto ? (
                 <img
                   src={athlete.photo}
                   alt={`${athlete.name} - ${athlete.sport} athlete`}

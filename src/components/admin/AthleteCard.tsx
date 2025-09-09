@@ -25,6 +25,22 @@ export const AthleteCard: React.FC<AthleteCardProps> = ({
   const [imageLoading, setImageLoading] = useState(true);
   const [schoolName, setSchoolName] = useState<string>('');
 
+  // Determine if the athlete has a valid photo URL
+  const hasPhoto = !!(athlete.photo && String(athlete.photo).trim() !== '');
+
+  // Initialize/reset image states whenever the athlete or photo changes
+  useEffect(() => {
+    if (hasPhoto) {
+      setImageError(false);
+      setImageLoading(true);
+    } else {
+      // No photo available: immediately use fallback and stop spinner
+      setImageError(true);
+      setImageLoading(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [athlete.id, athlete.photo]);
+
   const handleImageError = () => {
     setImageError(true);
     setImageLoading(false);
@@ -92,13 +108,13 @@ export const AthleteCard: React.FC<AthleteCardProps> = ({
         <div className="hidden sm:block">
           {/* Photo Section */}
           <div className="relative mb-4 aspect-square rounded-lg overflow-hidden bg-gray-100">
-            {imageLoading && (
+            {imageLoading && hasPhoto && (
               <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-nil-orange"></div>
               </div>
             )}
             
-            {!imageError ? (
+            {!imageError && hasPhoto ? (
               <img
                 src={athlete.photo}
                 alt={`${athlete.name} - ${athlete.sport} athlete`}
@@ -138,13 +154,13 @@ export const AthleteCard: React.FC<AthleteCardProps> = ({
         <div className="flex sm:hidden items-center space-x-3">
           {/* Photo Section - Smaller for mobile */}
           <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-            {imageLoading && (
+            {imageLoading && hasPhoto && (
               <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-nil-orange"></div>
               </div>
             )}
             
-            {!imageError ? (
+            {!imageError && hasPhoto ? (
               <img
                 src={athlete.photo}
                 alt={`${athlete.name} - ${athlete.sport} athlete`}
