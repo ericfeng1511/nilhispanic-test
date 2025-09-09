@@ -271,48 +271,51 @@ const Header = () => {
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-52 p-1">
-                {/* Notifications Preview (mobile) */}
-                <div className="py-2">
-                  <div className="px-2 pb-1 text-xs font-semibold text-nil-navy">Unread messages</div>
-                  {loadingPreviews ? (
-                    <div className="px-2 py-2 text-xs text-gray-500">Loading...</div>
-                  ) : previews.length === 0 ? (
-                    <div className="px-2 py-2 text-xs text-gray-500">No unread messages</div>
-                  ) : (
-                    <div className="max-h-64 overflow-auto">
-                      {previews.map((p) => (
-                        <button
-                          key={p.conversation_id}
-                          onClick={async () => {
-                            setPreviewsOpen(false);
-                            const target = profile.role === 'admin' ? '/admin/dashboard' : '/athlete/dashboard';
-                            try { await ChatService.markConversationRead(p.conversation_id, user!.id); } catch {}
-                            navigate(`${target}?openChat=${p.conversation_id}`);
-                          }}
-                          className="w-full text-left px-2 py-2 rounded hover:bg-gray-50 flex items-start gap-2"
-                        >
-                          <span className="mt-0.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] leading-[18px] font-semibold">
-                            {p.unread_count > 99 ? '99+' : p.unread_count}
-                          </span>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-xs font-medium text-gray-900 truncate">Conversation</div>
-                            <div className="text-[11px] text-gray-600 truncate">{p.latest_message?.content || 'New message'}</div>
-                          </div>
-                        </button>
-                      ))}
+                {/* Notifications Preview (mobile - only for admin/athlete) */}
+                {(profile?.role === 'admin' || profile?.role === 'athlete') && (
+                  <div className="py-2">
+                    <div className="px-2 pb-1 text-xs font-semibold text-nil-navy">Unread messages</div>
+                    {loadingPreviews ? (
+                      <div className="px-2 py-2 text-xs text-gray-500">Loading...</div>
+                    ) : previews.length === 0 ? (
+                      <div className="px-2 py-2 text-xs text-gray-500">No unread messages</div>
+                    ) : (
+                      <div className="max-h-64 overflow-auto">
+                        {previews.map((p) => (
+                          <button
+                            key={p.conversation_id}
+                            onClick={async () => {
+                              setPreviewsOpen(false);
+                              const role = profile?.role;
+                              const target = role === 'admin' ? '/admin/dashboard' : '/athlete/dashboard';
+                              try { await ChatService.markConversationRead(p.conversation_id, user!.id); } catch {}
+                              navigate(`${target}?openChat=${p.conversation_id}`);
+                            }}
+                            className="w-full text-left px-2 py-2 rounded hover:bg-gray-50 flex items-start gap-2"
+                          >
+                            <span className="mt-0.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] leading-[18px] font-semibold">
+                              {p.unread_count > 99 ? '99+' : p.unread_count}
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <div className="text-xs font-medium text-gray-900 truncate">Conversation</div>
+                              <div className="text-[11px] text-gray-600 truncate">{p.latest_message?.content || 'New message'}</div>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    <div className="border-t mt-2" />
+                    <div className="px-2 py-2">
+                      <Link
+                        to={(profile?.role === 'admin') ? '/admin/dashboard' : '/athlete/dashboard'}
+                        className="text-xs text-nil-orange hover:underline"
+                      >
+                        View all messages
+                      </Link>
                     </div>
-                  )}
-                  <div className="border-t mt-2" />
-                  <div className="px-2 py-2">
-                    <Link
-                      to={profile.role === 'admin' ? '/admin/dashboard' : '/athlete/dashboard'}
-                      className="text-xs text-nil-orange hover:underline"
-                    >
-                      View all messages
-                    </Link>
                   </div>
-                </div>
-                <DropdownMenuSeparator />
+                )}
+                {(profile?.role === 'admin' || profile?.role === 'athlete') && <DropdownMenuSeparator />}
                 {profile?.role === 'admin' && (
                   <DropdownMenuItem asChild>
                     <Link to="/admin/dashboard">Dashboard</Link>
