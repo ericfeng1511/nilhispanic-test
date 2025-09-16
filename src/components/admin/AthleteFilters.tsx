@@ -41,6 +41,7 @@ export const AthleteFilters: React.FC<AthleteFiltersProps> = ({
   const [yearsOpen, setYearsOpen] = useState(false);
   const [statesOpen, setStatesOpen] = useState(false);
   const [totalSmRangesOpen, setTotalSmRangesOpen] = useState(false);
+  const [profileFilterOpen, setProfileFilterOpen] = useState(false);
 
   const handleSearchChange = (value: string) => {
     onFiltersChange({ ...filters, search: value || undefined });
@@ -118,13 +119,23 @@ export const AthleteFilters: React.FC<AthleteFiltersProps> = ({
     });
   };
 
+  const handleProfileFilterChange = (option: 'profiles' | 'database') => {
+    // Toggle behavior: clicking the active option clears it back to "All Athletes"
+    const nextValue = filters.profileFilter === option ? undefined : option;
+    onFiltersChange({
+      ...filters,
+      profileFilter: nextValue,
+    });
+  };
+
   const hasActiveFilters = filters.search || 
     (filters.sports && filters.sports.length > 0) || 
     (filters.colleges && filters.colleges.length > 0) ||
     (filters.genders && filters.genders.length > 0) ||
     (filters.years && filters.years.length > 0) ||
     (filters.states && filters.states.length > 0) ||
-    (filters.totalSmRanges && filters.totalSmRanges.length > 0);
+    (filters.totalSmRanges && filters.totalSmRanges.length > 0) ||
+    (!!filters.profileFilter);
 
   return (
     <Card className="mb-6">
@@ -141,7 +152,7 @@ export const AthleteFilters: React.FC<AthleteFiltersProps> = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4">
           {/* Search Input */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -376,6 +387,48 @@ export const AthleteFilters: React.FC<AthleteFiltersProps> = ({
             </PopoverContent>
           </Popover>
 
+          {/* All Athletes (Profiles/Database) Single-Select Filter */}
+          <Popover open={profileFilterOpen} onOpenChange={setProfileFilterOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={profileFilterOpen}
+                className="justify-between"
+                disabled={isLoading}
+              >
+                {filters.profileFilter === 'profiles'
+                  ? 'Profiles'
+                  : filters.profileFilter === 'database'
+                  ? 'Database'
+                  : 'All Athletes'}
+                <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[200px] p-0">
+              <div className="p-2">
+                <button
+                  className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 ${filters.profileFilter === undefined ? 'bg-gray-50' : ''}`}
+                  onClick={() => onFiltersChange({ ...filters, profileFilter: undefined })}
+                >
+                  All Athletes
+                </button>
+                <button
+                  className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 ${filters.profileFilter === 'profiles' ? 'bg-gray-50' : ''}`}
+                  onClick={() => handleProfileFilterChange('profiles')}
+                >
+                  Profiles
+                </button>
+                <button
+                  className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 ${filters.profileFilter === 'database' ? 'bg-gray-50' : ''}`}
+                  onClick={() => handleProfileFilterChange('database')}
+                >
+                  Database
+                </button>
+              </div>
+            </PopoverContent>
+          </Popover>
+
           {/* Clear Filters Button */}
           <Button
             variant="outline"
@@ -469,6 +522,17 @@ export const AthleteFilters: React.FC<AthleteFiltersProps> = ({
                 </button>
               </span>
             ))}
+            {filters.profileFilter && (
+              <span className="inline-flex items-center gap-1 px-2 py-1 bg-nil-orange/20 text-nil-orange rounded-md text-sm">
+                All Athletes: {filters.profileFilter === 'profiles' ? 'Profiles' : 'Database'}
+                <button
+                  onClick={() => onFiltersChange({ ...filters, profileFilter: undefined })}
+                  className="hover:bg-nil-orange/30 rounded-full p-0.5"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
           </div>
         )}
       </CardContent>

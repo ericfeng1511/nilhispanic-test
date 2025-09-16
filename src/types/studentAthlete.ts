@@ -31,6 +31,12 @@ export interface StudentAthleteFilters {
   totalSmRanges?: string[]; // Multi-select social media range filter
   states?: string[]; // Multi-select state filter using two-letter abbreviations
   search?: string;
+  /**
+   * Filter by whether the athlete has a linked profile (`profile_id`) or not.
+   * 'profiles' = only athletes WITH a profile_id
+   * 'database' = only athletes WITHOUT a profile_id
+   */
+  profileFilter?: 'profiles' | 'database';
 }
 
 export interface PaginatedStudentAthletes {

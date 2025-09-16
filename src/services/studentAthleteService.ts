@@ -133,6 +133,21 @@ export class StudentAthleteService {
       );
     }
 
+    // Profile linking filter: 'profiles' = has profile_id, 'database' = missing profile_id
+    if (filters.profileFilter) {
+      if (filters.profileFilter === 'profiles') {
+        filteredAthletes = filteredAthletes.filter((athlete) => {
+          const pid = (athlete.profile_id || '').toString().trim();
+          return pid !== '';
+        });
+      } else if (filters.profileFilter === 'database') {
+        filteredAthletes = filteredAthletes.filter((athlete) => {
+          const pid = (athlete.profile_id || '').toString().trim();
+          return pid === '';
+        });
+      }
+    }
+
     // Calculate pagination
     const total = filteredAthletes.length;
     const totalPages = Math.ceil(total / pageSize);
