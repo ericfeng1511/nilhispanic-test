@@ -4,9 +4,15 @@ import HowItWorksSection from "@/components/HowItWorksSection";
 import AthleteSpotlight from "@/components/AthleteSpotlight";
 import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/Footer";
-import { useEffect } from "react";
+import { WelcomePopup } from "@/components/WelcomePopup";
+import { useEffect, useState } from "react";
 
 const Index = () => {
+  const handleSignUpClick = () => {
+    // Trigger the header's auth modal by dispatching a custom event
+    window.dispatchEvent(new CustomEvent('openAuthModal'));
+  };
+
   return (
     <div className="min-h-screen">
       <Header />
@@ -34,6 +40,7 @@ const Index = () => {
         <ContactSection />
       </main>
       <Footer />
+      <WelcomePopup onSignUpClick={handleSignUpClick} />
     </div>
   );
 };

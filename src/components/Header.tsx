@@ -70,6 +70,18 @@ const Header = () => {
     };
   }, [mobileMenuOpen]);
 
+  // Listen for custom event to open auth modal
+  useEffect(() => {
+    const handleOpenAuthModal = () => {
+      setAuthModalOpen(true);
+    };
+
+    window.addEventListener('openAuthModal', handleOpenAuthModal);
+    return () => {
+      window.removeEventListener('openAuthModal', handleOpenAuthModal);
+    };
+  }, []);
+
   const handleLogout = () => {
     // 1. Clear UI state immediately
     setMobileMenuOpen(false);
