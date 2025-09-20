@@ -44,18 +44,9 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({ onSignUpClick }) => 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent 
-        className="w-[95vw] max-w-[480px] max-h-[90vh] overflow-y-auto overscroll-contain px-4 py-6 sm:px-6 sm:py-8 mx-4 sm:mx-auto rounded-lg"
+        className="sm:max-w-[480px] max-h-[90vh] overflow-y-auto overscroll-contain px-4 py-6 sm:px-6 sm:py-8 mx-4"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
-        {/* Custom close button for better mobile UX */}
-        <button
-          onClick={handleClose}
-          className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
-          aria-label="Close"
-        >
-          <X className="h-4 w-4" />
-        </button>
-
         <DialogHeader className="text-center space-y-3 sm:space-y-4">
           <DialogTitle className="text-2xl sm:text-3xl md:text-4xl font-bold text-nil-navy leading-tight px-2">
             Own Your Brand.
