@@ -44,7 +44,7 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({ onSignUpClick }) => 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent 
-        className="w-full sm:max-w-[480px] max-h-[90vh] overflow-y-auto overscroll-contain px-6 py-8 mx-4 rounded-lg"
+        className="w-[95vw] max-w-[480px] max-h-[90vh] overflow-y-auto overscroll-contain px-4 py-6 sm:px-6 sm:py-8 mx-4 sm:mx-auto rounded-lg"
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
         {/* Custom close button for better mobile UX */}
@@ -56,29 +56,29 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({ onSignUpClick }) => 
           <X className="h-4 w-4" />
         </button>
 
-        <DialogHeader className="text-center space-y-4">
-          <DialogTitle className="text-3xl md:text-4xl font-bold text-nil-navy leading-tight">
+        <DialogHeader className="text-center space-y-3 sm:space-y-4">
+          <DialogTitle className="text-2xl sm:text-3xl md:text-4xl font-bold text-nil-navy leading-tight px-2">
             Own Your Brand.
           </DialogTitle>
-          <DialogDescription className="text-lg md:text-xl text-nil-dark-gray font-normal leading-relaxed">
+          <DialogDescription className="text-base sm:text-lg md:text-xl text-nil-dark-gray font-normal leading-relaxed px-2">
             Hispanic Student-Athletes: Build your free profile today.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex justify-center mt-8">
+        <div className="flex justify-center mt-6 sm:mt-8">
           <Button 
             onClick={handleSignUpClick}
-            className="bg-nil-orange text-white hover:bg-nil-navy hover:text-white transition-colors px-8 py-4 h-auto text-lg font-semibold rounded-md min-w-[200px] touch-manipulation"
+            className="bg-nil-orange text-white hover:bg-nil-navy hover:text-white transition-colors px-6 py-3 sm:px-8 sm:py-4 h-auto text-base sm:text-lg font-semibold rounded-md w-full sm:w-auto sm:min-w-[200px] touch-manipulation"
           >
             Sign Up Now
           </Button>
         </div>
 
         {/* Optional: Add a subtle "No thanks" link */}
-        <div className="text-center mt-6">
+        <div className="text-center mt-4 sm:mt-6">
           <button
             onClick={handleClose}
-            className="text-sm text-nil-dark-gray hover:text-nil-navy transition-colors underline underline-offset-2"
+            className="text-sm text-nil-dark-gray hover:text-nil-navy transition-colors underline underline-offset-2 touch-manipulation py-2"
           >
             Maybe later
           </button>
