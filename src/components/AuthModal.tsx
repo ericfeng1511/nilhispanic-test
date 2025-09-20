@@ -12,6 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useAuth } from '@/contexts/AuthContext';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { InfoTooltip } from './InfoTooltip';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -297,7 +298,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
           {!isLogin && (
             <div className="space-y-2">
-              <Label htmlFor="role">I am a...</Label>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="role">I am a...</Label>
+                {formData.role === 'athlete' && (
+                  <InfoTooltip variant="mobile" />
+                )}
+              </div>
               <select
                 id="role"
                 name="role"

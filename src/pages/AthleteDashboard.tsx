@@ -22,6 +22,7 @@ import type { Conversation } from '@/types/chat';
 import type { GroupConversation } from '@/types/chatGroup';
 import { CityService, type City } from '@/services/cityService';
 import { CollegeService } from '@/services/collegeService';
+import { InfoTooltip } from '@/components/InfoTooltip';
 
 // Custom TikTok Icon Component
 const TikTokIcon = ({ className }: { className?: string }) => (
@@ -509,7 +510,10 @@ const AthleteDashboard: React.FC = () => {
                 <ArrowLeft className="w-6 h-6" />
               </Link>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
+                <div className="flex items-center gap-3">
+                  <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
+                  <InfoTooltip variant="desktop" />
+                </div>
                 <p className="text-gray-600 mt-1">
                   Manage your athlete profile and social media presence
                 </p>
