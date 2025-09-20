@@ -43,11 +43,9 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({ onSignUpClick }) => 
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent 
-        className="sm:max-w-[480px] max-h-[90vh] overflow-y-auto overscroll-contain px-4 py-6 sm:px-6 sm:py-8 mx-4"
-        style={{ WebkitOverflowScrolling: 'touch' }}
-      >
-        <DialogHeader className="text-center space-y-3 sm:space-y-4">
+      <DialogContent className="sm:max-w-[480px] mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="px-4 py-6 sm:px-6 sm:py-8">
+          <DialogHeader className="text-center space-y-3 sm:space-y-4">
           <DialogTitle className="text-2xl sm:text-3xl md:text-4xl font-bold text-nil-navy leading-tight px-2">
             Own Your Brand.
           </DialogTitle>
@@ -73,6 +71,7 @@ export const WelcomePopup: React.FC<WelcomePopupProps> = ({ onSignUpClick }) => 
           >
             Maybe later
           </button>
+        </div>
         </div>
       </DialogContent>
     </Dialog>
