@@ -35,7 +35,7 @@ const TermsPdfViewer: React.FC<TermsPdfViewerProps> = ({ fileUrl }) => {
   }, []);
 
   return (
-    <div ref={containerRef} className="w-full h-[70vh] max-h-[70vh] overflow-y-auto">
+    <div ref={containerRef} className="w-full h-[70vh] max-h-[70vh] overflow-y-auto pdf-tight bg-white">
       <Document
         file={fileUrl}
         onLoadSuccess={onDocumentLoadSuccess}
@@ -52,7 +52,7 @@ const TermsPdfViewer: React.FC<TermsPdfViewerProps> = ({ fileUrl }) => {
         externalLinkTarget="_blank"
       >
         {numPages && width > 0 && (
-          <div className="flex flex-col items-center gap-4 py-2">
+          <div className="flex flex-col items-center gap-0 py-0">
             {Array.from({ length: numPages }, (_, i) => i + 1).map((pageNumber) => (
               <Page
                 key={pageNumber}
@@ -60,6 +60,7 @@ const TermsPdfViewer: React.FC<TermsPdfViewerProps> = ({ fileUrl }) => {
                 width={Math.min(width, 800)}
                 renderTextLayer={false}
                 renderAnnotationLayer={false}
+                className="!m-0 !p-0"
               />
             ))}
           </div>

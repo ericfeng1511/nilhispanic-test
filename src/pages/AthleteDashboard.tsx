@@ -167,12 +167,12 @@ const AthleteDashboard: React.FC = () => {
       }
       
       // Explicitly include ids as number or null to avoid being dropped
-      const finalUpdates = {
+      const finalUpdates: any = {
         ...updates,
         photo: photoUrl,
         city_id: typeof athleteProfile.city_id === 'number' ? athleteProfile.city_id : null,
-        school_id: typeof athleteProfile.school_id === 'number' ? athleteProfile.school_id : null
-      } as typeof updates;
+        school_id: typeof athleteProfile.school_id === 'number' ? athleteProfile.school_id : null,
+      };
       console.log('Submitting updates:', finalUpdates);
       
       // If no athlete record exists, create one
@@ -197,6 +197,13 @@ const AthleteDashboard: React.FC = () => {
       setPhotoPreview(null);
       setIsEditing(false);
       console.log('✅ Athlete profile updated successfully!');
+      // Force a full page reload to ensure the latest profile image is displayed immediately
+      // This is a pragmatic solution to bypass any caching/stale state across components
+      try {
+        window.location.reload();
+      } catch {
+        // no-op
+      }
     },
     onError: (error) => {
       console.error('❌ Error updating athlete profile:', error);

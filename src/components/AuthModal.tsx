@@ -39,8 +39,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
   const { signIn, signUp, resendVerification } = useAuth();
 
-  // Lazy-load the scroll-only PDF viewer to keep main bundle light
-  const TermsPdfViewer = lazy(() => import('./TermsPdfViewer'));
+  // Lazy-load the HTML-first viewer (falls back to PDF) to keep main bundle light
+  const TermsContentViewer = lazy(() => import('./TermsContentViewer'));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -391,7 +391,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         </DialogHeader>
         <div className="w-full h-[70vh] max-h-[70vh]">
           <Suspense fallback={<div className="p-4 text-sm text-gray-600">Loading terms...</div>}>
-            <TermsPdfViewer fileUrl="/terms/terms.pdf" />
+            <TermsContentViewer htmlUrl="/terms/terms.html" pdfUrl="/terms/terms.pdf" />
           </Suspense>
         </div>
       </DialogContent>

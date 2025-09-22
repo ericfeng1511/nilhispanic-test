@@ -26,6 +26,11 @@ export const AthleteDetailModal: React.FC<AthleteDetailModalProps> = ({
   // Determine if the athlete has a valid photo URL
   const hasPhoto = !!(athlete?.photo && String(athlete.photo).trim() !== '');
 
+  // Build cache-busted photo src when present
+  const photoSrc = hasPhoto && athlete
+    ? `${athlete.photo}${athlete.photo.includes('?') ? '&' : '?'}v=${encodeURIComponent(athlete.updated_at || '')}`
+    : '';
+
   // Reset image state when athlete or photo changes
   useEffect(() => {
     if (!athlete) return;
@@ -151,7 +156,7 @@ export const AthleteDetailModal: React.FC<AthleteDetailModalProps> = ({
               
               {!imageError && hasPhoto ? (
                 <img
-                  src={athlete.photo}
+                  src={photoSrc}
                   alt={`${athlete.name} - ${athlete.sport} athlete`}
                   className={`w-full h-full object-cover transition-opacity duration-300 ${
                     imageLoading ? 'opacity-0' : 'opacity-100'

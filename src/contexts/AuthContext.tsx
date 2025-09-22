@@ -3,7 +3,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabaseClient';
 
 // Always redirect verified email links to the live site
-const EMAIL_REDIRECT_URL = 'https://nilhispanic.com/';
+const EMAIL_REDIRECT_URL = 'https://nilhispanic.com/athlete/dashboard';
 
 interface Profile {
   id: string;

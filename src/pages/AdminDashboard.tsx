@@ -32,12 +32,16 @@ import type { Conversation } from '@/types/chat';
 import type { GroupConversation } from '@/types/chatGroup';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { StudentAthleteService } from '@/services/studentAthleteService';
+import { useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabaseClient';
 
 type TabType = 'athletes' | 'contacts' | 'colleges';
 
 const AdminDashboard: React.FC = () => {
   const { profile, loading: authLoading } = useAuth();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<TabType>('athletes');
+  const [imageCacheKey, setImageCacheKey] = useState<number>(Date.now());
   const [selectedAthlete, setSelectedAthlete] = useState<StudentAthlete | null>(null);
   const [selectedContact, setSelectedContact] = useState<SchoolContact | null>(null);
   const [isAthleteModalOpen, setIsAthleteModalOpen] = useState(false);
@@ -124,6 +128,34 @@ const AdminDashboard: React.FC = () => {
     stats: collegeStats,
     refetch: refetchColleges,
   } = useColleges();
+
+  // Realtime: refresh athletes list when student_athletes change (insert/update/delete)
+  useEffect(() => {
+    // Only subscribe when admin is present
+    if (!profile || profile.role !== 'admin') return;
+
+    const channel = supabase
+      .channel('admin-dashboard-student-athletes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'student_athletes' },
+        (_payload) => {
+          // Invalidate the cached list to force refetch; this updates images too
+          queryClient.invalidateQueries({ queryKey: ['student-athletes'] });
+          // Bump cache key to force <img> URL changes and bypass browser cache
+          setImageCacheKey(Date.now());
+        }
+      )
+      .subscribe();
+
+    return () => {
+      try {
+        supabase.removeChannel(channel);
+      } catch {
+        // ignore
+      }
+    };
+  }, [profile?.id, profile?.role, queryClient]);
 
   // Selection handlers
   const handleAthleteSelection = (athleteId: string, selected: boolean) => {
@@ -689,6 +721,7 @@ const AdminDashboard: React.FC = () => {
                             selectionMode={selectionMode}
                             isSelected={selectedAthleteIds.has(athlete.id)}
                             onSelectionChange={handleAthleteSelection}
+                            cacheKey={imageCacheKey}
                           />
                           {/* Actions under card - Hidden on mobile since horizontal cards are more compact */}
                           <div className="hidden sm:flex gap-2">

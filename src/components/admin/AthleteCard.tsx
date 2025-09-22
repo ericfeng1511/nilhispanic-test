@@ -12,6 +12,7 @@ interface AthleteCardProps {
   isSelected?: boolean;
   onSelectionChange?: (athleteId: string, selected: boolean) => void;
   selectionMode?: boolean;
+  cacheKey?: number | string; // optional cache-busting key from parent
 }
 
 export const AthleteCard: React.FC<AthleteCardProps> = ({ 
@@ -19,7 +20,8 @@ export const AthleteCard: React.FC<AthleteCardProps> = ({
   onClick, 
   isSelected = false, 
   onSelectionChange, 
-  selectionMode = false 
+  selectionMode = false,
+  cacheKey,
 }) => {
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
@@ -27,6 +29,14 @@ export const AthleteCard: React.FC<AthleteCardProps> = ({
 
   // Determine if the athlete has a valid photo URL
   const hasPhoto = !!(athlete.photo && String(athlete.photo).trim() !== '');
+
+  // Build photo src with cache-busting based on updated_at
+  let photoSrc = hasPhoto
+    ? `${athlete.photo}${athlete.photo.includes('?') ? '&' : '?'}v=${encodeURIComponent(athlete.updated_at || '')}`
+    : '';
+  if (photoSrc && (cacheKey !== undefined && cacheKey !== null)) {
+    photoSrc += `&_=${encodeURIComponent(String(cacheKey))}`;
+  }
 
   // Initialize/reset image states whenever the athlete or photo changes
   useEffect(() => {
@@ -116,7 +126,7 @@ export const AthleteCard: React.FC<AthleteCardProps> = ({
             
             {!imageError && hasPhoto ? (
               <img
-                src={athlete.photo}
+                src={photoSrc}
                 alt={`${athlete.name} - ${athlete.sport} athlete`}
                 className={`w-full h-full object-cover transition-opacity duration-300 ${
                   imageLoading ? 'opacity-0' : 'opacity-100'
@@ -162,7 +172,7 @@ export const AthleteCard: React.FC<AthleteCardProps> = ({
             
             {!imageError && hasPhoto ? (
               <img
-                src={athlete.photo}
+                src={photoSrc}
                 alt={`${athlete.name} - ${athlete.sport} athlete`}
                 className={`w-full h-full object-cover transition-opacity duration-300 ${
                   imageLoading ? 'opacity-0' : 'opacity-100'

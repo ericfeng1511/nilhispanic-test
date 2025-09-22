@@ -91,6 +91,41 @@
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+
+  /* Tight PDF page stacking for Terms viewer */
+  .pdf-tight .react-pdf__Document {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .pdf-tight .react-pdf__Page {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    background: #ffffff !important; /* ensure consistent white to hide overlaps */
+    line-height: 0 !important;
+    display: block !important;
+  }
+  .pdf-tight .react-pdf__Page__canvas,
+  .pdf-tight .react-pdf__Page__textContent,
+  .pdf-tight .react-pdf__Page__annotations {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    display: block !important;
+  }
+
+  /* Visually crop inherent PDF page white margins (top/bottom) */
+  .pdf-tight .react-pdf__Page__canvas {
+    /* Adjust the 24px values to fine-tune cropping if needed */
+    clip-path: inset(24px 0 24px 0);
+    -webkit-clip-path: inset(24px 0 24px 0);
+  }
+  /* Collapse seam between successive pages by overlapping more aggressively */
+  .pdf-tight .react-pdf__Page + .react-pdf__Page {
+    /* Increase overlap to account for cropped top/bottom margins */
+    margin-top: -48px !important;
+  }
 }
 
 @layer base {
