@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from '@/contexts/AuthContext';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { InfoTooltip } from './InfoTooltip';
+const SignupWizard = lazy(() => import('./auth/SignupWizard/SignupWizard'));
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [error, setError] = useState<string | null>(null);
   const [verificationSent, setVerificationSent] = useState(false);
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+  const [wizardOpen, setWizardOpen] = useState(false);
   
   const [formData, setFormData] = useState({
     email: '',
@@ -89,17 +91,27 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         setPendingEmail(formData.email);
         setError(null);
       } else {
-        // Success - close modal and hard refresh page
-        console.log('Auth successful, refreshing page...');
-        onClose();
-        setFormData({ email: '', password: '', fullName: '', confirmPassword: '', role: 'athlete' });
-        setTermsAccepted(false);
-        setError(null);
-        setVerificationSent(false);
-        setPendingEmail(null);
-        
-        // Hard refresh to eliminate any state management issues
-        window.location.reload();
+        if (isLogin) {
+          // Successful sign in: close modal and refresh page
+          console.log('Sign in successful, refreshing page...');
+          onClose();
+          setFormData({ email: '', password: '', fullName: '', confirmPassword: '', role: 'athlete' });
+          setTermsAccepted(false);
+          setError(null);
+          setVerificationSent(false);
+          setPendingEmail(null);
+          window.location.reload();
+        } else {
+          // Successful sign up: open the Signup Wizard flow starting with Photo Upload
+          console.log('Sign up successful, opening Signup Wizard...');
+          onClose();
+          setFormData({ email: '', password: '', fullName: '', confirmPassword: '', role: 'athlete' });
+          setTermsAccepted(false);
+          setError(null);
+          setVerificationSent(false);
+          setPendingEmail(null);
+          setWizardOpen(true);
+        }
       }
     } catch (err) {
       console.error('Unexpected auth error:', err);
@@ -148,6 +160,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
   return (
     <>
+    <Suspense fallback={null}>
+      {wizardOpen && (
+        <SignupWizard isOpen={wizardOpen} onClose={() => setWizardOpen(false)} />
+      )}
+    </Suspense>
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         className="w-full sm:max-w-[425px] max-h-[90vh] overflow-y-auto overscroll-contain px-4"
