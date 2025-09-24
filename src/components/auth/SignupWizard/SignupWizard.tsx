@@ -6,25 +6,31 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CityService, type City } from '@/services/cityService';
 import { CollegeService } from '@/services/collegeService';
-import { StudentAthleteService } from '@/services/studentAthleteService';
+import { SignupWizardService } from '@/services/signupWizardService';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/supabaseClient';
 
 interface SignupWizardProps {
   isOpen: boolean;
   onClose: () => void;
+  email: string;
+  password: string;
+  fullName: string;
+  role: 'athlete' | 'brand';
 }
 
 type Year = 'FR' | 'SO' | 'JR' | 'SR' | 'RFR' | 'GR' | '';
 
 type Gender = 'M' | 'F' | '';
 
-export const SignupWizard: React.FC<SignupWizardProps> = ({ isOpen, onClose }) => {
+const EMAIL_REDIRECT_URL = 'https://nilhispanic.com/athlete/dashboard';
+
+export const SignupWizard: React.FC<SignupWizardProps> = ({ isOpen, onClose, email, password, fullName, role }) => {
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
   const [profileId, setProfileId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [verificationSent, setVerificationSent] = useState(false);
 
   // Step 1 Photo
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
@@ -60,20 +66,28 @@ export const SignupWizard: React.FC<SignupWizardProps> = ({ isOpen, onClose }) =
   const [tiktokHandle, setTiktokHandle] = useState('');
   const [tiktokFollowers, setTiktokFollowers] = useState<number | undefined>();
 
-  const { user, profile } = useAuth();
+  const { resendVerification } = useAuth();
 
-  // Initialize on open
+  // Initialize: create user + base student_athletes row
   useEffect(() => {
     if (!isOpen) return;
     setCurrentStep(1);
     setError(null);
     setSuccessMessage(null);
+    setVerificationSent(false);
     setProfileId(null);
-    if (user?.id) {
-      setProfileId(user.id);
-    } else {
-      setError('No authenticated user profile found.');
-    }
+
+    (async () => {
+      try {
+        setLoading(true);
+        const res = await SignupWizardService.init({ email, password, full_name: fullName, role: role as any });
+        setProfileId(res.profile_id);
+      } catch (e: any) {
+        setError(e?.message || 'Failed to initialize signup.');
+      } finally {
+        setLoading(false);
+      }
+    })();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
@@ -102,32 +116,9 @@ export const SignupWizard: React.FC<SignupWizardProps> = ({ isOpen, onClose }) =
     try {
       setLoading(true);
       setError(null);
-
-      // Generate unique filename
-      const fileExt = selectedPhoto.name.split('.').pop();
-      const fileName = `${profileId}-${Date.now()}.${fileExt}`;
-      const filePath = `athlete-photos/${fileName}`;
-
-      // Upload to Storage
-      const { error: uploadError } = await supabase.storage
-        .from('athlete-photos')
-        .upload(filePath, selectedPhoto, { cacheControl: '3600', upsert: true });
-      if (uploadError) throw uploadError;
-
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from('athlete-photos')
-        .getPublicUrl(filePath);
-      const publicUrl = urlData.publicUrl;
-
-      // Ensure athlete row exists, then update photo
-      const existing = await StudentAthleteService.fetchStudentAthleteByProfileId(profileId);
-      if (!existing) {
-        await StudentAthleteService.createStudentAthlete(profileId, (profile?.full_name as any) || 'Unknown', { photo: publicUrl });
-      } else {
-        await StudentAthleteService.updateStudentAthlete(profileId, { photo: publicUrl });
-      }
-
+      // Upload via Edge Function and persist URL to student_athletes.photo
+      const { url } = await SignupWizardService.uploadPhoto(profileId, selectedPhoto);
+      await SignupWizardService.update({ profile_id: profileId, photo: url });
       setCurrentStep(2);
     } catch (e: any) {
       setError(e?.message || 'Failed to upload photo.');
@@ -176,29 +167,16 @@ export const SignupWizard: React.FC<SignupWizardProps> = ({ isOpen, onClose }) =
     try {
       setLoading(true);
       setError(null);
-      // Ensure athlete row exists before update
-      const existing = await StudentAthleteService.fetchStudentAthleteByProfileId(profileId);
-      if (!existing) {
-        await StudentAthleteService.createStudentAthlete(profileId, (profile?.full_name as any) || 'Unknown', {
-          sport,
-          year,
-          gender,
-          school_id: schoolId ?? null,
-          college: schoolId ? undefined : collegeFallback,
-          city_id: cityId ?? null,
-          hometown: cityId ? undefined : hometownFallback,
-        });
-      } else {
-        await StudentAthleteService.updateStudentAthlete(profileId, {
-          sport,
-          year,
-          gender,
-          school_id: schoolId ?? null,
-          college: schoolId ? undefined : collegeFallback,
-          city_id: cityId ?? null,
-          hometown: cityId ? undefined : hometownFallback,
-        });
-      }
+      await SignupWizardService.update({
+        profile_id: profileId,
+        sport,
+        year,
+        gender,
+        school_id: schoolId ?? null,
+        college: schoolId ? undefined : collegeFallback,
+        city_id: cityId ?? null,
+        hometown: cityId ? undefined : hometownFallback,
+      });
       setCurrentStep(3);
     } catch (e: any) {
       setError(e?.message || 'Failed to save basic information.');
@@ -224,8 +202,8 @@ export const SignupWizard: React.FC<SignupWizardProps> = ({ isOpen, onClose }) =
     try {
       setLoading(true);
       setError(null);
-      // Persist socials only (no verification flow)
-      await StudentAthleteService.updateStudentAthlete(profileId, {
+      await SignupWizardService.update({
+        profile_id: profileId,
         instagram_handle: instagramHandle || undefined,
         instagram_followers: instagramFollowers,
         x_handle: xHandle || undefined,
@@ -233,19 +211,42 @@ export const SignupWizard: React.FC<SignupWizardProps> = ({ isOpen, onClose }) =
         tiktok_handle: tiktokHandle || undefined,
         tiktok_followers: tiktokFollowers,
       });
-      setSuccessMessage('Your account has been set up!');
-      // Close wizard and navigate user to dashboard
-      onClose();
-      try { window.location.href = '/athlete/dashboard'; } catch {}
+
+      // Finalize server-side (no-op placeholder) then send verification email via client
+      await SignupWizardService.finalize(profileId);
+
+      // Send verification email using existing client util
+      const { error: resendErr } = await resendVerification(email);
+      if (resendErr) {
+        setError(resendErr.message || 'Failed to send verification email.');
+        return;
+      }
+
+      setVerificationSent(true);
+      setSuccessMessage('Account created! Please check your email for a verification link.');
     } catch (e: any) {
-      setError(e?.message || 'Failed to save social media details.');
+      setError(e?.message || 'Failed to finalize account.');
     } finally {
       setLoading(false);
     }
   };
 
   const renderStep = () => {
-    // No verification flow when email verification is disabled
+    if (verificationSent) {
+      return (
+        <div className="space-y-4">
+          <div className="p-4 bg-green-50 border border-green-200 rounded-md text-green-800">
+            {successMessage}
+          </div>
+          <p className="text-sm text-gray-600">
+            We sent a verification link to {email}. After verifying, you will be redirected to your dashboard.
+          </p>
+          <div className="text-center">
+            <Button onClick={onClose} className="bg-nil-orange hover:bg-nil-navy">Close</Button>
+          </div>
+        </div>
+      );
+    }
 
     if (currentStep === 1) {
       return (
@@ -437,7 +438,7 @@ export const SignupWizard: React.FC<SignupWizardProps> = ({ isOpen, onClose }) =
       <DialogContent className="w-full sm:max-w-[560px] max-h-[90vh] overflow-y-auto px-4">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-nil-navy">
-            {currentStep === 1 ? 'Upload Profile Photo' : currentStep === 2 ? 'Basic Information' : 'Social Media Presence'}
+            {verificationSent ? 'Check Your Email' : currentStep === 1 ? 'Upload Profile Photo' : currentStep === 2 ? 'Basic Information' : 'Social Media Presence'}
           </DialogTitle>
         </DialogHeader>
         {renderStep()}
