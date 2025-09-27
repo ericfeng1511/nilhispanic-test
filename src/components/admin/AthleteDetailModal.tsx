@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { StudentAthlete } from '@/types/studentAthlete';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { User, MapPin, Trophy, Calendar, Users, Instagram, Music, Twitter, Mail } from 'lucide-react';
+import { User, MapPin, Trophy, Calendar, Users, Instagram, Music, Twitter, Mail, Globe } from 'lucide-react';
 import { formatAcademicYear, formatGender } from '@/utils/formatters';
 import { CityService } from '@/services/cityService';
 import { CollegeService } from '@/services/collegeService';
@@ -249,6 +249,19 @@ export const AthleteDetailModal: React.FC<AthleteDetailModalProps> = ({
                   <span className="font-medium text-gray-700">Gender:</span>
                   <span className="ml-2 text-gray-900">
                     {formatGender(athlete.gender)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Cultural Roots */}
+              <div className="flex items-center space-x-3">
+                <Globe className="w-5 h-5 text-nil-orange flex-shrink-0" />
+                <div>
+                  <span className="font-medium text-gray-700">Cultural Roots:</span>
+                  <span className="ml-2 text-gray-900">
+                    {Array.isArray(athlete.cultural_roots) && athlete.cultural_roots.length > 0
+                      ? athlete.cultural_roots.join(', ')
+                      : 'N/A'}
                   </span>
                 </div>
               </div>
