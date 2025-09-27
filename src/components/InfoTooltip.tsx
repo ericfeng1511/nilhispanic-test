@@ -24,10 +24,10 @@ Always free, with no obligation or commitment.`;
     <div className="relative inline-block">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors ${className}`}
+        className={`inline-flex items-center justify-center w-8 h-8 rounded-full bg-nil-orange hover:bg-nil-navy transition-colors shadow-md hover:shadow-lg ${className}`}
         aria-label="More information"
       >
-        <HelpCircle className="w-3 h-3 text-gray-600" />
+        <HelpCircle className="w-5 h-5 text-white" />
       </button>
 
       {isOpen && (

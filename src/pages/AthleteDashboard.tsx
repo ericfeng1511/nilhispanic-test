@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate, Link, useSearchParams } from 'react-router-dom';
-import { User, Trophy, Calendar, MessageSquare, Settings, BarChart3, Edit3, Save, X, ArrowLeft, Camera, Upload, Instagram, Twitter } from 'lucide-react';
+import { User, Trophy, Calendar, MessageSquare, Settings, BarChart3, Edit3, Save, X, ArrowLeft, Camera, Upload, Instagram, Twitter, Trash2, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -99,6 +99,21 @@ const AthleteDashboard: React.FC = () => {
   const [showSchoolSuggestions, setShowSchoolSuggestions] = useState(false);
   const schoolSearchTimeout = useRef<number | null>(null);
   const [selectedSchoolLabel, setSelectedSchoolLabel] = useState<string>('');
+  
+  // Original values for cancel functionality
+  const [originalCityQuery, setOriginalCityQuery] = useState<string>('');
+  const [originalSchoolQuery, setOriginalSchoolQuery] = useState<string>('');
+  const [originalSelectedCityLabel, setOriginalSelectedCityLabel] = useState<string>('');
+  const [originalSelectedSchoolLabel, setOriginalSelectedSchoolLabel] = useState<string>('');
+
+  // Independent Social editing state and originals
+  const [isEditingSocial, setIsEditingSocial] = useState(false);
+  const [originalInstagramHandle, setOriginalInstagramHandle] = useState<string | undefined>(undefined);
+  const [originalInstagramFollowers, setOriginalInstagramFollowers] = useState<number | undefined>(undefined);
+  const [originalTiktokHandle, setOriginalTiktokHandle] = useState<string | undefined>(undefined);
+  const [originalTiktokFollowers, setOriginalTiktokFollowers] = useState<number | undefined>(undefined);
+  const [originalXHandle, setOriginalXHandle] = useState<string | undefined>(undefined);
+  const [originalXFollowers, setOriginalXFollowers] = useState<number | undefined>(undefined);
   
   // Chat state
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -363,10 +378,55 @@ const AthleteDashboard: React.FC = () => {
     setSelectedPhoto(null);
     setPhotoPreview(null);
     setIsEditing(false);
-    // Reset query to either selected city label or hometown
-    setCityQuery(selectedCityLabel || currentAthleteData?.hometown || '');
-    // Reset school query to selected label or existing college text
-    setSchoolQuery(selectedSchoolLabel || currentAthleteData?.college || '');
+    // Reset queries and labels to their original values before editing
+    setCityQuery(originalCityQuery);
+    setSchoolQuery(originalSchoolQuery);
+    setSelectedCityLabel(originalSelectedCityLabel);
+    setSelectedSchoolLabel(originalSelectedSchoolLabel);
+  };
+
+  const handleClearAll = () => {
+    // Clear all basic information fields
+    setAthleteProfile({
+      sport: '',
+      year: '',
+      college: '',
+      hometown: '',
+      gender: '',
+      photo: athleteProfile.photo, // Keep the photo
+      instagram_handle: athleteProfile.instagram_handle, // Keep social media
+      instagram_followers: athleteProfile.instagram_followers,
+      tiktok_handle: athleteProfile.tiktok_handle,
+      tiktok_followers: athleteProfile.tiktok_followers,
+      x_handle: athleteProfile.x_handle,
+      x_followers: athleteProfile.x_followers,
+      city_id: undefined,
+      school_id: undefined
+    });
+    // Clear city and school queries
+    setCityQuery('');
+    setSchoolQuery('');
+    setSelectedCityLabel('');
+    setSelectedSchoolLabel('');
+  };
+
+  // Check if all required basic information fields are completed
+  const isBasicInfoComplete = () => {
+    return (
+      athleteProfile.sport.trim() !== '' &&
+      athleteProfile.year !== '' &&
+      (selectedSchoolLabel.trim() !== '' || athleteProfile.college.trim() !== '') &&
+      (selectedCityLabel.trim() !== '' || athleteProfile.hometown.trim() !== '') &&
+      athleteProfile.gender !== ''
+    );
+  };
+
+  // Check if any social media is connected
+  const isAnySocialConnected = () => {
+    const ig = (athleteProfile.instagram_handle || '').trim();
+    const tw = (athleteProfile.x_handle || '').trim();
+    const tk = (athleteProfile.tiktok_handle || '').trim();
+    return ig !== '' || tw !== '' || tk !== '';
   };
 
   // Photo upload handlers
@@ -396,6 +456,46 @@ const AthleteDashboard: React.FC = () => {
     }
   };
 
+  // Social editing helpers
+  const startSocialEdit = () => {
+    setOriginalInstagramHandle(athleteProfile.instagram_handle);
+    setOriginalInstagramFollowers(athleteProfile.instagram_followers);
+    setOriginalTiktokHandle(athleteProfile.tiktok_handle);
+    setOriginalTiktokFollowers(athleteProfile.tiktok_followers);
+    setOriginalXHandle(athleteProfile.x_handle);
+    setOriginalXFollowers(athleteProfile.x_followers);
+    setIsEditingSocial(true);
+  };
+
+  const handleCancelSocial = () => {
+    setAthleteProfile(prev => ({
+      ...prev,
+      instagram_handle: originalInstagramHandle,
+      instagram_followers: originalInstagramFollowers,
+      tiktok_handle: originalTiktokHandle,
+      tiktok_followers: originalTiktokFollowers,
+      x_handle: originalXHandle,
+      x_followers: originalXFollowers,
+    }));
+    setIsEditingSocial(false);
+  };
+
+  const handleSaveSocial = async () => {
+    try {
+      await updateMutation.mutateAsync({
+        instagram_handle: athleteProfile.instagram_handle,
+        instagram_followers: athleteProfile.instagram_followers,
+        tiktok_handle: athleteProfile.tiktok_handle,
+        tiktok_followers: athleteProfile.tiktok_followers,
+        x_handle: athleteProfile.x_handle,
+        x_followers: athleteProfile.x_followers,
+      });
+      setIsEditingSocial(false);
+    } catch (e) {
+      // Errors are already logged in mutation onError
+    }
+  };
+
   const handlePhotoUploadClick = () => {
     fileInputRef.current?.click();
   };
@@ -403,7 +503,8 @@ const AthleteDashboard: React.FC = () => {
   const handleRemovePhoto = () => {
     setSelectedPhoto(null);
     setPhotoPreview(null);
-    setAthleteProfile(prev => ({ ...prev, photo: '' }));
+    // Do not clear the existing profile photo when cancelling a new selection.
+    // We only discard the newly selected (unsaved) photo preview and input value.
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -503,8 +604,17 @@ const AthleteDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen relative">
+      {/* Fixed Background Image */}
+      <div 
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: 'url(/images/background-img-1.png)' }}
+      />
+      {/* Dark overlay for readability */}
+      <div className="fixed inset-0 bg-black/40" />
+      
+      {/* Content with relative positioning */}
+      <div className="relative z-10 container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -512,17 +622,17 @@ const AthleteDashboard: React.FC = () => {
               <Link 
                 to="/"
                 aria-label="Go back to homepage"
-                className="p-2 rounded-full text-gray-500 hover:bg-gray-200 hover:text-gray-800 transition-colors"
+                className="p-2 rounded-full text-white/80 hover:bg-white/20 hover:text-white transition-colors"
               >
                 <ArrowLeft className="w-6 h-6" />
               </Link>
               <div>
                 <div className="flex items-center gap-3">
-                  <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
+                  <h1 className="text-3xl font-bold text-white drop-shadow-lg">My Profile</h1>
                   <InfoTooltip variant="desktop" />
                 </div>
-                <p className="text-gray-600 mt-1">
-                  Manage your athlete profile and social media presence
+                <p className="text-white/90 mt-1 drop-shadow-md">
+                  Manage your ÑIL Hispanic Athlete Profile
                 </p>
               </div>
             </div>
@@ -534,7 +644,7 @@ const AthleteDashboard: React.FC = () => {
         </div>
 
         {/* Profile Header Card */}
-        <Card className="mb-6">
+        <Card className="mb-6 bg-white/75 backdrop-blur-sm border-white/20">
           <CardContent className="pt-6">
             <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
               {/* Profile Photo */}
@@ -576,33 +686,10 @@ const AthleteDashboard: React.FC = () => {
                     Student Athlete
                   </div>
                 </div>
-                <div className="flex flex-wrap items-center gap-4 text-gray-600">
-                  {athleteProfile.sport && (
-                    <div className="flex items-center gap-1">
-                      <Trophy className="w-4 h-4" />
-                      <span>{athleteProfile.sport}</span>
-                    </div>
-                  )}
-                  {(selectedSchoolLabel || athleteProfile.college) && (
-                    <div className="flex items-center gap-1">
-                      <Settings className="w-4 h-4" />
-                      <span>{selectedSchoolLabel || athleteProfile.college}</span>
-                    </div>
-                  )}
-                  {athleteProfile.year && (
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-4 h-4" />
-                      <span>
-                        {athleteProfile.year === 'FR' ? 'Freshman' :
-                         athleteProfile.year === 'SO' ? 'Sophomore' :
-                         athleteProfile.year === 'JR' ? 'Junior' :
-                         athleteProfile.year === 'SR' ? 'Senior' :
-                         athleteProfile.year === 'RFR' ? 'Redshirt' :
-                         athleteProfile.year === 'GR' ? 'Graduate' : athleteProfile.year}
-                      </span>
-                    </div>
-                  )}
-                </div>
+                {/* Email subheading (read-only) */}
+                {user?.email && (
+                  <div className="text-gray-600 text-sm mb-2 break-all">{user.email}</div>
+                )}
                 {(selectedPhoto || photoPreview) && (
                   <div className="mt-3 flex gap-2">
                     <Button
@@ -628,7 +715,7 @@ const AthleteDashboard: React.FC = () => {
         </Card>
 
         {/* Basic Information */}
-        <Card className="mb-6">
+        <Card className="mb-6 bg-white/75 backdrop-blur-sm border-white/20">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
@@ -637,7 +724,14 @@ const AthleteDashboard: React.FC = () => {
               </CardTitle>
               {!isEditing ? (
                 <Button
-                  onClick={() => setIsEditing(true)}
+                  onClick={() => {
+                    // Store original values before editing
+                    setOriginalCityQuery(cityQuery);
+                    setOriginalSchoolQuery(schoolQuery);
+                    setOriginalSelectedCityLabel(selectedCityLabel);
+                    setOriginalSelectedSchoolLabel(selectedSchoolLabel);
+                    setIsEditing(true);
+                  }}
                   variant="outline"
                   size="sm"
                   className="flex items-center gap-2"
@@ -661,6 +755,15 @@ const AthleteDashboard: React.FC = () => {
                     {updateMutation.isPending ? 'Saving...' : 'Save'}
                   </Button>
                   <Button
+                    onClick={handleClearAll}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Clear All
+                  </Button>
+                  <Button
                     onClick={handleCancel}
                     variant="outline"
                     size="sm"
@@ -674,10 +777,24 @@ const AthleteDashboard: React.FC = () => {
             </div>
           </CardHeader>
           <CardContent>
+            {/* Warning Message for Incomplete Profile */}
+            {!isBasicInfoComplete() && (
+              <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-amber-800">
+                    One or more fields not completed.
+                  </p>
+                  <p className="text-sm text-amber-700 mt-1">
+                    Please fill in your basic info to help ÑIL Hispanic match you with NIL opportunities.
+                  </p>
+                </div>
+              </div>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Sport Field */}
               <div className="space-y-2 relative">
-                <Label htmlFor="sport">Sport</Label>
+                <Label htmlFor="sport">Sport <span className="text-red-500">*</span></Label>
                 {isEditing ? (
                   <div className="relative">
                     <Input
@@ -718,7 +835,7 @@ const AthleteDashboard: React.FC = () => {
 
               {/* Year Field */}
               <div className="space-y-2">
-                <Label htmlFor="year">Academic Year</Label>
+                <Label htmlFor="year">Academic Year <span className="text-red-500">*</span></Label>
                 {isEditing ? (
                   <Select
                     value={athleteProfile.year}
@@ -752,7 +869,7 @@ const AthleteDashboard: React.FC = () => {
 
               {/* College/University (Schools) Field with Autocomplete backed by schools table */}
               <div className="space-y-2 relative">
-                <Label htmlFor="college">College/University</Label>
+                <Label htmlFor="college">College/University <span className="text-red-500">*</span></Label>
                 {isEditing ? (
                   <div className="relative">
                     <Input
@@ -813,7 +930,7 @@ const AthleteDashboard: React.FC = () => {
 
               {/* Hometown (City) Field with Autocomplete */}
               <div className="space-y-2 relative">
-                <Label htmlFor="hometown">Hometown</Label>
+                <Label htmlFor="hometown">Hometown <span className="text-red-500">*</span></Label>
                 {isEditing ? (
                   <div className="relative">
                     <Input
@@ -874,7 +991,7 @@ const AthleteDashboard: React.FC = () => {
 
               {/* Gender Field */}
               <div className="space-y-2">
-                <Label htmlFor="gender">Gender</Label>
+                <Label htmlFor="gender">Gender <span className="text-red-500">*</span></Label>
                 {isEditing ? (
                   <Select
                     value={athleteProfile.gender}
@@ -900,17 +1017,68 @@ const AthleteDashboard: React.FC = () => {
         </Card>
 
         {/* Social Media Section */}
-        <Card>
+        <Card className="bg-white/75 backdrop-blur-sm border-white/20">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MessageSquare className="w-5 h-5 text-nil-orange" />
-              Social Media Presence
-            </CardTitle>
-            <CardDescription>
-              Connect your social media accounts to showcase your online presence
-            </CardDescription>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <MessageSquare className="w-5 h-5 text-nil-orange" />
+                  Social Media Presence
+                </CardTitle>
+              </div>
+              {!isEditingSocial ? (
+                <Button
+                  onClick={startSocialEdit}
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <Edit3 className="w-4 h-4" />
+                  Edit
+                </Button>
+              ) : (
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleSaveSocial}
+                    disabled={updateMutation.isPending}
+                    size="sm"
+                    className="flex items-center gap-2 bg-nil-orange hover:bg-nil-navy disabled:opacity-50"
+                  >
+                    {updateMutation.isPending ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                    ) : (
+                      <Save className="w-4 h-4" />
+                    )}
+                    {updateMutation.isPending ? 'Saving...' : 'Save'}
+                  </Button>
+                  <Button
+                    onClick={handleCancelSocial}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2"
+                  >
+                    <X className="w-4 h-4" />
+                    Cancel
+                  </Button>
+                </div>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
+            {/* Warning Message for No Social Media Connected */}
+            {!isAnySocialConnected() && (
+              <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-amber-800">
+                    No social media connected.
+                  </p>
+                  <p className="text-sm text-amber-700 mt-1">
+                    ÑIL Hispanic recommends connecting at least one social media account.
+                  </p>
+                </div>
+              </div>
+            )}
             <div className="space-y-8">
               {/* Instagram */}
               <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
@@ -923,7 +1091,7 @@ const AthleteDashboard: React.FC = () => {
                     <p className="text-sm text-gray-500">
                       {athleteProfile.instagram_handle ? (
                         <>
-                          {athleteProfile.instagram_handle}
+                          @{athleteProfile.instagram_handle.replace(/^@+/, '')}
                           {athleteProfile.instagram_followers && (
                             <span className="ml-2">• {athleteProfile.instagram_followers.toLocaleString()} followers</span>
                           )}
@@ -934,21 +1102,27 @@ const AthleteDashboard: React.FC = () => {
                     </p>
                   </div>
                 </div>
-                {isEditing ? (
+                {isEditingSocial && (
                   <div className="flex gap-2">
-                    <Input
-                      value={athleteProfile.instagram_handle || ''}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setAthleteProfile(prev => ({
-                          ...prev,
-                          instagram_handle: value,
-                          instagram_followers: value ? prev.instagram_followers : undefined
-                        }));
-                      }}
-                      placeholder="@username"
-                      className="w-32"
-                    />
+                    <div className="relative">
+                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500">@</span>
+                      <Input
+                        value={athleteProfile.instagram_handle || ''}
+                        onChange={(e) => {
+                          // Strip leading @ and any disallowed characters
+                          const raw = e.target.value;
+                          const cleaned = raw.replace(/^@+/, '').replace(/[^a-zA-Z0-9._-]/g, '');
+                          setAthleteProfile(prev => ({
+                            ...prev,
+                            instagram_handle: cleaned,
+                            instagram_followers: cleaned ? prev.instagram_followers : undefined
+                          }));
+                        }}
+                        placeholder="username"
+                        className="w-32 pl-6"
+                        inputMode="text"
+                      />
+                    </div>
                     <Input
                       type="number"
                       value={athleteProfile.instagram_followers ?? ''}
@@ -968,14 +1142,6 @@ const AthleteDashboard: React.FC = () => {
                       disabled={!athleteProfile.instagram_handle}
                     />
                   </div>
-                ) : (
-                  <Button
-                    onClick={() => setIsEditing(true)}
-                    variant="ghost"
-                    size="sm"
-                  >
-                    <Edit3 className="w-4 h-4" />
-                  </Button>
                 )}
               </div>
 
@@ -990,7 +1156,7 @@ const AthleteDashboard: React.FC = () => {
                     <p className="text-sm text-gray-500">
                       {athleteProfile.x_handle ? (
                         <>
-                          {athleteProfile.x_handle}
+                          @{athleteProfile.x_handle.replace(/^@+/, '')}
                           {athleteProfile.x_followers && (
                             <span className="ml-2">• {athleteProfile.x_followers.toLocaleString()} followers</span>
                           )}
@@ -1001,21 +1167,26 @@ const AthleteDashboard: React.FC = () => {
                     </p>
                   </div>
                 </div>
-                {isEditing ? (
+                {isEditingSocial && (
                   <div className="flex gap-2">
-                    <Input
-                      value={athleteProfile.x_handle || ''}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setAthleteProfile(prev => ({
-                          ...prev,
-                          x_handle: value,
-                          x_followers: value ? prev.x_followers : undefined
-                        }));
-                      }}
-                      placeholder="@username"
-                      className="w-32"
-                    />
+                    <div className="relative">
+                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500">@</span>
+                      <Input
+                        value={athleteProfile.x_handle || ''}
+                        onChange={(e) => {
+                          const raw = e.target.value;
+                          const cleaned = raw.replace(/^@+/, '').replace(/[^a-zA-Z0-9._-]/g, '');
+                          setAthleteProfile(prev => ({
+                            ...prev,
+                            x_handle: cleaned,
+                            x_followers: cleaned ? prev.x_followers : undefined
+                          }));
+                        }}
+                        placeholder="username"
+                        className="w-32 pl-6"
+                        inputMode="text"
+                      />
+                    </div>
                     <Input
                       type="number"
                       value={athleteProfile.x_followers ?? ''}
@@ -1035,14 +1206,6 @@ const AthleteDashboard: React.FC = () => {
                       disabled={!athleteProfile.x_handle}
                     />
                   </div>
-                ) : (
-                  <Button
-                    onClick={() => setIsEditing(true)}
-                    variant="ghost"
-                    size="sm"
-                  >
-                    <Edit3 className="w-4 h-4" />
-                  </Button>
                 )}
               </div>
 
@@ -1057,7 +1220,7 @@ const AthleteDashboard: React.FC = () => {
                     <p className="text-sm text-gray-500">
                       {athleteProfile.tiktok_handle ? (
                         <>
-                          {athleteProfile.tiktok_handle}
+                          @{athleteProfile.tiktok_handle.replace(/^@+/, '')}
                           {athleteProfile.tiktok_followers && (
                             <span className="ml-2">• {athleteProfile.tiktok_followers.toLocaleString()} followers</span>
                           )}
@@ -1068,21 +1231,26 @@ const AthleteDashboard: React.FC = () => {
                     </p>
                   </div>
                 </div>
-                {isEditing ? (
+                {isEditingSocial && (
                   <div className="flex gap-2">
-                    <Input
-                      value={athleteProfile.tiktok_handle || ''}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setAthleteProfile(prev => ({
-                          ...prev,
-                          tiktok_handle: value,
-                          tiktok_followers: value ? prev.tiktok_followers : undefined
-                        }));
-                      }}
-                      placeholder="@username"
-                      className="w-32"
-                    />
+                    <div className="relative">
+                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500">@</span>
+                      <Input
+                        value={athleteProfile.tiktok_handle || ''}
+                        onChange={(e) => {
+                          const raw = e.target.value;
+                          const cleaned = raw.replace(/^@+/, '').replace(/[^a-zA-Z0-9._-]/g, '');
+                          setAthleteProfile(prev => ({
+                            ...prev,
+                            tiktok_handle: cleaned,
+                            tiktok_followers: cleaned ? prev.tiktok_followers : undefined
+                          }));
+                        }}
+                        placeholder="username"
+                        className="w-32 pl-6"
+                        inputMode="text"
+                      />
+                    </div>
                     <Input
                       type="number"
                       value={athleteProfile.tiktok_followers ?? ''}
@@ -1102,14 +1270,6 @@ const AthleteDashboard: React.FC = () => {
                       disabled={!athleteProfile.tiktok_handle}
                     />
                   </div>
-                ) : (
-                  <Button
-                    onClick={() => setIsEditing(true)}
-                    variant="ghost"
-                    size="sm"
-                  >
-                    <Edit3 className="w-4 h-4" />
-                  </Button>
                 )}
               </div>
             </div>
