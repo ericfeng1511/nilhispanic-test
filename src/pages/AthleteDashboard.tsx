@@ -717,7 +717,7 @@ const AthleteDashboard: React.FC = () => {
         {/* Basic Information */}
         <Card className="mb-6 bg-white/75 backdrop-blur-sm border-white/20">
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <CardTitle className="flex items-center gap-2">
                 <User className="w-5 h-5 text-nil-orange" />
                 Basic Information
@@ -734,13 +734,13 @@ const AthleteDashboard: React.FC = () => {
                   }}
                   variant="outline"
                   size="sm"
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 self-start sm:self-auto"
                 >
                   <Edit3 className="w-4 h-4" />
                   Edit
                 </Button>
               ) : (
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Button
                     onClick={handleSave}
                     disabled={updateMutation.isPending}
@@ -1019,7 +1019,7 @@ const AthleteDashboard: React.FC = () => {
         {/* Social Media Section */}
         <Card className="bg-white/75 backdrop-blur-sm border-white/20">
           <CardHeader>
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <MessageSquare className="w-5 h-5 text-nil-orange" />
@@ -1031,13 +1031,13 @@ const AthleteDashboard: React.FC = () => {
                   onClick={startSocialEdit}
                   variant="outline"
                   size="sm"
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 self-start sm:self-auto"
                 >
                   <Edit3 className="w-4 h-4" />
                   Edit
                 </Button>
               ) : (
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Button
                     onClick={handleSaveSocial}
                     disabled={updateMutation.isPending}
