@@ -333,7 +333,7 @@ export class StudentAthleteService {
    */
   static async updateStudentAthlete(
     profileId: string, 
-    updates: Partial<Pick<StudentAthlete, 'sport' | 'year' | 'college' | 'hometown' | 'gender' | 'photo' | 'instagram_handle' | 'instagram_followers' | 'tiktok_handle' | 'tiktok_followers' | 'x_handle' | 'x_followers' | 'city_id' | 'school_id'>>
+    updates: Partial<Pick<StudentAthlete, 'sport' | 'year' | 'college' | 'hometown' | 'gender' | 'photo' | 'instagram_handle' | 'instagram_followers' | 'tiktok_handle' | 'tiktok_followers' | 'x_handle' | 'x_followers' | 'city_id' | 'school_id' | 'cultural_roots'>>
   ): Promise<StudentAthlete> {
     try {
       console.log('Updating student athlete for profile_id:', profileId, 'with updates:', updates);
@@ -364,7 +364,7 @@ export class StudentAthleteService {
   static async createStudentAthlete(
     profileId: string,
     name: string,
-    athleteData: Partial<Pick<StudentAthlete, 'sport' | 'year' | 'college' | 'hometown' | 'gender' | 'photo' | 'instagram_handle' | 'instagram_followers' | 'tiktok_handle' | 'tiktok_followers' | 'x_handle' | 'x_followers' | 'city_id' | 'school_id'>>
+    athleteData: Partial<Pick<StudentAthlete, 'sport' | 'year' | 'college' | 'hometown' | 'gender' | 'photo' | 'instagram_handle' | 'instagram_followers' | 'tiktok_handle' | 'tiktok_followers' | 'x_handle' | 'x_followers' | 'city_id' | 'school_id' | 'cultural_roots'>>
   ): Promise<StudentAthlete> {
     try {
       console.log('Creating student athlete for profile_id:', profileId, 'with data:', athleteData);
@@ -385,7 +385,8 @@ export class StudentAthleteService {
         tiktok_handle: athleteData.tiktok_handle || null,
         tiktok_followers: athleteData.tiktok_followers || null,
         x_handle: athleteData.x_handle || null,
-        x_followers: athleteData.x_followers || null
+        x_followers: athleteData.x_followers || null,
+        cultural_roots: athleteData.cultural_roots ?? []
       };
       
       const { data, error } = await supabase

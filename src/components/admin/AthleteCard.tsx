@@ -3,8 +3,9 @@ import { StudentAthlete } from '@/types/studentAthlete';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { User, MapPin, Trophy } from 'lucide-react';
+import { User, MapPin, Trophy, Mail } from 'lucide-react';
 import { CollegeService } from '@/services/collegeService';
+import { supabase } from '@/lib/supabaseClient';
 
 interface AthleteCardProps {
   athlete: StudentAthlete;
@@ -26,6 +27,7 @@ export const AthleteCard: React.FC<AthleteCardProps> = ({
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
   const [schoolName, setSchoolName] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
 
   // Determine if the athlete has a valid photo URL
   const hasPhoto = !!(athlete.photo && String(athlete.photo).trim() !== '');
@@ -95,6 +97,34 @@ export const AthleteCard: React.FC<AthleteCardProps> = ({
     return () => { active = false; };
   }, [athlete.school_id]);
 
+  // Fetch athlete email via profiles table
+  useEffect(() => {
+    let active = true;
+    const load = async () => {
+      try {
+        const pid = athlete.profile_id;
+        if (pid) {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('email')
+            .eq('id', pid)
+            .single();
+          if (!error && active) {
+            setEmail((data as any)?.email || '');
+          } else if (active) {
+            setEmail('');
+          }
+        } else if (active) {
+          setEmail('');
+        }
+      } catch {
+        if (active) setEmail('');
+      }
+    };
+    load();
+    return () => { active = false; };
+  }, [athlete.profile_id]);
+
   return (
     <Card 
       className={`group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-white border border-gray-200 cursor-pointer ${
@@ -147,6 +177,12 @@ export const AthleteCard: React.FC<AthleteCardProps> = ({
             <h3 className="font-bold text-lg text-nil-orange line-clamp-2 group-hover:text-nil-navy transition-colors">
               {athlete.name}
             </h3>
+            {email && (
+              <div className="flex items-center text-gray-600 text-sm">
+                <Mail className="w-4 h-4 mr-1 flex-shrink-0" />
+                <span className="line-clamp-1">{email}</span>
+              </div>
+            )}
             
             <div className="flex items-center text-gray-600 text-sm">
               <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
@@ -193,6 +229,12 @@ export const AthleteCard: React.FC<AthleteCardProps> = ({
             <h3 className="font-bold text-base text-nil-orange line-clamp-1 group-hover:text-nil-navy transition-colors">
               {athlete.name}
             </h3>
+            {email && (
+              <div className="flex items-center text-gray-600 text-sm mt-1">
+                <Mail className="w-3 h-3 mr-1 flex-shrink-0" />
+                <span className="line-clamp-1 text-xs">{email}</span>
+              </div>
+            )}
             
             <div className="flex items-center text-gray-600 text-sm mt-1">
               <MapPin className="w-3 h-3 mr-1 flex-shrink-0" />

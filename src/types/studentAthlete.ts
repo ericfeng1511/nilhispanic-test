@@ -17,6 +17,7 @@ export interface StudentAthlete {
   tiktok_followers?: number;
   x_handle?: string;
   x_followers?: number;
+  cultural_roots?: string[]; // Array of cultural roots (text[])
   total_followers?: number; // Sum of all social media followers
   total_sm_range?: string; // 0-999, 1000-1999, 2000-4000, 5000-9999, 10,000+
   created_at?: string;

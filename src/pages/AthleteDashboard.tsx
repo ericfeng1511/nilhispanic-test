@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate, Link, useSearchParams } from 'react-router-dom';
-import { User, Trophy, Calendar, MessageSquare, Settings, BarChart3, Edit3, Save, X, ArrowLeft, Camera, Upload, Instagram, Twitter, Trash2, AlertTriangle } from 'lucide-react';
+import { User, Trophy, Calendar, MessageSquare, Settings, BarChart3, Edit3, Save, X, ArrowLeft, Camera, Upload, Instagram, Twitter, Trash2, AlertTriangle, ChevronDown } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,6 +23,8 @@ import type { GroupConversation } from '@/types/chatGroup';
 import { CityService, type City } from '@/services/cityService';
 import { CollegeService } from '@/services/collegeService';
 import { InfoTooltip } from '@/components/InfoTooltip';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Checkbox } from '@/components/ui/checkbox';
 
 // Custom TikTok Icon Component
 const TikTokIcon = ({ className }: { className?: string }) => (
@@ -34,6 +36,31 @@ const TikTokIcon = ({ className }: { className?: string }) => (
     <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-.04-.1z"/>
   </svg>
 );
+
+// Cultural Roots options
+const CULTURAL_ROOT_OPTIONS = [
+  'Argentina',
+  'Bolivia',
+  'Chile',
+  'Colombia',
+  'Costa Rica',
+  'Cuba',
+  'Dominican Republic',
+  'Ecuador',
+  'El Salvador',
+  'Guatemala',
+  'Honduras',
+  'Mexico',
+  'Nicaragua',
+  'Panama',
+  'Paraguay',
+  'Peru',
+  'Puerto Rico',
+  'Spain',
+  'Uruguay',
+  'Venezuela',
+  'Other',
+];
 
 interface AthleteProfile {
   sport: string;
@@ -50,6 +77,7 @@ interface AthleteProfile {
   x_followers?: number;
   city_id?: number;
   school_id?: number;
+  cultural_roots?: string[];
 }
 
 const AthleteDashboard: React.FC = () => {
@@ -74,7 +102,8 @@ const AthleteDashboard: React.FC = () => {
     x_handle: '',
     x_followers: undefined,
     city_id: undefined,
-    school_id: undefined
+    school_id: undefined,
+    cultural_roots: []
   });
   
   // Photo upload state
@@ -170,7 +199,7 @@ const AthleteDashboard: React.FC = () => {
 
   // Update mutation
   const updateMutation = useMutation({
-    mutationFn: async (updates: Partial<Pick<AthleteProfile, 'sport' | 'year' | 'college' | 'hometown' | 'gender' | 'photo' | 'instagram_handle' | 'instagram_followers' | 'tiktok_handle' | 'tiktok_followers' | 'x_handle' | 'x_followers' | 'city_id' | 'school_id'>>) => {
+    mutationFn: async (updates: Partial<Pick<AthleteProfile, 'sport' | 'year' | 'college' | 'hometown' | 'gender' | 'photo' | 'instagram_handle' | 'instagram_followers' | 'tiktok_handle' | 'tiktok_followers' | 'x_handle' | 'x_followers' | 'city_id' | 'school_id' | 'cultural_roots'>>) => {
       if (!profile?.id) throw new Error('No profile ID available');
       
       // Handle photo upload if there's a selected photo
@@ -187,6 +216,7 @@ const AthleteDashboard: React.FC = () => {
         photo: photoUrl,
         city_id: typeof athleteProfile.city_id === 'number' ? athleteProfile.city_id : null,
         school_id: typeof athleteProfile.school_id === 'number' ? athleteProfile.school_id : null,
+        cultural_roots: Array.isArray(updates.cultural_roots ?? athleteProfile.cultural_roots) ? (updates.cultural_roots ?? athleteProfile.cultural_roots) : null,
       };
       console.log('Submitting updates:', finalUpdates);
       
@@ -243,7 +273,8 @@ const AthleteDashboard: React.FC = () => {
       x_handle: currentAthleteData.x_handle || '',
       x_followers: currentAthleteData.x_followers || undefined,
       city_id: (currentAthleteData as any).city_id || undefined,
-      school_id: (currentAthleteData as any).school_id || undefined
+      school_id: (currentAthleteData as any).school_id || undefined,
+      cultural_roots: (currentAthleteData as any).cultural_roots || []
     });
     
     // Load city and school data asynchronously without causing re-renders
@@ -354,7 +385,8 @@ const AthleteDashboard: React.FC = () => {
         x_handle: currentAthleteData.x_handle || '',
         x_followers: currentAthleteData.x_followers || undefined,
         city_id: (currentAthleteData as any).city_id || undefined,
-        school_id: (currentAthleteData as any).school_id || undefined
+        school_id: (currentAthleteData as any).school_id || undefined,
+        cultural_roots: (currentAthleteData as any).cultural_roots || []
       });
     } else {
       setAthleteProfile({
@@ -371,7 +403,8 @@ const AthleteDashboard: React.FC = () => {
         x_handle: '',
         x_followers: undefined,
         city_id: undefined,
-        school_id: undefined
+        school_id: undefined,
+        cultural_roots: []
       });
     }
     // Reset photo upload state
@@ -401,7 +434,8 @@ const AthleteDashboard: React.FC = () => {
       x_handle: athleteProfile.x_handle,
       x_followers: athleteProfile.x_followers,
       city_id: undefined,
-      school_id: undefined
+      school_id: undefined,
+      cultural_roots: []
     });
     // Clear city and school queries
     setCityQuery('');
@@ -604,17 +638,8 @@ const AthleteDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen relative">
-      {/* Fixed Background Image */}
-      <div 
-        className="fixed inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: 'url(/images/background-img-1.png)' }}
-      />
-      {/* Dark overlay for readability */}
-      <div className="fixed inset-0 bg-black/40" />
-      
-      {/* Content with relative positioning */}
-      <div className="relative z-10 container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-white">
+      <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -622,16 +647,16 @@ const AthleteDashboard: React.FC = () => {
               <Link 
                 to="/"
                 aria-label="Go back to homepage"
-                className="p-2 rounded-full text-white/80 hover:bg-white/20 hover:text-white transition-colors"
+                className="p-2 rounded-full text-gray-500 hover:bg-gray-200 hover:text-gray-800 transition-colors"
               >
                 <ArrowLeft className="w-6 h-6" />
               </Link>
               <div>
                 <div className="flex items-center gap-3">
-                  <h1 className="text-3xl font-bold text-white drop-shadow-lg">My Profile</h1>
+                  <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
                   <InfoTooltip variant="desktop" />
                 </div>
-                <p className="text-white/90 mt-1 drop-shadow-md">
+                <p className="text-gray-600 mt-1">
                   Manage your ÑIL Hispanic Athlete Profile
                 </p>
               </div>
@@ -1009,6 +1034,71 @@ const AthleteDashboard: React.FC = () => {
                   <div className="p-3 bg-gray-50 rounded-md">
                     {athleteProfile.gender === 'M' ? 'Male' : 
                      athleteProfile.gender === 'F' ? 'Female' : 'Not specified'}
+                  </div>
+                )}
+              </div>
+
+              {/* Cultural Roots Field (Multi-select) */}
+              <div className="space-y-2">
+                <Label htmlFor="cultural_roots">Cultural Roots</Label>
+                {isEditing ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                      >
+                        <span className="truncate text-left">
+                          {athleteProfile.cultural_roots && athleteProfile.cultural_roots.length > 0
+                            ? `${athleteProfile.cultural_roots.length} selected`
+                            : 'Select cultural roots'}
+                        </span>
+                        <ChevronDown className="h-4 w-4 opacity-50" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-72 p-0">
+                      <div className="max-h-60 overflow-y-auto py-1">
+                        {CULTURAL_ROOT_OPTIONS.map((opt) => {
+                          const id = `root-${opt.replace(/\s+/g, '-').toLowerCase()}`;
+                          const checked = !!(athleteProfile.cultural_roots || []).includes(opt);
+                          return (
+                            <button
+                              key={opt}
+                              type="button"
+                              onClick={() => {
+                                setAthleteProfile(prev => {
+                                  const curr = prev.cultural_roots || [];
+                                  const exists = curr.includes(opt);
+                                  return {
+                                    ...prev,
+                                    cultural_roots: exists
+                                      ? curr.filter(r => r !== opt)
+                                      : [...curr, opt]
+                                  };
+                                });
+                              }}
+                              className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-accent hover:text-accent-foreground ${checked ? 'bg-accent/50' : ''}`}
+                            >
+                              <Checkbox
+                                id={id}
+                                checked={checked}
+                                onCheckedChange={() => { /* handled by button onClick */ }}
+                                className="pointer-events-none"
+                              />
+                              <label htmlFor={id} className="leading-none cursor-pointer select-none flex-1">
+                                {opt}
+                              </label>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <div className="p-3 bg-gray-50 rounded-md">
+                    {athleteProfile.cultural_roots && athleteProfile.cultural_roots.length > 0
+                      ? athleteProfile.cultural_roots.join(', ')
+                      : 'Not specified'}
                   </div>
                 )}
               </div>

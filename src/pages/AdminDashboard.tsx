@@ -723,17 +723,7 @@ const AdminDashboard: React.FC = () => {
                             onSelectionChange={handleAthleteSelection}
                             cacheKey={imageCacheKey}
                           />
-                          {/* Actions under card - Hidden on mobile since horizontal cards are more compact */}
-                          <div className="hidden sm:flex gap-2">
-                            <Button
-                              size="sm"
-                              className="flex-1 bg-nil-orange hover:bg-nil-navy"
-                              onClick={() => handleStartChat(athlete)}
-                              disabled={!athlete.profile_id || chatLoading}
-                            >
-                              Message
-                            </Button>
-                          </div>
+                          {/* Message button removed per request */}
                         </div>
                       ))}
                     </div>

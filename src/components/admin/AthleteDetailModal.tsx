@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { StudentAthlete } from '@/types/studentAthlete';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { User, MapPin, Trophy, Calendar, Users, Instagram, Music, Twitter } from 'lucide-react';
+import { User, MapPin, Trophy, Calendar, Users, Instagram, Music, Twitter, Mail } from 'lucide-react';
 import { formatAcademicYear, formatGender } from '@/utils/formatters';
 import { CityService } from '@/services/cityService';
 import { CollegeService } from '@/services/collegeService';
+import { supabase } from '@/lib/supabaseClient';
 
 interface AthleteDetailModalProps {
   athlete: StudentAthlete | null;
@@ -22,6 +23,7 @@ export const AthleteDetailModal: React.FC<AthleteDetailModalProps> = ({
   const [imageLoading, setImageLoading] = useState(true);
   const [formattedCity, setFormattedCity] = useState<string>('N/A');
   const [schoolName, setSchoolName] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
 
   // Determine if the athlete has a valid photo URL
   const hasPhoto = !!(athlete?.photo && String(athlete.photo).trim() !== '');
@@ -83,6 +85,34 @@ export const AthleteDetailModal: React.FC<AthleteDetailModalProps> = ({
     return () => { active = false; };
   }, [athlete?.school_id]);
 
+  // Load email from profiles by profile_id
+  useEffect(() => {
+    let active = true;
+    const loadEmail = async () => {
+      try {
+        const pid = athlete?.profile_id;
+        if (pid) {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('email')
+            .eq('id', pid)
+            .single();
+          if (!error && active) {
+            setEmail((data as any)?.email || '');
+          } else if (active) {
+            setEmail('');
+          }
+        } else if (active) {
+          setEmail('');
+        }
+      } catch {
+        if (active) setEmail('');
+      }
+    };
+    loadEmail();
+    return () => { active = false; };
+  }, [athlete?.profile_id]);
+
   if (!athlete) return null;
 
   const handleImageError = () => {
@@ -137,10 +167,10 @@ export const AthleteDetailModal: React.FC<AthleteDetailModalProps> = ({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-nil-orange">
-            Athlete Profile
+            {athlete.name}
           </DialogTitle>
           <DialogDescription className="text-gray-600">
-            Detailed information for {athlete.name}
+            {email || 'N/A'}
           </DialogDescription>
         </DialogHeader>
         
@@ -175,9 +205,6 @@ export const AthleteDetailModal: React.FC<AthleteDetailModalProps> = ({
           {/* Details Section */}
           <div className="space-y-4">
             <div>
-              <h2 className="text-2xl font-bold text-nil-navy mb-2">
-                {athlete.name}
-              </h2>
               <Badge variant="secondary" className="bg-nil-orange text-white">
                 {athlete.sport}
               </Badge>
@@ -194,6 +221,8 @@ export const AthleteDetailModal: React.FC<AthleteDetailModalProps> = ({
                   </span>
                 </div>
               </div>
+
+              
 
               {/* College */}
               <div className="flex items-center space-x-3">
