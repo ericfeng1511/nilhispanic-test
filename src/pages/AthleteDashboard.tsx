@@ -25,6 +25,7 @@ import { CollegeService } from '@/services/collegeService';
 import { InfoTooltip } from '@/components/InfoTooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
+import PhotoCropperModal from '@/components/PhotoCropperModal';
 
 // Custom TikTok Icon Component
 const TikTokIcon = ({ className }: { className?: string }) => (
@@ -110,6 +111,7 @@ const AthleteDashboard: React.FC = () => {
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
   
   // Autocomplete suggestions
   const [sportSuggestions, setSportSuggestions] = useState<string[]>([]);
@@ -531,7 +533,13 @@ const AthleteDashboard: React.FC = () => {
   };
 
   const handlePhotoUploadClick = () => {
-    fileInputRef.current?.click();
+    setIsPhotoModalOpen(true);
+  };
+
+  const handleCroppedSave = (file: File, previewDataUrl: string) => {
+    setSelectedPhoto(file);
+    setPhotoPreview(previewDataUrl);
+    setIsPhotoModalOpen(false);
   };
 
   const handleRemovePhoto = () => {
@@ -738,6 +746,15 @@ const AthleteDashboard: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Photo Cropper Modal */}
+        <PhotoCropperModal
+          open={isPhotoModalOpen}
+          onOpenChange={setIsPhotoModalOpen}
+          onSave={handleCroppedSave}
+          initialImageUrl={athleteProfile.photo || null}
+          title="Update Profile Photo"
+        />
 
         {/* Basic Information */}
         <Card className="mb-6 bg-white/75 backdrop-blur-sm border-white/20">
