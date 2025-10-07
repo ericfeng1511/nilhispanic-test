@@ -208,7 +208,8 @@
 
   /* Improve touch targets on mobile */
   @media (max-width: 767px) {
-    button,
+    /* Exclude circular/icon buttons from forced min-height to avoid ovals */
+    button:not(.rounded-full),
     input,
     textarea,
     select {
