@@ -208,12 +208,19 @@
 
   /* Improve touch targets on mobile */
   @media (max-width: 767px) {
-    /* Exclude circular/icon buttons from forced min-height to avoid ovals */
-    button:not(.rounded-full),
-    input,
+    /* Exclude circular/icon buttons and checkboxes/radios from forced min-height */
+    button:not(.rounded-full):not([role="checkbox"]),
+    input:not([type="checkbox"]):not([type="radio"]),
     textarea,
     select {
       min-height: 44px;
+    }
+
+    /* Ensure checkbox/radio controls are not stretched */
+    [role="checkbox"],
+    input[type="checkbox"],
+    input[type="radio"] {
+      min-height: 0;
     }
   }
 }
