@@ -69,7 +69,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       if (isLogin) {
         result = await signIn(formData.email, formData.password);
       } else {
-        result = await signUp(formData.email, formData.password, formData.fullName, formData.role);
+        // Force all new signups to the 'athlete' role
+        result = await signUp(formData.email, formData.password, formData.fullName, 'athlete');
       }
 
       console.log('Auth result:', result);
@@ -154,15 +155,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-nil-navy">
-            {verificationSent ? 'Check Your Email' : (isLogin ? 'Welcome Back' : 'Create Account')}
-          </DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="text-2xl font-bold text-nil-navy">
+              {verificationSent ? 'Check Your Email' : (isLogin ? 'Welcome Back' : 'Create Account')}
+            </DialogTitle>
+            {/* Moved info tooltip from role row to the header */}
+            <InfoTooltip variant="mobile" />
+          </div>
           <DialogDescription>
             {verificationSent 
               ? 'We sent a verification link to your email. Please click the link to activate your account.' 
               : (isLogin 
                 ? 'Sign in to access your dashboard and opportunities.' 
-                : 'Join our community of Hispanic student-athletes and brands.'
+                : 'Join our community of Hispanic student-athletes.'
               )
             }
           </DialogDescription>
@@ -296,26 +301,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             </div>
           )}
 
-          {!isLogin && (
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Label htmlFor="role">I am a...</Label>
-                {formData.role === 'athlete' && (
-                  <InfoTooltip variant="mobile" />
-                )}
-              </div>
-              <select
-                id="role"
-                name="role"
-                value={formData.role}
-                onChange={handleInputChange}
-                className="w-full h-12 px-3 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-nil-orange focus:border-transparent"
-              >
-                <option value="athlete">Student-Athlete</option>
-                <option value="brand">Brand Representative</option>
-              </select>
-            </div>
-          )}
+          {/* Role selection removed: all new accounts are Student-Athletes by default */}
 
           {!isLogin && (
             <div className="flex items-center space-x-3">
