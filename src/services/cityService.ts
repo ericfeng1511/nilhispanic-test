@@ -16,15 +16,26 @@ export class CityService {
     // Decide whether the query is predominantly ZIP or text
     const isZip = /\d{3,}/.test(q);
 
-    // For performance, limit to 10 and order by city/state/zip
+    // We fetch more rows and then de-duplicate by city/state so only one option per city appears
+    // For deterministic selection of the representative row, order by city_name/state_id/zip
+    const LIMIT = 50; // fetch enough to dedupe down to ~10 visible options
     if (isZip) {
       const { data, error } = await supabase
         .from('cities')
         .select('id, zip, city_name, state_id')
         .ilike('zip', `%${q}%`)
-        .limit(10);
+        .order('city_name', { ascending: true })
+        .order('state_id', { ascending: true })
+        .order('zip', { ascending: true, nullsFirst: true })
+        .limit(LIMIT);
       if (error) throw error;
-      return data || [];
+      const rows = data || [];
+      const uniqueMap = new Map<string, City>();
+      for (const c of rows) {
+        const key = `${(c.city_name || '').toLowerCase()}|${c.state_id}`;
+        if (!uniqueMap.has(key)) uniqueMap.set(key, c);
+      }
+      return Array.from(uniqueMap.values()).slice(0, 10);
     } else {
       // Try to parse patterns like "City, ST" or "City ST"
       let cityPart = q;
@@ -53,15 +64,25 @@ export class CityService {
         builder = builder.ilike('state_id', `${statePart}%`);
       }
 
-      const { data, error } = await builder.limit(10);
+      const { data, error } = await builder
+        .order('city_name', { ascending: true })
+        .order('state_id', { ascending: true })
+        .order('zip', { ascending: true, nullsFirst: true })
+        .limit(LIMIT);
       if (error) throw error;
-      return data || [];
+      const rows = data || [];
+      const uniqueMap = new Map<string, City>();
+      for (const c of rows) {
+        const key = `${(c.city_name || '').toLowerCase()}|${c.state_id}`;
+        if (!uniqueMap.has(key)) uniqueMap.set(key, c);
+      }
+      return Array.from(uniqueMap.values()).slice(0, 10);
     }
   }
 
   static formatCityLabel(c: City): string {
-    const zip = c.zip ? ` ${c.zip}` : '';
-    return `${c.city_name}, ${c.state_id}${zip}`;
+    // Display only City, ST (omit ZIP entirely)
+    return `${c.city_name}, ${c.state_id}`;
   }
 
   static async getCityById(id: number): Promise<City | null> {
@@ -77,3 +98,4 @@ export class CityService {
     return data as City;
   }
 }
+
