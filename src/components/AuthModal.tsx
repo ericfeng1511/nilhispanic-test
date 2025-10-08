@@ -156,11 +156,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       >
         <DialogHeader>
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-2xl font-bold text-nil-navy">
-              {verificationSent ? 'Check Your Email' : (isLogin ? 'Welcome Back' : 'Create Account')}
-            </DialogTitle>
-            {/* Moved info tooltip from role row to the header */}
-            <InfoTooltip variant="mobile" />
+            <div className="flex items-center gap-2">
+              {/* Place tooltip to the left of the title to avoid overlapping the dialog close button */}
+              <InfoTooltip variant="desktop" />
+              <DialogTitle className="text-2xl font-bold text-nil-navy">
+                {verificationSent ? 'Check Your Email' : (isLogin ? 'Welcome Back' : 'Create Account')}
+              </DialogTitle>
+            </div>
+            {/* Right side intentionally left empty so the dialog's native close X remains accessible */}
+            <div className="w-8" aria-hidden />
           </div>
           <DialogDescription>
             {verificationSent 
