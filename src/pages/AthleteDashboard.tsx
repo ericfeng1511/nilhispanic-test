@@ -1251,8 +1251,7 @@ const AthleteDashboard: React.FC = () => {
                   </div>
                 )}
               </div>
-
-              {/* X (Twitter) */}
+              {/* X (Twitter) - temporarily disabled
               <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center">
@@ -1315,8 +1314,9 @@ const AthleteDashboard: React.FC = () => {
                   </div>
                 )}
               </div>
+              */}
 
-              {/* TikTok */}
+              {/* TikTok - temporarily disabled
               <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-black rounded-lg flex items-center justify-center">
@@ -1379,6 +1379,7 @@ const AthleteDashboard: React.FC = () => {
                   </div>
                 )}
               </div>
+              */}
             </div>
           </CardContent>
         </Card>
