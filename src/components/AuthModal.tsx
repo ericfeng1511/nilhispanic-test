@@ -331,8 +331,25 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           )}
 
           {error && (
-            <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
-              {error}
+            <div className="p-3 bg-red-50 border border-red-200 rounded-md flex items-center justify-between gap-3">
+              <span className="text-sm text-red-600">{error}</span>
+              {isLogin && pendingEmail && (
+                <Button
+                  type="button"
+                  onClick={handleResendVerification}
+                  disabled={loading}
+                  className="h-8 px-3 bg-nil-orange text-white hover:bg-nil-navy transition-colors"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                      Resending...
+                    </>
+                  ) : (
+                    'Resend Verification Email'
+                  )}
+                </Button>
+              )}
             </div>
           )}
 
