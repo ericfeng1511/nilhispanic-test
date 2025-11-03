@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { ContactForm } from "./ContactForm";
 import { AuthModal } from "./AuthModal";
+import ResetPasswordModal from "./ResetPasswordModal";
 import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'react-router-dom';
 import { Menu, ChevronDown, LogOut, User, Settings, Shield, Trophy, Building2, Bell } from 'lucide-react';
@@ -33,6 +34,7 @@ import { useNavigate } from 'react-router-dom';
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [resetModalOpen, setResetModalOpen] = useState(false);
   const { user, profile, loading, signOut } = useAuth();
   const { count: unreadCount } = useUnreadMessages();
   const navigate = useNavigate();
@@ -75,10 +77,14 @@ const Header = () => {
     const handleOpenAuthModal = () => {
       setAuthModalOpen(true);
     };
-
+    const handleOpenReset = () => {
+      setResetModalOpen(true);
+    };
     window.addEventListener('openAuthModal', handleOpenAuthModal);
+    window.addEventListener('openResetPasswordModal', handleOpenReset);
     return () => {
       window.removeEventListener('openAuthModal', handleOpenAuthModal);
+      window.removeEventListener('openResetPasswordModal', handleOpenReset);
     };
   }, []);
 
@@ -505,6 +511,10 @@ const Header = () => {
       <AuthModal 
         isOpen={authModalOpen} 
         onClose={() => setAuthModalOpen(false)} 
+      />
+      <ResetPasswordModal
+        isOpen={resetModalOpen}
+        onClose={() => setResetModalOpen(false)}
       />
     </header>
   );

@@ -26,8 +26,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [error, setError] = useState<string | null>(null);
   const [verificationSent, setVerificationSent] = useState(false);
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
-  const [forgotMode, setForgotMode] = useState(false);
-  const [resetSent, setResetSent] = useState(false);
   
   const [formData, setFormData] = useState({
     email: '',
@@ -39,7 +37,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
 
-  const { signIn, signUp, resendVerification, requestPasswordReset } = useAuth();
+  const { signIn, signUp, resendVerification } = useAuth();
 
   // Lazy-load the HTML-first viewer (falls back to PDF) to keep main bundle light
   const TermsContentViewer = lazy(() => import('./TermsContentViewer'));
@@ -126,8 +124,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setShowPassword(false);
     setVerificationSent(false);
     setPendingEmail(null);
-    setForgotMode(false);
-    setResetSent(false);
   };
 
   const switchMode = () => {
@@ -151,20 +147,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setLoading(false);
   };
 
-  const handleForgotPassword = async () => {
-    if (!formData.email) {
-      setError('Please enter your email to reset your password.');
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    const result = await requestPasswordReset(formData.email);
-    if (result.error) {
-      setError(result.error.message || 'Failed to send password reset email');
-    } else {
-      setResetSent(true);
-    }
-    setLoading(false);
+  const openResetPasswordModal = () => {
+    onClose();
+    setTimeout(() => {
+      window.dispatchEvent(new Event('openResetPasswordModal'));
+    }, 0);
   };
 
   return (
@@ -389,50 +376,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           </Button>
 
           {isLogin && (
-            <div className="text-center space-y-3">
-              {!forgotMode ? (
-                <button
-                  type="button"
-                  onClick={() => { setForgotMode(true); setError(null); }}
-                  className="text-nil-navy hover:text-nil-orange transition-colors font-medium"
-                >
-                  Forgot password?
-                </button>
-              ) : (
-                <div className="space-y-3">
-                  {!resetSent ? (
-                    <>
-                      <p className="text-sm text-gray-600">Enter your email above and send a reset link.</p>
-                      <Button
-                        type="button"
-                        onClick={handleForgotPassword}
-                        disabled={loading}
-                        className="h-10 bg-nil-orange text-white hover:bg-nil-navy transition-colors"
-                      >
-                        {loading ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Sending...
-                          </>
-                        ) : (
-                          'Send Reset Link'
-                        )}
-                      </Button>
-                    </>
-                  ) : (
-                    <div className="p-3 bg-green-50 border border-green-200 rounded-md text-sm text-green-800">
-                      Password reset email sent to {formData.email}. Check your inbox.
-                    </div>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => { setForgotMode(false); setResetSent(false); setError(null); }}
-                    className="block w-full text-nil-navy hover:text-nil-orange transition-colors font-medium"
-                  >
-                    Back to Sign In
-                  </button>
-                </div>
-              )}
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={openResetPasswordModal}
+                className="text-nil-navy hover:text-nil-orange transition-colors font-medium"
+              >
+                Forgot password?
+              </button>
             </div>
           )}
 
