@@ -4,6 +4,10 @@ import { supabase } from '@/lib/supabaseClient';
 
 // Always redirect verified email links to the live site
 const EMAIL_REDIRECT_URL = 'https://nilhispanic.com/athlete/dashboard';
+// Compute a reset-password redirect URL for both dev and prod
+const RESET_PASSWORD_REDIRECT_URL = (typeof window !== 'undefined' && window.location?.origin)
+  ? `${window.location.origin}/reset-password`
+  : 'https://nilhispanic.com/reset-password';
 
 interface Profile {
   id: string;
@@ -24,6 +28,8 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   updateProfile: (updates: Partial<Profile>) => Promise<{ error: any }>;
   resendVerification: (email: string) => Promise<{ error: any }>;
+  requestPasswordReset: (email: string) => Promise<{ error: any }>;
+  updatePassword: (newPassword: string) => Promise<{ error: any }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -500,6 +506,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const requestPasswordReset = async (email: string) => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: RESET_PASSWORD_REDIRECT_URL,
+      });
+      return { error };
+    } catch (error) {
+      return { error };
+    }
+  };
+
+  const updatePassword = async (newPassword: string) => {
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      return { error };
+    } catch (error) {
+      return { error };
+    }
+  };
+
   const value = {
     user,
     profile,
@@ -510,6 +536,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signOut,
     updateProfile,
     resendVerification,
+    requestPasswordReset,
+    updatePassword,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

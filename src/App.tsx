@@ -18,6 +18,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AthleteDashboard from "./pages/AthleteDashboard";
 import BrandDashboard from "./pages/BrandDashboard";
 import ScrollToTop from "./components/ScrollToTop";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ const App = () => (
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/athlete/dashboard" element={<AthleteDashboard />} />
           <Route path="/brand/dashboard" element={<BrandDashboard />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
