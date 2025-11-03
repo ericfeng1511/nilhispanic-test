@@ -63,7 +63,7 @@ export class StudentAthleteService {
     page: number = 1,
     pageSize: number = 100,
     filters: StudentAthleteFilters = {},
-    options?: { schoolIdToName?: Record<number, string> }
+    options?: { schoolIdToName?: Record<number, string>; profileIdToCreatedAt?: Record<string, string> }
   ): PaginatedStudentAthletes {
     let filteredAthletes = [...allAthletes];
 
@@ -144,6 +144,74 @@ export class StudentAthleteService {
         filteredAthletes = filteredAthletes.filter((athlete) => {
           const pid = (athlete.profile_id || '').toString().trim();
           return pid === '';
+        });
+      }
+    }
+
+    // Filter by profile created date range (inclusive). Placeholders (no profile_id) default to 2025-07-01.
+    if (filters.profileCreatedStart || filters.profileCreatedEnd) {
+      const parseDayStart = (s?: string) => (s ? Date.parse(`${s}T00:00:00Z`) : undefined);
+      const parseDayEnd = (s?: string) => (s ? Date.parse(`${s}T23:59:59.999Z`) : undefined);
+      const startTs = parseDayStart(filters.profileCreatedStart);
+      const endTs = parseDayEnd(filters.profileCreatedEnd);
+      const defaultCreated = '2025-07-01T00:00:00Z';
+      const map = options?.profileIdToCreatedAt || {};
+
+      filteredAthletes = filteredAthletes.filter((athlete) => {
+        const pid = (athlete.profile_id || '').toString().trim();
+        const createdStr = pid && map[pid] ? map[pid] : defaultCreated;
+        const ts = Date.parse(createdStr) || Date.parse(defaultCreated);
+        if (typeof startTs === 'number' && ts < startTs) return false;
+        if (typeof endTs === 'number' && ts > endTs) return false;
+        return true;
+      });
+    }
+
+    // Sorting by first/last name or profile creation date
+    if (filters.sortBy) {
+      if (filters.sortBy === 'profileCreatedAt') {
+        const dir = filters.sortDir === 'desc' ? -1 : 1;
+        const map = options?.profileIdToCreatedAt || {};
+        filteredAthletes.sort((a, b) => {
+          const aPid = (a.profile_id || '').toString();
+          const bPid = (b.profile_id || '').toString();
+          const aTs = aPid && map[aPid] ? Date.parse(map[aPid]) || 0 : 0; // placeholders -> 0 (oldest)
+          const bTs = bPid && map[bPid] ? Date.parse(map[bPid]) || 0 : 0;
+          if (aTs !== bTs) return (aTs - bTs) * dir;
+          // Tie-breaker: name
+          const aName = a.name || '';
+          const bName = b.name || '';
+          return aName.localeCompare(bName, undefined, { sensitivity: 'base' }) * dir;
+        });
+      } else {
+        const dir = filters.sortDir === 'desc' ? -1 : 1;
+        const getFirst = (name: string) => {
+          const parts = (name || '').trim().split(/\s+/);
+          return parts[0] || '';
+        };
+        const getLast = (name: string) => {
+          const parts = (name || '').trim().split(/\s+/);
+          return parts.length ? parts[parts.length - 1] : '';
+        };
+
+        filteredAthletes.sort((a, b) => {
+          const aName = a.name || '';
+          const bName = b.name || '';
+
+          let aKey = '';
+          let bKey = '';
+          if (filters.sortBy === 'firstName') {
+            aKey = getFirst(aName);
+            bKey = getFirst(bName);
+          } else {
+            aKey = getLast(aName);
+            bKey = getLast(bName);
+          }
+
+          const cmp = aKey.localeCompare(bKey, undefined, { sensitivity: 'base' });
+          if (cmp !== 0) return cmp * dir;
+          // Tie-breaker: full name compare
+          return (aName).localeCompare(bName, undefined, { sensitivity: 'base' }) * dir;
         });
       }
     }

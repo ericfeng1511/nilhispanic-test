@@ -38,6 +38,11 @@ export interface StudentAthleteFilters {
    * 'database' = only athletes WITHOUT a profile_id
    */
   profileFilter?: 'profiles' | 'database';
+  sortBy?: 'firstName' | 'lastName' | 'profileCreatedAt';
+  sortDir?: 'asc' | 'desc';
+  // Filter: profile created date range (YYYY-MM-DD). Placeholders default to 2025-07-01 in service.
+  profileCreatedStart?: string;
+  profileCreatedEnd?: string;
 }
 
 export interface PaginatedStudentAthletes {

@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { StudentAthleteService } from '@/services/studentAthleteService';
 import { StudentAthlete, StudentAthleteFilters, PaginatedStudentAthletes } from '@/types/studentAthlete';
 import { CollegeService } from '@/services/collegeService';
+import { supabase } from '@/lib/supabaseClient';
 
 export const useStudentAthletes = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -56,6 +57,42 @@ export const useStudentAthletes = () => {
     return map;
   }, [schools]);
 
+  // Build a list of profile_ids present in the dataset (for profile-created sorting)
+  const profileIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const a of allAthletes) {
+      const pid = (a.profile_id || '').toString().trim();
+      if (pid) ids.add(pid);
+    }
+    return Array.from(ids);
+  }, [allAthletes]);
+
+  // Fetch created_at for those profiles (bulk)
+  const { data: profileRows = [] } = useQuery({
+    queryKey: ['profiles-by-ids', profileIds],
+    queryFn: async () => {
+      if (profileIds.length === 0) return [] as Array<{ id: string; created_at: string }>;
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, created_at')
+        .in('id', profileIds);
+      if (error) throw new Error(error.message);
+      return (data || []) as Array<{ id: string; created_at: string }>;
+    },
+    enabled: profileIds.length > 0,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+
+  // id->created_at map for profiles
+  const profileIdToCreatedAt = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const p of profileRows) {
+      if (p && p.id && p.created_at) map[p.id] = p.created_at;
+    }
+    return map;
+  }, [profileRows]);
+
   // Get paginated results from cached data
   const paginatedResults: PaginatedStudentAthletes = useMemo(() => {
     if (!allAthletes.length) {
@@ -73,9 +110,9 @@ export const useStudentAthletes = () => {
       currentPage,
       pageSize,
       filters,
-      { schoolIdToName }
+      { schoolIdToName, profileIdToCreatedAt }
     );
-  }, [allAthletes, currentPage, pageSize, filters, schoolIdToName]);
+  }, [allAthletes, currentPage, pageSize, filters, schoolIdToName, profileIdToCreatedAt]);
 
   // Get unique sports for filter dropdown
   const uniqueSports = useMemo(() => {

@@ -635,6 +635,89 @@ const AdminDashboard: React.FC = () => {
               isLoading={athletesLoading}
             />
 
+            {/* Sort Results (separate section under filters) */}
+            <Card className="mb-6">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900">Sort Results</h3>
+                  {athleteFilters.sortBy && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => updateAthleteFilters({ ...athleteFilters, sortBy: undefined, sortDir: undefined })}
+                    >
+                      Clear Sorting
+                    </Button>
+                  )}
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-sm font-medium text-gray-700 mb-2">Sort By</div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        variant={athleteFilters.sortBy === 'firstName' ? 'default' : 'outline'}
+                        onClick={() => {
+                          const isSame = athleteFilters.sortBy === 'firstName';
+                          updateAthleteFilters({
+                            ...athleteFilters,
+                            sortBy: isSame ? undefined : 'firstName',
+                            sortDir: isSame ? undefined : (athleteFilters.sortDir || 'asc'),
+                          });
+                        }}
+                      >
+                        First Name
+                      </Button>
+                      <Button
+                        variant={athleteFilters.sortBy === 'lastName' ? 'default' : 'outline'}
+                        onClick={() => {
+                          const isSame = athleteFilters.sortBy === 'lastName';
+                          updateAthleteFilters({
+                            ...athleteFilters,
+                            sortBy: isSame ? undefined : 'lastName',
+                            sortDir: isSame ? undefined : (athleteFilters.sortDir || 'asc'),
+                          });
+                        }}
+                      >
+                        Last Name
+                      </Button>
+                      <Button
+                        variant={athleteFilters.sortBy === 'profileCreatedAt' ? 'default' : 'outline'}
+                        onClick={() => {
+                          const isSame = athleteFilters.sortBy === 'profileCreatedAt';
+                          updateAthleteFilters({
+                            ...athleteFilters,
+                            sortBy: isSame ? undefined : 'profileCreatedAt',
+                            sortDir: isSame ? undefined : (athleteFilters.sortDir || 'asc'),
+                          });
+                        }}
+                      >
+                        Profile Created
+                      </Button>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-gray-700 mb-2">Direction</div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        variant={athleteFilters.sortDir !== 'desc' ? 'default' : 'outline'}
+                        disabled={!athleteFilters.sortBy}
+                        onClick={() => updateAthleteFilters({ ...athleteFilters, sortDir: 'asc' })}
+                      >
+                        Ascending
+                      </Button>
+                      <Button
+                        variant={athleteFilters.sortDir === 'desc' ? 'default' : 'outline'}
+                        disabled={!athleteFilters.sortBy}
+                        onClick={() => updateAthleteFilters({ ...athleteFilters, sortDir: 'desc' })}
+                      >
+                        Descending
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Selection Mode Controls - Below filters */}
             <div className="flex items-center gap-2 mb-6">
               <Button

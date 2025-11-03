@@ -7,6 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Search, Filter, X, ChevronDown } from 'lucide-react';
 import { formatAcademicYear, formatGender } from '@/utils/formatters';
+import { Calendar } from '@/components/ui/calendar';
 
 interface AthleteFiltersProps {
   filters: StudentAthleteFilters;
@@ -42,6 +43,8 @@ export const AthleteFilters: React.FC<AthleteFiltersProps> = ({
   const [statesOpen, setStatesOpen] = useState(false);
   const [totalSmRangesOpen, setTotalSmRangesOpen] = useState(false);
   const [profileFilterOpen, setProfileFilterOpen] = useState(false);
+  const [profileCreatedOpen, setProfileCreatedOpen] = useState(false);
+  
 
   const handleSearchChange = (value: string) => {
     onFiltersChange({ ...filters, search: value || undefined });
@@ -135,7 +138,9 @@ export const AthleteFilters: React.FC<AthleteFiltersProps> = ({
     (filters.years && filters.years.length > 0) ||
     (filters.states && filters.states.length > 0) ||
     (filters.totalSmRanges && filters.totalSmRanges.length > 0) ||
-    (!!filters.profileFilter);
+    (!!filters.profileFilter) ||
+    (!!filters.sortBy) ||
+    (!!filters.profileCreatedStart) || (!!filters.profileCreatedEnd);
 
   return (
     <Card className="mb-6">
@@ -198,6 +203,79 @@ export const AthleteFilters: React.FC<AthleteFiltersProps> = ({
                     </label>
                   </div>
                 ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          {/* Profile Created Date Range Filter */}
+          <Popover open={profileCreatedOpen} onOpenChange={setProfileCreatedOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={profileCreatedOpen}
+                className="justify-between"
+                disabled={isLoading}
+              >
+                {(() => {
+                  const start = filters.profileCreatedStart;
+                  const end = filters.profileCreatedEnd;
+                  if (start && end) return `Created: ${start} – ${end}`;
+                  if (start) return `Created: From ${start}`;
+                  if (end) return `Created: Until ${end}`;
+                  return 'Profile Created';
+                })()}
+                <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[320px] p-3">
+              <div className="space-y-3">
+                <Calendar
+                  mode="range"
+                  selected={{
+                    from: filters.profileCreatedStart ? new Date(filters.profileCreatedStart + 'T00:00:00Z') : undefined,
+                    to: filters.profileCreatedEnd ? new Date(filters.profileCreatedEnd + 'T00:00:00Z') : undefined,
+                  } as any}
+                  onSelect={(range: any) => {
+                    const from = range?.from as Date | undefined;
+                    const to = range?.to as Date | undefined;
+                    const toYMD = (d?: Date) => (d ? new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())).toISOString().slice(0, 10) : undefined);
+                    onFiltersChange({
+                      ...filters,
+                      profileCreatedStart: toYMD(from),
+                      profileCreatedEnd: toYMD(to),
+                    });
+                  }}
+                  numberOfMonths={1}
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">Start</label>
+                    <Input
+                      type="date"
+                      value={filters.profileCreatedStart || ''}
+                      onChange={(e) => onFiltersChange({ ...filters, profileCreatedStart: e.target.value || undefined })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">End</label>
+                    <Input
+                      type="date"
+                      value={filters.profileCreatedEnd || ''}
+                      onChange={(e) => onFiltersChange({ ...filters, profileCreatedEnd: e.target.value || undefined })}
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between pt-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onFiltersChange({ ...filters, profileCreatedStart: undefined, profileCreatedEnd: undefined })}
+                  >
+                    Clear
+                  </Button>
+                  <Button size="sm" onClick={() => setProfileCreatedOpen(false)}>Done</Button>
+                </div>
               </div>
             </PopoverContent>
           </Popover>
@@ -527,6 +605,34 @@ export const AthleteFilters: React.FC<AthleteFiltersProps> = ({
                 All Athletes: {filters.profileFilter === 'profiles' ? 'Profiles' : 'Database'}
                 <button
                   onClick={() => onFiltersChange({ ...filters, profileFilter: undefined })}
+                  className="hover:bg-nil-orange/30 rounded-full p-0.5"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+            {filters.sortBy && (
+              <span className="inline-flex items-center gap-1 px-2 py-1 bg-nil-orange/20 text-nil-orange rounded-md text-sm">
+                Sort: {filters.sortBy === 'firstName' ? 'First Name' : filters.sortBy === 'lastName' ? 'Last Name' : 'Profile Created'} {filters.sortDir === 'desc' ? '(Desc)' : '(Asc)'}
+                <button
+                  onClick={() => onFiltersChange({ ...filters, sortBy: undefined, sortDir: undefined })}
+                  className="hover:bg-nil-orange/30 rounded-full p-0.5"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+            {(filters.profileCreatedStart || filters.profileCreatedEnd) && (
+              <span className="inline-flex items-center gap-1 px-2 py-1 bg-nil-orange/20 text-nil-orange rounded-md text-sm">
+                {(() => {
+                  const start = filters.profileCreatedStart;
+                  const end = filters.profileCreatedEnd;
+                  if (start && end) return `Created: ${start} – ${end}`;
+                  if (start) return `Created: From ${start}`;
+                  return `Created: Until ${end}`;
+                })()}
+                <button
+                  onClick={() => onFiltersChange({ ...filters, profileCreatedStart: undefined, profileCreatedEnd: undefined })}
                   className="hover:bg-nil-orange/30 rounded-full p-0.5"
                 >
                   <X className="w-3 h-3" />
