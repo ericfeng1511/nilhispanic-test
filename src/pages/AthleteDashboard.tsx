@@ -1456,37 +1456,41 @@ const AthleteDashboard: React.FC = () => {
                     ) : conversations.length === 0 ? (
                       <div className="py-6 text-center text-gray-500">No conversations yet.</div>
                     ) : (
-                      <div className="divide-y rounded-md border">
-                        {conversations.map((c) => (
-                          <button
-                            key={c.id}
-                            className="w-full text-left px-4 py-3 hover:bg-gray-50 focus:outline-none"
-                            onClick={() => setChatConversationId(c.id)}
-                          >
-                            <div className="flex items-center justify-between">
-                              <div className="font-medium">Chat with Admin</div>
-                              <div className="text-xs text-gray-500">
-                                {c.last_message_at ? new Date(c.last_message_at).toLocaleString() : '—'}
+                      <div className="max-h-[50vh] overflow-y-auto">
+                        <div className="divide-y rounded-md border">
+                          {conversations.map((c) => (
+                            <button
+                              key={c.id}
+                              className="w-full text-left px-4 py-3 hover:bg-gray-50 focus:outline-none"
+                              onClick={() => setChatConversationId(c.id)}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="font-medium">Chat with Admin</div>
+                                <div className="text-xs text-gray-500">
+                                  {c.last_message_at ? new Date(c.last_message_at).toLocaleString() : '—'}
+                                </div>
                               </div>
-                            </div>
-                            <div className="text-sm text-gray-600">Conversation ID: {c.id}</div>
-                          </button>
-                        ))}
+                              <div className="text-sm text-gray-600">Conversation ID: {c.id}</div>
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
                 ) : (
-                  <GroupChatList
-                    groups={groups}
-                    loading={groupsLoading}
-                    onOpen={async (g) => {
-                      setSelectedGroupId(g.id);
-                      setSelectedGroupTitle(g.title);
-                      if (profile?.id) {
-                        try { await ChatGroupService.markGroupRead(g.id, profile.id); } catch {}
-                      }
-                    }}
-                  />
+                  <div className="max-h-[50vh] overflow-y-auto">
+                    <GroupChatList
+                      groups={groups}
+                      loading={groupsLoading}
+                      onOpen={async (g) => {
+                        setSelectedGroupId(g.id);
+                        setSelectedGroupTitle(g.title);
+                        if (profile?.id) {
+                          try { await ChatGroupService.markGroupRead(g.id, profile.id); } catch {}
+                        }
+                      }}
+                    />
+                  </div>
                 )}
               </div>
             )}

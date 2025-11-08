@@ -1290,71 +1290,75 @@ const AdminDashboard: React.FC = () => {
                   ) : conversations.length === 0 ? (
                     <div className="text-gray-600">No conversations found.</div>
                   ) : (
-                    <div className="divide-y rounded-md border">
-                      {conversations.map((conv) => (
-                        <button
-                          key={conv.id}
-                          onClick={async () => {
-                            try {
-                              setChatConversationId(conv.id);
-                              const otherName = (conv as any).athlete_name as string | undefined;
-                              if (otherName) setChatTitle(otherName);
-                              // Fetch athlete name to ensure title is correct
-                              const athlete = await StudentAthleteService.fetchStudentAthleteByProfileId(conv.athlete_id);
-                              if (athlete) {
-                                setChatTarget(athlete);
-                                if (!otherName && athlete.name) setChatTitle(athlete.name);
-                              }
-                              if (profile?.id) {
-                                try { await ChatService.markConversationRead(conv.id, profile.id); } catch {}
-                              }
-                            } catch {}
-                          }}
-                          className="w-full text-left p-3 hover:bg-gray-50"
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3 min-w-0">
-                              <div className="relative w-10 h-10 flex-shrink-0">
-                                {(conv as any).athlete_photo ? (
-                                  <img
-                                    src={(conv as any).athlete_photo}
-                                    alt={(conv as any).athlete_name || 'User avatar'}
-                                    className="w-10 h-10 rounded-full object-cover bg-gray-100"
-                                    onError={(e) => {
-                                      (e.currentTarget as HTMLImageElement).style.display = 'none';
-                                      const placeholder = (e.currentTarget.nextElementSibling as HTMLElement | null);
-                                      if (placeholder) placeholder.classList.remove('hidden');
-                                    }}
-                                  />
-                                ) : null}
-                                <div className={(conv as any).athlete_photo ? 'hidden absolute inset-0 flex items-center justify-center rounded-full bg-gradient-to-br from-nil-light-blue to-nil-navy' : 'absolute inset-0 flex items-center justify-center rounded-full bg-gradient-to-br from-nil-light-blue to-nil-navy'}>
-                                  <User className="w-5 h-5 text-white opacity-70" />
+                    <div className="max-h-[50vh] overflow-y-auto">
+                      <div className="divide-y rounded-md border">
+                        {conversations.map((conv) => (
+                          <button
+                            key={conv.id}
+                            onClick={async () => {
+                              try {
+                                setChatConversationId(conv.id);
+                                const otherName = (conv as any).athlete_name as string | undefined;
+                                if (otherName) setChatTitle(otherName);
+                                // Fetch athlete name to ensure title is correct
+                                const athlete = await StudentAthleteService.fetchStudentAthleteByProfileId(conv.athlete_id);
+                                if (athlete) {
+                                  setChatTarget(athlete);
+                                  if (!otherName && athlete.name) setChatTitle(athlete.name);
+                                }
+                                if (profile?.id) {
+                                  try { await ChatService.markConversationRead(conv.id, profile.id); } catch {}
+                                }
+                              } catch {}
+                            }}
+                            className="w-full text-left p-3 hover:bg-gray-50"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3 min-w-0">
+                                <div className="relative w-10 h-10 flex-shrink-0">
+                                  {(conv as any).athlete_photo ? (
+                                    <img
+                                      src={(conv as any).athlete_photo}
+                                      alt={(conv as any).athlete_name || 'User avatar'}
+                                      className="w-10 h-10 rounded-full object-cover bg-gray-100"
+                                      onError={(e) => {
+                                        (e.currentTarget as HTMLImageElement).style.display = 'none';
+                                        const placeholder = (e.currentTarget.nextElementSibling as HTMLElement | null);
+                                        if (placeholder) placeholder.classList.remove('hidden');
+                                      }}
+                                    />
+                                  ) : null}
+                                  <div className={(conv as any).athlete_photo ? 'hidden absolute inset-0 flex items-center justify-center rounded-full bg-gradient-to-br from-nil-light-blue to-nil-navy' : 'absolute inset-0 flex items-center justify-center rounded-full bg-gradient-to-br from-nil-light-blue to-nil-navy'}>
+                                    <User className="w-5 h-5 text-white opacity-70" />
+                                  </div>
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="font-medium text-gray-900 truncate">{(conv as any).athlete_name || 'Conversation'}</div>
+                                  <div className="text-sm text-gray-600 line-clamp-1">Tap to open conversation</div>
                                 </div>
                               </div>
-                              <div className="min-w-0">
-                                <div className="font-medium text-gray-900 truncate">{(conv as any).athlete_name || 'Conversation'}</div>
-                                <div className="text-sm text-gray-600 line-clamp-1">Tap to open conversation</div>
-                              </div>
+                              <div className="text-xs text-gray-500 ml-3 flex-shrink-0">{new Date(conv.last_message_at || conv.updated_at || conv.created_at).toLocaleString()}</div>
                             </div>
-                            <div className="text-xs text-gray-500 ml-3 flex-shrink-0">{new Date(conv.last_message_at || conv.updated_at || conv.created_at).toLocaleString()}</div>
-                          </div>
-                        </button>
-                      ))}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
               ) : (
-                <GroupChatList
-                  groups={groups}
-                  loading={groupsLoading}
-                  onOpen={async (g) => {
-                    setSelectedGroupId(g.id);
-                    setSelectedGroupTitle(g.title);
-                    if (profile?.id) {
-                      try { await ChatGroupService.markGroupRead(g.id, profile.id); } catch {}
-                    }
-                  }}
-                />
+                <div className="max-h-[50vh] overflow-y-auto">
+                  <GroupChatList
+                    groups={groups}
+                    loading={groupsLoading}
+                    onOpen={async (g) => {
+                      setSelectedGroupId(g.id);
+                      setSelectedGroupTitle(g.title);
+                      if (profile?.id) {
+                        try { await ChatGroupService.markGroupRead(g.id, profile.id); } catch {}
+                      }
+                    }}
+                  />
+                </div>
               )}
             </div>
           )}
