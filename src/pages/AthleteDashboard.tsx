@@ -158,6 +158,9 @@ const AthleteDashboard: React.FC = () => {
   const [groupsLoading, setGroupsLoading] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [selectedGroupTitle, setSelectedGroupTitle] = useState<string | null>(null);
+  // Search state for chat modal lists
+  const [directSearch, setDirectSearch] = useState('');
+  const [groupSearch, setGroupSearch] = useState('');
   
   // Fetch current athlete data
   const { data: currentAthleteData, isLoading: athleteLoading, error: athleteError } = useQuery({
@@ -664,6 +667,7 @@ const AthleteDashboard: React.FC = () => {
                   <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
                   <InfoTooltip variant="desktop" />
                 </div>
+
                 <p className="text-gray-600 mt-1">
                   Manage your ÑIL Hispanic Athlete Profile
                 </p>
@@ -1458,7 +1462,13 @@ const AthleteDashboard: React.FC = () => {
                     ) : (
                       <div className="max-h-[50vh] overflow-y-auto">
                         <div className="divide-y rounded-md border">
-                          {conversations.map((c) => (
+                          {conversations
+                            .filter((c) => {
+                              // Athlete sees only admin counterpart; we don't have name enrichment here, so use a placeholder label and allow all unless searching for 'admin'
+                              const label = 'admin';
+                              return directSearch.trim() === '' || label.includes(directSearch.toLowerCase());
+                            })
+                            .map((c) => (
                             <button
                               key={c.id}
                               className="w-full text-left px-4 py-3 hover:bg-gray-50 focus:outline-none"
@@ -1480,7 +1490,10 @@ const AthleteDashboard: React.FC = () => {
                 ) : (
                   <div className="max-h-[50vh] overflow-y-auto">
                     <GroupChatList
-                      groups={groups}
+                      groups={groups.filter((g) => {
+                        const title = String(g.title || 'Group').toLowerCase();
+                        return groupSearch.trim() === '' || title.includes(groupSearch.toLowerCase());
+                      })}
                       loading={groupsLoading}
                       onOpen={async (g) => {
                         setSelectedGroupId(g.id);

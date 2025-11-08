@@ -65,6 +65,9 @@ const AdminDashboard: React.FC = () => {
   const [groupsLoading, setGroupsLoading] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [selectedGroupTitle, setSelectedGroupTitle] = useState<string | null>(null);
+  // Search state for chat modal lists
+  const [directSearch, setDirectSearch] = useState('');
+  const [groupSearch, setGroupSearch] = useState('');
   // New Message dialog state
   const [isNewMessageOpen, setIsNewMessageOpen] = useState(false);
   const [newMessageMode, setNewMessageMode] = useState<'direct' | 'group'>('direct');
@@ -1280,6 +1283,25 @@ const AdminDashboard: React.FC = () => {
                 )}
               </div>
 
+              {/* Search bar for current mode */}
+              <div>
+                {messagesMode === 'direct' ? (
+                  <Input
+                    value={directSearch}
+                    onChange={(e) => setDirectSearch(e.target.value)}
+                    placeholder="Search by name..."
+                    className="max-w-md"
+                  />
+                ) : (
+                  <Input
+                    value={groupSearch}
+                    onChange={(e) => setGroupSearch(e.target.value)}
+                    placeholder="Search groups..."
+                    className="max-w-md"
+                  />
+                )}
+              </div>
+
               {messagesMode === 'direct' ? (
                 <div className="space-y-3">
                   {convLoading ? (
@@ -1292,7 +1314,12 @@ const AdminDashboard: React.FC = () => {
                   ) : (
                     <div className="max-h-[50vh] overflow-y-auto">
                       <div className="divide-y rounded-md border">
-                        {conversations.map((conv) => (
+                        {conversations
+                          .filter((conv) => {
+                            const name = String((conv as any).athlete_name || '').toLowerCase();
+                            return directSearch.trim() === '' || name.includes(directSearch.toLowerCase());
+                          })
+                          .map((conv) => (
                           <button
                             key={conv.id}
                             onClick={async () => {
@@ -1348,7 +1375,10 @@ const AdminDashboard: React.FC = () => {
               ) : (
                 <div className="max-h-[50vh] overflow-y-auto">
                   <GroupChatList
-                    groups={groups}
+                    groups={groups.filter((g) => {
+                      const title = String(g.title || 'Group').toLowerCase();
+                      return groupSearch.trim() === '' || title.includes(groupSearch.toLowerCase());
+                    })}
                     loading={groupsLoading}
                     onOpen={async (g) => {
                       setSelectedGroupId(g.id);
