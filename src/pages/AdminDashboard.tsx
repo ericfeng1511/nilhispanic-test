@@ -19,9 +19,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Users, Database, RefreshCw, AlertCircle, Shield, GraduationCap, Building2, ArrowLeft, CheckSquare, Square, BarChart3, MessageSquare, User, Plus } from 'lucide-react';
+import { Loader2, Users, Database, RefreshCw, AlertCircle, Shield, GraduationCap, Building2, ArrowLeft, CheckSquare, Square, BarChart3, MessageSquare, User, Plus, MoreHorizontal } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import ChatWindow from '@/components/chat/ChatWindow';
 import GroupChatList from '@/components/chat/GroupChatList';
 import GroupChatWindow from '@/components/chat/GroupChatWindow';
@@ -1393,7 +1394,37 @@ const AdminDashboard: React.FC = () => {
                                   <div className="text-sm text-gray-600 line-clamp-1">Tap to open conversation</div>
                                 </div>
                               </div>
-                              <div className="text-xs text-gray-500 ml-3 flex-shrink-0">{new Date(conv.last_message_at || conv.updated_at || conv.created_at).toLocaleString()}</div>
+                              <div className="flex items-center gap-2 ml-3 flex-shrink-0">
+                                <div className="text-xs text-gray-500">
+                                  {new Date(conv.last_message_at || conv.updated_at || conv.created_at).toLocaleString()}
+                                </div>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <button
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="p-1 rounded hover:bg-gray-100 focus:outline-none"
+                                      aria-label="Conversation options"
+                                    >
+                                      <MoreHorizontal className="w-5 h-5 text-gray-500" />
+                                    </button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                                    <DropdownMenuItem
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        setUnreadConvoIds((prev) => {
+                                          const next = new Set(prev);
+                                          next.add(conv.id);
+                                          return next;
+                                        });
+                                      }}
+                                    >
+                                      Mark as Unread
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
                             </div>
                           </button>
                         ))}

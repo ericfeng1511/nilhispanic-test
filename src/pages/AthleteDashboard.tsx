@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate, Link, useSearchParams } from 'react-router-dom';
-import { User, Trophy, Calendar, MessageSquare, Settings, BarChart3, Edit3, Save, X, ArrowLeft, Camera, Upload, Instagram, Twitter, Trash2, AlertTriangle, ChevronDown } from 'lucide-react';
+import { User, Trophy, Calendar, MessageSquare, Settings, BarChart3, Edit3, Save, X, ArrowLeft, Camera, Upload, Instagram, Twitter, Trash2, AlertTriangle, ChevronDown, MoreHorizontal } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +12,7 @@ import { StudentAthleteService } from '@/services/studentAthleteService';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import ChatWindow from '@/components/chat/ChatWindow';
 import GroupChatList from '@/components/chat/GroupChatList';
 import GroupChatWindow from '@/components/chat/GroupChatWindow';
@@ -1499,14 +1500,42 @@ const AthleteDashboard: React.FC = () => {
                               }}
                             >
                               <div className="flex items-center justify-between">
-                                <div className="font-medium">Chat with Admin</div>
+                                <div className="flex items-center gap-3 min-w-0">
+                                  {unreadConvoIds.has(c.id) ? (
+                                    <span className="inline-block w-2.5 h-2.5 rounded-full bg-red-600 flex-shrink-0" aria-label="Unread messages" title="Unread messages" />
+                                  ) : null}
+                                  <div className="font-medium truncate">Chat with Admin</div>
+                                </div>
                                 <div className="flex items-center gap-2 ml-3 flex-shrink-0">
                                   <div className="text-xs text-gray-500">
                                     {c.last_message_at ? new Date(c.last_message_at).toLocaleString() : '—'}
                                   </div>
-                                  {unreadConvoIds.has(c.id) ? (
-                                    <span className="inline-block w-2.5 h-2.5 rounded-full bg-red-600" aria-label="Unread messages" title="Unread messages" />
-                                  ) : null}
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <button
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="p-1 rounded hover:bg-gray-100 focus:outline-none"
+                                        aria-label="Conversation options"
+                                      >
+                                        <MoreHorizontal className="w-5 h-5 text-gray-500" />
+                                      </button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                                      <DropdownMenuItem
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          setUnreadConvoIds((prev) => {
+                                            const next = new Set(prev);
+                                            next.add(c.id);
+                                            return next;
+                                          });
+                                        }}
+                                      >
+                                        Mark as Unread
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
                                 </div>
                               </div>
                               <div className="text-sm text-gray-600">Conversation ID: {c.id}</div>
