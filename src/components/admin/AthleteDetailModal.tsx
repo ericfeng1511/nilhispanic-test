@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { StudentAthlete } from '@/types/studentAthlete';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { User, MapPin, Trophy, Calendar, Users, Instagram, Music, Twitter, Mail, Globe } from 'lucide-react';
 import { formatAcademicYear, formatGender } from '@/utils/formatters';
 import { CityService } from '@/services/cityService';
@@ -24,6 +26,9 @@ export const AthleteDetailModal: React.FC<AthleteDetailModalProps> = ({
   const [formattedCity, setFormattedCity] = useState<string>('N/A');
   const [schoolName, setSchoolName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
+  const [isEditingIgFollowers, setIsEditingIgFollowers] = useState(false);
+  const [igFollowersInput, setIgFollowersInput] = useState<string>('');
+  const [igFollowersLocal, setIgFollowersLocal] = useState<number | null | undefined>(undefined);
 
   // Determine if the athlete has a valid photo URL
   const hasPhoto = !!(athlete?.photo && String(athlete.photo).trim() !== '');
@@ -112,6 +117,14 @@ export const AthleteDetailModal: React.FC<AthleteDetailModalProps> = ({
     loadEmail();
     return () => { active = false; };
   }, [athlete?.profile_id]);
+
+  // Sync local followers state when athlete changes
+  useEffect(() => {
+    const val = typeof athlete?.instagram_followers === 'number' ? athlete?.instagram_followers : null;
+    setIgFollowersLocal(val ?? null);
+    setIgFollowersInput(val != null ? String(val) : '');
+    setIsEditingIgFollowers(false);
+  }, [athlete?.id, athlete?.instagram_followers]);
 
   if (!athlete) return null;
 
@@ -293,11 +306,65 @@ export const AthleteDetailModal: React.FC<AthleteDetailModalProps> = ({
                 {formatInstagramHandle(athlete.instagram_handle) !== 'N/A' && (
                   <div className="flex items-center space-x-3 ml-8">
                     <span className="text-gray-400 text-sm">└──</span>
-                    <div>
+                    <div className="flex items-center gap-2">
                       <span className="font-medium text-gray-700 text-sm">Followers:</span>
-                      <span className="ml-2 text-gray-900 text-sm">
-                        {formatInstagramFollowers(athlete.instagram_followers)}
-                      </span>
+                      {!isEditingIgFollowers ? (
+                        <>
+                          <span className="text-gray-900 text-sm">
+                            {formatInstagramFollowers(igFollowersLocal ?? athlete.instagram_followers)}
+                          </span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setIsEditingIgFollowers(true)}
+                          >
+                            Edit
+                          </Button>
+                        </>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="number"
+                            inputMode="numeric"
+                            className="h-8 w-32"
+                            value={igFollowersInput}
+                            onChange={(e) => setIgFollowersInput(e.target.value.replace(/[^0-9]/g, ''))}
+                            placeholder="e.g. 1200"
+                          />
+                          <Button
+                            size="sm"
+                            className="bg-nil-orange hover:bg-nil-navy"
+                            onClick={async () => {
+                              const parsed = igFollowersInput.trim() === '' ? null : Number(igFollowersInput);
+                              if (parsed != null && (isNaN(parsed) || parsed < 0)) return;
+                              try {
+                                const { error } = await supabase
+                                  .from('student_athletes')
+                                  .update({ instagram_followers: parsed })
+                                  .eq('id', athlete!.id);
+                                if (error) throw error;
+                                setIgFollowersLocal(parsed ?? null);
+                                setIsEditingIgFollowers(false);
+                              } catch (e) {
+                                // non-fatal: keep editing state; you may add a toast if desired
+                              }
+                            }}
+                          >
+                            Save
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              const val = typeof athlete?.instagram_followers === 'number' ? athlete?.instagram_followers : null;
+                              setIgFollowersInput(val != null ? String(val) : '');
+                              setIsEditingIgFollowers(false);
+                            }}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
