@@ -68,6 +68,9 @@ const AdminDashboard: React.FC = () => {
   // Search state for chat modal lists
   const [directSearch, setDirectSearch] = useState('');
   const [groupSearch, setGroupSearch] = useState('');
+  // Unread tracking
+  const [unreadConvoIds, setUnreadConvoIds] = useState<Set<string>>(new Set());
+  const [groupLastReadMap, setGroupLastReadMap] = useState<Record<string, string | null | undefined>>({});
   // New Message dialog state
   const [isNewMessageOpen, setIsNewMessageOpen] = useState(false);
   const [newMessageMode, setNewMessageMode] = useState<'direct' | 'group'>('direct');
@@ -322,6 +325,11 @@ const AdminDashboard: React.FC = () => {
       setConvLoading(true);
       const res = await ChatService.listConversationsForUser(profile.id, 'admin', 1, 50) as { data: Conversation[]; total: number };
       const list = res.data || [];
+      // Load unread previews to mark unread conversations
+      try {
+        const previews = await ChatService.getUnreadPreviewsForUser(profile.id, 'admin');
+        setUnreadConvoIds(new Set(previews.map(p => p.conversation_id)));
+      } catch {}
       // Enrich with athlete names and photos for display
       try {
         const uniqueAthleteIds = Array.from(new Set(list.map((c) => c.athlete_id).filter(Boolean)));
@@ -1262,6 +1270,18 @@ const AdminDashboard: React.FC = () => {
                           setGroupsLoading(true);
                           const gres = await ChatGroupService.listGroupsForUser(profile.id, 1, 50);
                           setGroups(gres.data || []);
+                          // Load last_read_at map for unread dots
+                          const groupIds = (gres.data || []).map(g => g.id);
+                          if (groupIds.length > 0) {
+                            const { data: parts } = await supabase
+                              .from('group_participants')
+                              .select('group_id, last_read_at')
+                              .eq('user_id', profile.id)
+                              .in('group_id', groupIds);
+                            const map: Record<string, string | null> = {};
+                            for (const row of (parts as any[]) || []) map[String((row as any).group_id)] = (row as any).last_read_at || null;
+                            setGroupLastReadMap(map);
+                          }
                         } catch {} finally { setGroupsLoading(false); }
                       }
                     }}
@@ -1335,6 +1355,12 @@ const AdminDashboard: React.FC = () => {
                                 }
                                 if (profile?.id) {
                                   try { await ChatService.markConversationRead(conv.id, profile.id); } catch {}
+                                  // Optimistically clear unread dot
+                                  setUnreadConvoIds((prev) => {
+                                    const next = new Set(prev);
+                                    next.delete(conv.id);
+                                    return next;
+                                  });
                                 }
                               } catch {}
                             }}
@@ -1342,6 +1368,9 @@ const AdminDashboard: React.FC = () => {
                           >
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-3 min-w-0">
+                                {unreadConvoIds.has(conv.id) ? (
+                                  <span className="inline-block w-2.5 h-2.5 rounded-full bg-red-600 flex-shrink-0" aria-label="Unread messages" title="Unread messages" />
+                                ) : null}
                                 <div className="relative w-10 h-10 flex-shrink-0">
                                   {(conv as any).athlete_photo ? (
                                     <img
@@ -1379,12 +1408,15 @@ const AdminDashboard: React.FC = () => {
                       const title = String(g.title || 'Group').toLowerCase();
                       return groupSearch.trim() === '' || title.includes(groupSearch.toLowerCase());
                     })}
+                    lastReadMap={groupLastReadMap}
                     loading={groupsLoading}
                     onOpen={async (g) => {
                       setSelectedGroupId(g.id);
                       setSelectedGroupTitle(g.title);
                       if (profile?.id) {
                         try { await ChatGroupService.markGroupRead(g.id, profile.id); } catch {}
+                        // Optimistically update lastRead for this group so dot disappears
+                        setGroupLastReadMap((prev) => ({ ...prev, [g.id]: new Date().toISOString() }));
                       }
                     }}
                   />

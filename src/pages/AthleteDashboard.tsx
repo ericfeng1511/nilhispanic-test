@@ -161,6 +161,9 @@ const AthleteDashboard: React.FC = () => {
   // Search state for chat modal lists
   const [directSearch, setDirectSearch] = useState('');
   const [groupSearch, setGroupSearch] = useState('');
+  // Unread tracking
+  const [unreadConvoIds, setUnreadConvoIds] = useState<Set<string>>(new Set());
+  const [groupLastReadMap, setGroupLastReadMap] = useState<Record<string, string | null | undefined>>({});
   
   // Fetch current athlete data
   const { data: currentAthleteData, isLoading: athleteLoading, error: athleteError } = useQuery({
@@ -570,16 +573,16 @@ const AthleteDashboard: React.FC = () => {
     setMessagesMode('direct');
     setConvLoading(true);
     try {
-      const res: any = await loadConversations();
+      if (!profile?.id) return;
+      // Load direct conversations for athlete
+      const res = await ChatService.listConversationsForUser(profile.id, 'athlete', 1, 50);
       setConversations(res.data || []);
-      if ((res.total || 0) === 0) {
-        toast({ title: 'No messages yet', description: 'You will see messages here when an admin contacts you.' } as any);
-      } else if ((res.total || 0) === 1) {
-        setChatConversationId(res.data[0].id);
-      } else {
-        setChatConversationId(null);
-      }
-      // Load groups in background
+      // Load unread previews to mark unread conversations
+      try {
+        const previews = await ChatService.getUnreadPreviewsForUser(profile.id, 'athlete');
+        setUnreadConvoIds(new Set(previews.map((p) => p.conversation_id)));
+      } catch {}
+      // Preload groups list and their last_read_at
       try {
         setGroupsLoading(true);
         const gres = await ChatGroupService.listGroupsForUser(profile.id, 1, 50);
@@ -1445,6 +1448,17 @@ const AthleteDashboard: React.FC = () => {
                           setGroupsLoading(true);
                           const gres = await ChatGroupService.listGroupsForUser(profile.id, 1, 50);
                           setGroups(gres.data || []);
+                          const groupIds = (gres.data || []).map((g) => g.id);
+                          if (groupIds.length > 0) {
+                            const { data: parts } = await supabase
+                              .from('group_participants')
+                              .select('group_id, last_read_at')
+                              .eq('user_id', profile.id)
+                              .in('group_id', groupIds);
+                            const map: Record<string, string | null> = {};
+                            for (const row of (parts as any[]) || []) map[String((row as any).group_id)] = (row as any).last_read_at || null;
+                            setGroupLastReadMap(map);
+                          }
                         } catch {} finally { setGroupsLoading(false); }
                       }
                     }}
@@ -1472,12 +1486,27 @@ const AthleteDashboard: React.FC = () => {
                             <button
                               key={c.id}
                               className="w-full text-left px-4 py-3 hover:bg-gray-50 focus:outline-none"
-                              onClick={() => setChatConversationId(c.id)}
+                              onClick={async () => {
+                                setChatConversationId(c.id);
+                                if (profile?.id) {
+                                  try { await ChatService.markConversationRead(c.id, profile.id); } catch {}
+                                  setUnreadConvoIds((prev) => {
+                                    const next = new Set(prev);
+                                    next.delete(c.id);
+                                    return next;
+                                  });
+                                }
+                              }}
                             >
                               <div className="flex items-center justify-between">
                                 <div className="font-medium">Chat with Admin</div>
-                                <div className="text-xs text-gray-500">
-                                  {c.last_message_at ? new Date(c.last_message_at).toLocaleString() : '—'}
+                                <div className="flex items-center gap-2 ml-3 flex-shrink-0">
+                                  <div className="text-xs text-gray-500">
+                                    {c.last_message_at ? new Date(c.last_message_at).toLocaleString() : '—'}
+                                  </div>
+                                  {unreadConvoIds.has(c.id) ? (
+                                    <span className="inline-block w-2.5 h-2.5 rounded-full bg-red-600" aria-label="Unread messages" title="Unread messages" />
+                                  ) : null}
                                 </div>
                               </div>
                               <div className="text-sm text-gray-600">Conversation ID: {c.id}</div>
@@ -1494,12 +1523,15 @@ const AthleteDashboard: React.FC = () => {
                         const title = String(g.title || 'Group').toLowerCase();
                         return groupSearch.trim() === '' || title.includes(groupSearch.toLowerCase());
                       })}
+                      lastReadMap={groupLastReadMap}
                       loading={groupsLoading}
                       onOpen={async (g) => {
                         setSelectedGroupId(g.id);
                         setSelectedGroupTitle(g.title);
                         if (profile?.id) {
                           try { await ChatGroupService.markGroupRead(g.id, profile.id); } catch {}
+                          // Optimistically bump last read
+                          setGroupLastReadMap((prev) => ({ ...prev, [g.id]: new Date().toISOString() }));
                         }
                       }}
                     />

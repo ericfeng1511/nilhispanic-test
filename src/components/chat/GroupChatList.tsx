@@ -37,6 +37,13 @@ export const GroupChatList: React.FC<GroupChatListProps> = ({ groups, lastReadMa
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 min-w-0">
+                {hasUnread ? (
+                  <span
+                    className="inline-block w-2.5 h-2.5 rounded-full bg-red-600 flex-shrink-0"
+                    aria-label="Unread messages"
+                    title="Unread messages"
+                  />
+                ) : null}
                 <div className="relative w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-br from-nil-light-blue to-nil-navy text-white">
                   <Users className="w-5 h-5 opacity-80" />
                 </div>
@@ -45,14 +52,7 @@ export const GroupChatList: React.FC<GroupChatListProps> = ({ groups, lastReadMa
                   <div className="text-sm text-gray-600 line-clamp-1">Tap to open group chat</div>
                 </div>
               </div>
-              <div className="flex items-center gap-2 ml-3 flex-shrink-0">
-                <div className="text-xs text-gray-500">{new Date(lastTs).toLocaleString()}</div>
-                {hasUnread ? (
-                  <span className="inline-flex items-center justify-center px-2 py-0.5 text-xs font-medium leading-none text-white bg-red-600 rounded-full">
-                    New
-                  </span>
-                ) : null}
-              </div>
+              <div className="text-xs text-gray-500 ml-3 flex-shrink-0">{new Date(lastTs).toLocaleString()}</div>
             </div>
           </button>
         );
