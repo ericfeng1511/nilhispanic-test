@@ -140,7 +140,7 @@ export const AthleteFilters: React.FC<AthleteFiltersProps> = ({
     (filters.totalSmRanges && filters.totalSmRanges.length > 0) ||
     (!!filters.profileFilter) ||
     (!!filters.sortBy) ||
-    (!!filters.profileCreatedStart) || (!!filters.profileCreatedEnd);
+    (!!filters.profileCreatedStart) || (!!filters.profileCreatedEnd) || (!!filters.createdInPastWeek);
 
   return (
     <Card className="mb-6">
@@ -206,6 +206,8 @@ export const AthleteFilters: React.FC<AthleteFiltersProps> = ({
               </div>
             </PopoverContent>
           </Popover>
+
+          
 
           {/* Profile Created Date Range Filter */}
           <Popover open={profileCreatedOpen} onOpenChange={setProfileCreatedOpen}>
@@ -633,6 +635,17 @@ export const AthleteFilters: React.FC<AthleteFiltersProps> = ({
                 })()}
                 <button
                   onClick={() => onFiltersChange({ ...filters, profileCreatedStart: undefined, profileCreatedEnd: undefined })}
+                  className="hover:bg-nil-orange/30 rounded-full p-0.5"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+            {filters.createdInPastWeek && (
+              <span className="inline-flex items-center gap-1 px-2 py-1 bg-nil-orange/20 text-nil-orange rounded-md text-sm">
+                Created: Past Week
+                <button
+                  onClick={() => onFiltersChange({ ...filters, createdInPastWeek: undefined })}
                   className="hover:bg-nil-orange/30 rounded-full p-0.5"
                 >
                   <X className="w-3 h-3" />

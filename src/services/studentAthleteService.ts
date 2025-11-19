@@ -167,6 +167,24 @@ export class StudentAthleteService {
       });
     }
 
+    // Quick filter: only include accounts (profiles) created within the past 7 days
+    if (filters.createdInPastWeek) {
+      const map = options?.profileIdToCreatedAt || {};
+      const now = Date.now();
+      const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+      const cutoff = now - sevenDaysMs;
+
+      filteredAthletes = filteredAthletes.filter((athlete) => {
+        const pid = (athlete.profile_id || '').toString().trim();
+        if (!pid) return false; // must be a profile/account
+        const createdStr = map[pid];
+        if (!createdStr) return false; // if unknown, exclude from this quick filter
+        const ts = Date.parse(createdStr);
+        if (isNaN(ts)) return false;
+        return ts >= cutoff && ts <= now;
+      });
+    }
+
     // Sorting by first/last name or profile creation date
     if (filters.sortBy) {
       if (filters.sortBy === 'profileCreatedAt') {

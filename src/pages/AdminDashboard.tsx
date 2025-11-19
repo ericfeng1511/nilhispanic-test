@@ -731,7 +731,23 @@ const AdminDashboard: React.FC = () => {
             </Card>
 
             {/* Selection Mode Controls - Below filters */}
-            <div className="flex items-center gap-2 mb-6">
+            <div className="flex items-center flex-wrap gap-3 mb-6">
+              {/* Quick Filter: Accounts Created in Past Week (button styled like selection toggle) */}
+              <Button
+                onClick={() =>
+                  updateAthleteFilters({
+                    ...athleteFilters,
+                    createdInPastWeek: athleteFilters.createdInPastWeek ? undefined : true,
+                  })
+                }
+                variant={athleteFilters.createdInPastWeek ? 'default' : 'outline'}
+                className={athleteFilters.createdInPastWeek ? 'bg-nil-orange hover:bg-nil-navy' : ''}
+                disabled={athletesLoading}
+              >
+                {athleteFilters.createdInPastWeek ? <CheckSquare className="w-4 h-4 mr-2" /> : <Square className="w-4 h-4 mr-2" />}
+                Created Past Week
+              </Button>
+              
               <Button
                 onClick={toggleSelectionMode}
                 variant={selectionMode ? "default" : "outline"}
@@ -740,7 +756,6 @@ const AdminDashboard: React.FC = () => {
                 {selectionMode ? <CheckSquare className="w-4 h-4 mr-2" /> : <Square className="w-4 h-4 mr-2" />}
                 {selectionMode ? 'Exit Selection' : 'Select Athletes'}
               </Button>
-              
               {selectionMode && (
                 <>
                   <Button onClick={handleSelectAll} variant="outline" size="sm">

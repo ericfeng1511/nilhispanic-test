@@ -63,7 +63,7 @@ const ForAthletesPage = () => {
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold heading-gradient">ATHLETE SPOTLIGHTS</h2>
               <p className="text-nil-dark-gray max-w-3xl mx-auto text-lg mt-4">
-                Stay up to date with the latest from the ÑIL Hispanic community.
+                Stay up to date with the latest from the ÑILHispanic™ community.
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">
@@ -105,7 +105,7 @@ const ForAthletesPage = () => {
               </div>
               <div className="text-left">
                 <p className="text-lg md:text-xl text-gray-700 leading-relaxed">
-                  At ÑIL Hispanic, we believe in your potential. The world of Name, Image, and Likeness (NIL) has opened incredible opportunities, and we are here to provide the resources, guidance, and community you need to thrive. Our programs are designed to help you build a successful brand and prepare for a prosperous life beyond sports.
+                  At ÑILHispanic™, we believe in your potential. The world of Name, Image, and Likeness (NIL) has opened incredible opportunities, and we are here to provide the resources, guidance, and community you need to thrive. Our programs are designed to help you build a successful brand and prepare for a prosperous life beyond sports.
                 </p>
               </div>
             </div>

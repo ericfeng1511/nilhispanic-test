@@ -78,7 +78,7 @@ const BrandsSection = () => {
           </div>
           
           <div className="bg-nil-navy rounded-lg p-8 text-white flex flex-col justify-center">
-            <h3 className="text-2xl md:text-3xl font-bold mb-6">WHY YOUR BRAND SHOULD CHAMPION ÑIL HISPANIC</h3>
+            <h3 className="text-2xl md:text-3xl font-bold mb-6">WHY YOUR BRAND SHOULD CHAMPION ÑILHISPANIC™</h3>
             
             <ul className="space-y-4 mb-8">
               <li className="flex items-start">

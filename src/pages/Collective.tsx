@@ -39,7 +39,7 @@ const CollectivePage = () => {
               </div>
               <div className="text-left">
                 <p className="text-lg md:text-xl text-gray-700 leading-relaxed">
-                  At ÑILH Collective (ÑIL Hispanic Collective), we are revolutionizing the landscape for Hispanic college student-athletes. As a national nonprofit, we are committed to raising funds and creating impactful programs that champion their success both on and off the field. Unlike other initiatives, we are school-agnostic, meaning our focus spans across all sports and schools, ensuring no Hispanic student-athlete is left behind.
+                  At ÑILH Collective (ÑILHispanic™ Collective), we are revolutionizing the landscape for Hispanic college student-athletes. As a national nonprofit, we are committed to raising funds and creating impactful programs that champion their success both on and off the field. Unlike other initiatives, we are school-agnostic, meaning our focus spans across all sports and schools, ensuring no Hispanic student-athlete is left behind.
                 </p>
               </div>
             </div>

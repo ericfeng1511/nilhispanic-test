@@ -43,6 +43,8 @@ export interface StudentAthleteFilters {
   // Filter: profile created date range (YYYY-MM-DD). Placeholders default to 2025-07-01 in service.
   profileCreatedStart?: string;
   profileCreatedEnd?: string;
+  // Quick filter: only include accounts (profiles) created within the past 7 days
+  createdInPastWeek?: boolean;
 }
 
 export interface PaginatedStudentAthletes {

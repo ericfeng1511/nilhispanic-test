@@ -19,7 +19,7 @@ const ContactSection = () => {
         <div className="text-center mb-14">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 heading-gradient">GET IN TOUCH</h2>
           <p className="text-nil-dark-gray max-w-3xl mx-auto text-lg">
-            Ready to learn more about how ÑIL Hispanic can help your brand connect with Hispanic student-athletes? Let's start a conversation.
+            Ready to learn more about how ÑILHispanic™ can help your brand connect with Hispanic student-athletes? Let's start a conversation.
           </p>
         </div>
         

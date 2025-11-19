@@ -673,7 +673,7 @@ const AthleteDashboard: React.FC = () => {
                 </div>
 
                 <p className="text-gray-600 mt-1">
-                  Manage your ÑIL Hispanic Athlete Profile
+                  Manage your ÑILHispanic™ Athlete Profile
                 </p>
               </div>
             </div>

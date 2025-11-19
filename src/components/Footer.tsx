@@ -7,7 +7,7 @@ const Footer = () => {
       <div className="container-custom">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
           <div>
-            <h3 className="text-2xl font-bold mb-4">ÑIL<span className="text-nil-orange">Hispanic</span></h3>
+            <h3 className="text-2xl font-bold mb-4">ÑIL<span className="text-nil-orange">Hispanic</span>™</h3>
             <p className="text-gray-300 mb-4">
               Empowering Hispanic student-athletes to maximize their NIL opportunities while connecting brands with an untapped demographic.
             </p>
@@ -95,7 +95,7 @@ const Footer = () => {
         <div className="border-t border-gray-700 pt-6">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400 text-sm mb-4 md:mb-0">
-              © {new Date().getFullYear()} ÑIL Hispanic. All rights reserved.
+              © {new Date().getFullYear()} ÑILHispanic™. All rights reserved.
             </p>
             <div className="flex space-x-6">
               <a href="#" className="text-gray-400 text-sm hover:text-nil-orange">Privacy Policy</a>

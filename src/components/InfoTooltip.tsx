@@ -4,11 +4,15 @@ import { HelpCircle, X } from 'lucide-react';
 interface InfoTooltipProps {
   variant?: 'mobile' | 'desktop';
   className?: string;
+  title?: string;
+  content?: string;
 }
 
 export const InfoTooltip: React.FC<InfoTooltipProps> = ({ 
   variant = 'desktop', 
-  className = '' 
+  className = '',
+  title,
+  content,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -18,7 +22,9 @@ export const InfoTooltip: React.FC<InfoTooltipProps> = ({
 We'll also share deal details here when available.
 Always free, with no obligation or commitment.`;
 
-  const displayText = variant === 'mobile' ? mobileText : desktopText;
+  const defaultText = variant === 'mobile' ? mobileText : desktopText;
+  const displayText = content || defaultText;
+  const displayTitle = title || 'Profile Information';
 
   // No anchored positioning; we center the popup for simplicity and to avoid clipping
 
@@ -45,7 +51,7 @@ Always free, with no obligation or commitment.`;
                   <X className="w-4 h-4" />
                 </button>
                 <div className="pr-8">
-                  <h3 className="font-semibold text-nil-navy mb-3">Profile Information</h3>
+                  <h3 className="font-semibold text-nil-navy mb-3">{displayTitle}</h3>
                   <p className="text-sm text-gray-700 leading-relaxed">
                     {displayText}
                   </p>
@@ -65,9 +71,9 @@ Always free, with no obligation or commitment.`;
                   <X className="w-4 h-4" />
                 </button>
                 <div className="pr-6">
-                  <h3 className="font-semibold text-nil-navy mb-3">Profile Information</h3>
+                  <h3 className="font-semibold text-nil-navy mb-3">{displayTitle}</h3>
                   <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
-                    {desktopText}
+                    {displayText}
                   </p>
                 </div>
               </div>
@@ -86,7 +92,7 @@ Always free, with no obligation or commitment.`;
                     <X className="w-4 h-4" />
                   </button>
                   <div className="pr-6">
-                    <h3 className="font-semibold text-nil-navy mb-2 text-sm">Profile Information</h3>
+                    <h3 className="font-semibold text-nil-navy mb-2 text-sm">{displayTitle}</h3>
                     <p className="text-xs text-gray-700 leading-relaxed">
                       {displayText}
                     </p>

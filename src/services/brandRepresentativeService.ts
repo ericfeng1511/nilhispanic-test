@@ -8,6 +8,7 @@ export interface BrandRepresentative {
   title: string | null;
   department: string | null;
   bio: string | null;
+  photo?: string | null;
   email: string | null;
   linkedin_url: string | null;
   website_url: string | null;
@@ -53,7 +54,7 @@ export class BrandRepresentativeService {
    */
   static async updateBrandRepresentative(
     profileId: string, 
-    updates: Partial<Pick<BrandRepresentative, 'name' | 'brand' | 'title' | 'department' | 'bio' | 'email' | 'linkedin_url' | 'website_url' | 'logo'>>
+    updates: Partial<Pick<BrandRepresentative, 'name' | 'brand' | 'title' | 'department' | 'bio' | 'photo' | 'email' | 'linkedin_url' | 'website_url' | 'logo'>>
   ): Promise<BrandRepresentative> {
     try {
       console.log('🔄 Updating brand representative for profile ID:', profileId);
@@ -87,7 +88,7 @@ export class BrandRepresentativeService {
    */
   static async createBrandRepresentative(
     profileId: string,
-    brandData: Partial<Pick<BrandRepresentative, 'name' | 'brand' | 'title' | 'department' | 'bio' | 'email' | 'linkedin_url' | 'website_url' | 'logo'>>
+    brandData: Partial<Pick<BrandRepresentative, 'name' | 'brand' | 'title' | 'department' | 'bio' | 'photo' | 'email' | 'linkedin_url' | 'website_url' | 'logo'>>
   ): Promise<BrandRepresentative> {
     try {
       console.log('➕ Creating brand representative for profile ID:', profileId);

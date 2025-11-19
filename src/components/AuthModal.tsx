@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from '@/contexts/AuthContext';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { InfoTooltip } from './InfoTooltip';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -69,8 +70,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       if (isLogin) {
         result = await signIn(formData.email, formData.password);
       } else {
-        // Force all new signups to the 'athlete' role
-        result = await signUp(formData.email, formData.password, formData.fullName, 'athlete');
+        result = await signUp(formData.email, formData.password, formData.fullName, formData.role);
       }
 
       console.log('Auth result:', result);
@@ -313,6 +313,25 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           )}
 
           {/* Role selection removed: all new accounts are Student-Athletes by default */}
+          {!isLogin && (
+            <div className="space-y-2">
+              <Label htmlFor="role">Account Type</Label>
+              <Select
+                value={formData.role}
+                onValueChange={(v) =>
+                  setFormData((prev) => ({ ...prev, role: v as 'athlete' | 'brand' }))
+                }
+              >
+                <SelectTrigger id="role" className="h-12 text-base">
+                  <SelectValue placeholder="Select account type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="athlete">Student Athlete</SelectItem>
+                  <SelectItem value="brand">Brand Representative</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {!isLogin && (
             <div className="flex items-center space-x-3">
