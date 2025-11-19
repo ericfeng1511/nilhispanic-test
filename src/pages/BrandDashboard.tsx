@@ -1,19 +1,29 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'react-router-dom';
-import { Building2, ArrowLeft, Camera, User } from 'lucide-react';
+import { Building2, ArrowLeft, Camera, User, Edit3, Save, Trash2, X, AlertTriangle } from 'lucide-react';
 import { InfoTooltip } from '@/components/InfoTooltip';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useMutation } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 import PhotoCropperModal from '@/components/PhotoCropperModal';
 import { useBrandRepresentative } from '@/hooks/useBrandRepresentative';
 import { BrandRepresentativeService } from '@/services/brandRepresentativeService';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 
 const BrandDashboard: React.FC = () => {
   const { profile, user } = useAuth();
   const { brandRepresentative, refetch, updateBrandRepresentative, createBrandRepresentative, isUpdating } = useBrandRepresentative(profile?.id);
+
+  // Basic Info state (mirrors AthleteDashboard patterns)
+  const [isEditingBasic, setIsEditingBasic] = useState(false);
+  const [brandName, setBrandName] = useState<string>('');
+  const [title, setTitle] = useState<string>('');
+  const [originalBrandName, setOriginalBrandName] = useState<string>('');
+  const [originalTitle, setOriginalTitle] = useState<string>('');
 
   // Photo upload state (mirrors AthleteDashboard)
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
@@ -56,6 +66,35 @@ const BrandDashboard: React.FC = () => {
       await refetch();
       setSelectedPhoto(null);
       setPhotoPreview(null);
+      try { window.location.reload(); } catch {}
+    }
+  });
+
+  // Load existing brand rep data into basic info
+  useEffect(() => {
+    if (!brandRepresentative) return;
+    setBrandName(brandRepresentative.brand || '');
+    setTitle(brandRepresentative.title || '');
+  }, [brandRepresentative?.id]);
+
+  const isBasicInfoComplete = () => {
+    return brandName.trim() !== '' && title.trim() !== '';
+  };
+
+  // Save mutation for basic info (mirrors athlete update behavior incl. reload)
+  const updateBasicInfoMutation = useMutation({
+    mutationFn: async () => {
+      if (!profile?.id) throw new Error('No profile ID available');
+      const updates = { brand: brandName.trim(), title: title.trim() } as const;
+      if (brandRepresentative) {
+        await BrandRepresentativeService.updateBrandRepresentative(profile.id, updates);
+      } else {
+        await BrandRepresentativeService.createBrandRepresentative(profile.id, updates);
+      }
+    },
+    onSuccess: async () => {
+      await refetch();
+      setIsEditingBasic(false);
       try { window.location.reload(); } catch {}
     }
   });
@@ -203,6 +242,118 @@ const BrandDashboard: React.FC = () => {
           initialImageUrl={(brandRepresentative?.photo as string) || null}
           title="Update Profile Photo"
         />
+
+        {/* Basic Information (mirrors AthleteDashboard) */}
+        <Card className="mb-6 bg-white/75 backdrop-blur-sm border-white/20">
+          <CardHeader>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <CardTitle className="flex items-center gap-2">
+                <User className="w-5 h-5 text-nil-orange" />
+                Basic Information
+              </CardTitle>
+              {!isEditingBasic ? (
+                <Button
+                  onClick={() => {
+                    setOriginalBrandName(brandName);
+                    setOriginalTitle(title);
+                    setIsEditingBasic(true);
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2 self-start sm:self-auto"
+                >
+                  <Edit3 className="w-4 h-4" />
+                  Edit
+                </Button>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    onClick={() => updateBasicInfoMutation.mutate()}
+                    disabled={updateBasicInfoMutation.isPending || !isBasicInfoComplete()}
+                    size="sm"
+                    className="flex items-center gap-2 bg-nil-orange hover:bg-nil-navy disabled:opacity-50"
+                  >
+                    {updateBasicInfoMutation.isPending ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                    ) : (
+                      <Save className="w-4 h-4" />
+                    )}
+                    {updateBasicInfoMutation.isPending ? 'Saving...' : 'Save'}
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setBrandName('');
+                      setTitle('');
+                    }}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Clear All
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setBrandName(originalBrandName);
+                      setTitle(originalTitle);
+                      setIsEditingBasic(false);
+                    }}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2"
+                  >
+                    <X className="w-4 h-4" />
+                    Cancel
+                  </Button>
+                </div>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            {!isBasicInfoComplete() && (
+              <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-amber-800">One or more fields not completed.</p>
+                  <p className="text-sm text-amber-700 mt-1">Please fill in your basic info to help ÑIL Hispanic match you with opportunities.</p>
+                </div>
+              </div>
+            )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Brand Name */}
+              <div className="space-y-2">
+                <Label htmlFor="brand-name">Brand Name <span className="text-red-500">*</span></Label>
+                {isEditingBasic ? (
+                  <Input
+                    id="brand-name"
+                    value={brandName}
+                    onChange={(e) => setBrandName(e.target.value)}
+                    placeholder="Enter your brand"
+                    className="w-full"
+                  />
+                ) : (
+                  <div className="p-3 bg-gray-50 rounded-md">{brandName || 'Not specified'}</div>
+                )}
+              </div>
+
+              {/* Title */}
+              <div className="space-y-2">
+                <Label htmlFor="title">Position/Title <span className="text-red-500">*</span></Label>
+                {isEditingBasic ? (
+                  <Input
+                    id="title"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Enter your position or title"
+                    className="w-full"
+                  />
+                ) : (
+                  <div className="p-3 bg-gray-50 rounded-md">{title || 'Not specified'}</div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
