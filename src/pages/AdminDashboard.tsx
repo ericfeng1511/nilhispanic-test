@@ -1465,6 +1465,15 @@ const AdminDashboard: React.FC = () => {
                         setGroupLastReadMap((prev) => ({ ...prev, [g.id]: new Date().toISOString() }));
                       }
                     }}
+                    isAdmin={true}
+                    currentUserId={profile?.id}
+                    onDeleted={(groupId) => {
+                      setGroups((prev) => prev.filter((g) => g.id !== groupId));
+                      if (selectedGroupId === groupId) {
+                        setSelectedGroupId(null);
+                        setSelectedGroupTitle(null);
+                      }
+                    }}
                   />
                 </div>
               )}

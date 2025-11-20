@@ -576,4 +576,87 @@ export class ChatGroupService {
     // Return a void cleanup function to satisfy React typings
     return () => { void supabase.removeChannel(channel); };
   }
+
+  // Fully delete a group conversation and all associated data (admin/owner only)
+  static async deleteGroupFully(groupId: string, requesterId: string): Promise<void> {
+    // Ensure requester is admin/owner
+    const isAdmin = await this.isGroupAdmin(groupId, requesterId);
+    if (!isAdmin) {
+      throw new Error('Only group admins can delete this group');
+    }
+
+    // 1) Collect all message IDs for the group
+    const { data: msgs, error: mErr } = await supabase
+      .from(GROUP_MESSAGES_TABLE)
+      .select('id')
+      .eq('group_id', groupId);
+    if (mErr) throw new Error(`Failed to fetch group messages: ${mErr.message}`);
+    const messageIds = (msgs || []).map((m: any) => m.id as string);
+
+    // 2) Collect all attachment storage paths for those messages
+    let attachmentPaths: string[] = [];
+    if (messageIds.length > 0) {
+      const { data: atts, error: aErr } = await supabase
+        .from(GROUP_ATTACHMENTS_TABLE)
+        .select('storage_path')
+        .in('message_id', messageIds);
+      if (aErr) throw new Error(`Failed to fetch attachments: ${aErr.message}`);
+      attachmentPaths = (atts || []).map((a: any) => a.storage_path as string);
+    }
+
+    // 3) Delete storage files (best-effort, proceed even if some fail)
+    if (attachmentPaths.length > 0) {
+      try {
+        // Supabase storage remove can delete multiple paths at once
+        const { error: rmErr } = await supabase.storage
+          .from(ATTACHMENTS_BUCKET)
+          .remove(attachmentPaths);
+        if (rmErr) {
+          // Non-fatal: log and proceed to DB cleanup
+          console.warn('Failed to delete some storage files:', rmErr.message);
+        }
+      } catch (e: any) {
+        console.warn('Storage deletion error:', e?.message || e);
+      }
+    }
+
+    // 4) Delete attachment rows
+    if (messageIds.length > 0) {
+      const { error: daErr } = await supabase
+        .from(GROUP_ATTACHMENTS_TABLE)
+        .delete()
+        .in('message_id', messageIds);
+      if (daErr) throw new Error(`Failed to delete attachment rows: ${daErr.message}`);
+    }
+
+    // 5) Delete read receipts
+    if (messageIds.length > 0) {
+      const { error: rrErr } = await supabase
+        .from('group_message_reads')
+        .delete()
+        .in('message_id', messageIds);
+      if (rrErr) throw new Error(`Failed to delete read receipts: ${rrErr.message}`);
+    }
+
+    // 6) Delete messages
+    const { error: dmErr } = await supabase
+      .from(GROUP_MESSAGES_TABLE)
+      .delete()
+      .eq('group_id', groupId);
+    if (dmErr) throw new Error(`Failed to delete messages: ${dmErr.message}`);
+
+    // 7) Delete participants
+    const { error: dpErr } = await supabase
+      .from(GROUP_PARTICIPANTS_TABLE)
+      .delete()
+      .eq('group_id', groupId);
+    if (dpErr) throw new Error(`Failed to delete participants: ${dpErr.message}`);
+
+    // 8) Delete the conversation
+    const { error: dcErr } = await supabase
+      .from(GROUP_CONVERSATIONS_TABLE)
+      .delete()
+      .eq('id', groupId);
+    if (dcErr) throw new Error(`Failed to delete group: ${dcErr.message}`);
+  }
 }

@@ -2,17 +2,26 @@ import React, { useState } from 'react';
 import type { GroupConversation } from '@/types/chatGroup';
 import { Users, MoreHorizontal } from 'lucide-react';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { ChatGroupService } from '@/services/chatGroupService';
 
 interface GroupChatListProps {
   groups: GroupConversation[];
   lastReadMap?: Record<string, string | null | undefined>; // group_id -> last_read_at
   onOpen: (group: GroupConversation) => void;
   loading?: boolean;
+  // Admin-only delete controls
+  isAdmin?: boolean;
+  currentUserId?: string; // required if isAdmin
+  onDeleted?: (groupId: string) => void;
 }
 
-export const GroupChatList: React.FC<GroupChatListProps> = ({ groups, lastReadMap = {}, onOpen, loading }) => {
+export const GroupChatList: React.FC<GroupChatListProps> = ({ groups, lastReadMap = {}, onOpen, loading, isAdmin = false, currentUserId, onDeleted }) => {
   // Local UI override: groups marked as unread from the menu
   const [forceUnread, setForceUnread] = useState<Set<string>>(new Set());
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
   if (loading) {
     return (
       <div className="flex items-center gap-2 text-gray-600">
@@ -42,13 +51,21 @@ export const GroupChatList: React.FC<GroupChatListProps> = ({ groups, lastReadMa
               <div className="flex items-center gap-3 min-w-0">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button
+                    <div
+                      role="button"
+                      tabIndex={0}
                       onClick={(e) => e.stopPropagation()}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          (e.currentTarget as HTMLDivElement).click();
+                        }
+                      }}
                       className="p-1 rounded hover:bg-gray-100 focus:outline-none"
                       aria-label="Group options"
                     >
                       <MoreHorizontal className="w-5 h-5 text-gray-500" />
-                    </button>
+                    </div>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" onClick={(e) => e.stopPropagation()}>
                     <DropdownMenuItem
@@ -64,6 +81,19 @@ export const GroupChatList: React.FC<GroupChatListProps> = ({ groups, lastReadMa
                     >
                       Mark as Unread
                     </DropdownMenuItem>
+                    {isAdmin ? (
+                      <DropdownMenuItem
+                        className="text-red-600 focus:text-red-700"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setPendingDeleteId(g.id);
+                          setConfirmOpen(true);
+                        }}
+                      >
+                        Delete
+                      </DropdownMenuItem>
+                    ) : null}
                   </DropdownMenuContent>
                 </DropdownMenu>
                 {hasUnread ? (
@@ -86,6 +116,43 @@ export const GroupChatList: React.FC<GroupChatListProps> = ({ groups, lastReadMa
           </button>
         );
       })}
+      {/* Confirm Delete Dialog */}
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete group chat?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the entire group chat, including all messages and attachments, for all members. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              disabled={deleting}
+              onClick={async () => {
+                if (!pendingDeleteId || !currentUserId) { setConfirmOpen(false); return; }
+                try {
+                  setDeleting(true);
+                  await ChatGroupService.deleteGroupFully(pendingDeleteId, currentUserId);
+                  setConfirmOpen(false);
+                  setPendingDeleteId(null);
+                  if (onDeleted) onDeleted(pendingDeleteId);
+                } catch (e: any) {
+                  // Minimal UX: close dialog; admin will see it disappear after refresh if deletion partially applied
+                  setConfirmOpen(false);
+                  setPendingDeleteId(null);
+                  // Optionally, could integrate toast here if available in parent
+                } finally {
+                  setDeleting(false);
+                }
+              }}
+            >
+              {deleting ? 'Deleting...' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
