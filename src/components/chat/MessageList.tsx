@@ -60,7 +60,7 @@ export const MessageList: React.FC<MessageListProps> = ({ messages, currentUserI
           href={href}
           target="_blank"
           rel="noopener noreferrer"
-          className="underline underline-offset-2 hover:opacity-80 break-words text-blue-200 hover:text-blue-100"
+          className="underline underline-offset-2 hover:opacity-80 break-words break-all text-blue-200 hover:text-blue-100"
           onClick={(e) => e.stopPropagation()}
         >
           {raw}
@@ -131,9 +131,9 @@ export const MessageList: React.FC<MessageListProps> = ({ messages, currentUserI
               <div className={`${
                   imagesOnly
                     ? isMine
-                      ? 'flex items-end w-full justify-end gap-0'
-                      : 'flex items-end gap-2 max-w-[75%] flex-row'
-                    : `flex items-end gap-2 max-w-[75%] ${isMine ? 'flex-row-reverse' : 'flex-row'}`
+                      ? 'flex items-end w-full justify-end gap-0 min-w-0'
+                      : 'flex items-end gap-2 max-w-[75%] flex-row min-w-0'
+                    : `flex items-end gap-2 max-w-[75%] ${isMine ? 'flex-row-reverse' : 'flex-row'} min-w-0`
                 }`}>
                 {!isMine && !inSameClusterAsPrev && (
                   <AvatarBubble src={avatars?.[msg.sender_id]} nameKey={msg.sender_id} />
@@ -144,18 +144,18 @@ export const MessageList: React.FC<MessageListProps> = ({ messages, currentUserI
                 <div
                   className={`${
                     imagesOnly
-                      ? `p-0 text-sm relative ${isMine ? 'ml-auto' : 'mr-auto'}`
+                      ? `p-0 text-sm relative ${isMine ? 'ml-auto' : 'mr-auto'} min-w-0`
                       : `rounded-2xl px-4 py-2.5 text-sm shadow-sm relative ${
                           isMine
                             ? 'bg-nil-orange text-white rounded-br-md'
                             : 'bg-white text-gray-900 rounded-bl-md border border-gray-200'
-                        }`
+                        } min-w-0`
                   }`}
                   title={new Date(msg.created_at).toLocaleString()}
                   aria-label={`Sent at ${new Date(msg.created_at).toISOString()}`}
                 >
                   {msg.content?.trim() && (
-                    <div className="whitespace-pre-wrap break-words leading-relaxed">{renderMessageText(msg.content)}</div>
+                    <div className="whitespace-pre-wrap break-words break-all leading-relaxed">{renderMessageText(msg.content)}</div>
                   )}
                   {!!msg.attachments?.length && (
                     <div className={`${imagesOnly ? 'mt-0' : 'mt-2'} ${msg.content?.trim() ? '' : ''}`}>

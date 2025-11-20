@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Send, Paperclip } from 'lucide-react';
 
 interface MessageInputProps {
@@ -35,11 +35,19 @@ export const MessageInput: React.FC<MessageInputProps> = ({ onSend, onSendWithAt
     }
   };
 
-  const onKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (e) => {
+  const onKeyDown: React.KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
+  };
+
+  const onAutoResize: React.FormEventHandler<HTMLTextAreaElement> = (e) => {
+    const el = e.currentTarget;
+    // Reset height to compute scrollHeight correctly, then set to content height up to a cap
+    el.style.height = 'auto';
+    const max = 200; // px cap (~6-8 lines depending on font)
+    el.style.height = Math.min(el.scrollHeight, max) + 'px';
   };
 
   const onPickFiles: React.ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -81,14 +89,16 @@ export const MessageInput: React.FC<MessageInputProps> = ({ onSend, onSendWithAt
         >
           <Paperclip className="w-5 h-5 text-gray-500" />
         </Button>
-        <div className="flex-1 relative">
-          <Input
+        <div className="flex-1 relative min-w-0">
+          <Textarea
             value={value}
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={onKeyDown}
+            onInput={onAutoResize}
+            rows={1}
             placeholder="Type a message..."
             disabled={disabled || pending}
-            className="pr-12 py-3 rounded-full border-gray-300 focus:border-nil-orange focus:ring-nil-orange bg-gray-50 focus:bg-white transition-colors"
+            className="pr-12 py-3 rounded-2xl border-gray-300 focus:border-nil-orange focus:ring-nil-orange bg-gray-50 focus:bg-white transition-colors resize-none leading-relaxed whitespace-pre-wrap break-words break-all min-h-[44px]"
           />
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
             {value.trim() || files.length > 0 ? (
