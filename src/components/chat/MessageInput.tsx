@@ -98,7 +98,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({ onSend, onSendWithAt
             rows={1}
             placeholder="Type a message..."
             disabled={disabled || pending}
-            className="pr-12 py-3 rounded-2xl border-gray-300 focus:border-nil-orange focus:ring-nil-orange bg-gray-50 focus:bg-white transition-colors resize-none leading-relaxed whitespace-pre-wrap break-words break-all min-h-[44px]"
+            className="pr-12 py-3 rounded-2xl border-gray-300 focus:border-nil-orange focus:ring-nil-orange bg-gray-50 focus:bg-white transition-colors resize-none leading-relaxed whitespace-pre-wrap break-words min-h-[44px]"
           />
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
             {value.trim() || files.length > 0 ? (

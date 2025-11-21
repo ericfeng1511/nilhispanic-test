@@ -151,7 +151,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         throw e;
       }
     },
-    [conversationId, currentUserId]
+    [conversationId, currentUserId, onMessageSent]
   );
 
   const onSendWithAttachments = useCallback(
@@ -249,7 +249,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         throw e as any;
       }
     },
-    [conversationId, currentUserId]
+    [conversationId, currentUserId, onMessageSent]
   );
 
   const headerParticipantId = useMemo(() => {

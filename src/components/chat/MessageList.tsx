@@ -60,7 +60,7 @@ export const MessageList: React.FC<MessageListProps> = ({ messages, currentUserI
           href={href}
           target="_blank"
           rel="noopener noreferrer"
-          className="underline underline-offset-2 hover:opacity-80 break-words break-all text-blue-200 hover:text-blue-100"
+          className="underline underline-offset-2 hover:opacity-80 break-words text-blue-200 hover:text-blue-100"
           onClick={(e) => e.stopPropagation()}
         >
           {raw}
@@ -155,7 +155,7 @@ export const MessageList: React.FC<MessageListProps> = ({ messages, currentUserI
                   aria-label={`Sent at ${new Date(msg.created_at).toISOString()}`}
                 >
                   {msg.content?.trim() && (
-                    <div className="whitespace-pre-wrap break-words break-all leading-relaxed">{renderMessageText(msg.content)}</div>
+                    <div className="whitespace-pre-wrap break-words leading-relaxed">{renderMessageText(msg.content)}</div>
                   )}
                   {!!msg.attachments?.length && (
                     <div className={`${imagesOnly ? 'mt-0' : 'mt-2'} ${msg.content?.trim() ? '' : ''}`}>

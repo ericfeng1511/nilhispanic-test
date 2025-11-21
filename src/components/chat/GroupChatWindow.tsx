@@ -220,13 +220,29 @@ export const GroupChatWindow: React.FC<GroupChatWindowProps> = ({ groupId, curre
   const onSendText = async (content: string) => {
     if (!content.trim()) return;
     setSending(true);
+    // Optimistic update: show message immediately
+    const tempId = `temp-${Date.now()}`;
+    const optimistic: GroupMessage = {
+      id: tempId,
+      group_id: groupId,
+      sender_id: currentUserId,
+      content: content.trim(),
+      created_at: new Date().toISOString(),
+      attachments: [],
+    };
+    setMessages((prev) => [...prev, optimistic]);
     try {
       const message = await ChatGroupService.sendGroupMessage(groupId, currentUserId, content);
+      // Replace optimistic with real message
+      setMessages((prev) => prev.map((m) => (m.id === tempId ? message : m)));
       // Notify parent about the new message for timestamp sync
       if (onGroupMessageSent && message.created_at) {
         onGroupMessageSent(groupId, message.created_at);
       }
-      // Don't add to state here - let realtime subscription handle it to avoid duplicates
+    } catch (e) {
+      // Remove optimistic on error
+      setMessages((prev) => prev.filter((m) => m.id !== tempId));
+      throw e;
     } finally {
       setSending(false);
     }
@@ -235,13 +251,29 @@ export const GroupChatWindow: React.FC<GroupChatWindowProps> = ({ groupId, curre
   const onSendWithAttachments = async (content: string, files: File[]) => {
     if (!files.length && !content.trim()) return;
     setSending(true);
+    // Optimistic update: show message immediately (attachments will load)
+    const tempId = `temp-${Date.now()}`;
+    const optimistic: GroupMessage = {
+      id: tempId,
+      group_id: groupId,
+      sender_id: currentUserId,
+      content: content || '',
+      created_at: new Date().toISOString(),
+      attachments: [],
+    };
+    setMessages((prev) => [...prev, optimistic]);
     try {
       const message = await ChatGroupService.sendGroupMessageWithAttachments(groupId, currentUserId, files, content);
+      // Replace optimistic with real message (includes attachments)
+      setMessages((prev) => prev.map((m) => (m.id === tempId ? message : m)));
       // Notify parent about the new message for timestamp sync
       if (onGroupMessageSent && message.created_at) {
         onGroupMessageSent(groupId, message.created_at);
       }
-      // Don't add to state here - let realtime subscription handle it to avoid duplicates
+    } catch (e) {
+      // Remove optimistic on error
+      setMessages((prev) => prev.filter((m) => m.id !== tempId));
+      throw e;
     } finally {
       setSending(false);
     }
@@ -410,7 +442,7 @@ const GroupMessageList: React.FC<{ messages: GroupMessage[]; currentUserId: stri
               <div className={`${isMine ? 'bg-nil-orange text-white rounded-2xl rounded-br-md' : 'bg-white text-gray-900 rounded-2xl rounded-bl-md border border-gray-200'} px-4 py-2.5 text-sm shadow-sm min-w-0`}
                    title={created.toLocaleString()} aria-label={`Sent at ${created.toISOString()}`}>
                 {msg.content?.trim() ? (
-                  <div className="whitespace-pre-wrap break-words break-all leading-relaxed">{msg.content}</div>
+                  <div className="whitespace-pre-wrap break-words leading-relaxed">{msg.content}</div>
                 ) : null}
                 {images.length > 0 || others.length > 0 ? (
                   <div className={`${msg.content?.trim() ? 'mt-2' : ''}`}>
