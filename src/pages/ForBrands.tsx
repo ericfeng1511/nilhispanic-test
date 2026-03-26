@@ -49,7 +49,7 @@ const ForBrandsPage = () => {
           <div className="absolute inset-0 bg-gradient-to-br from-nil-navy/85 via-nil-navy/50 to-nil-orange/45 z-0"></div>
           <div className="relative z-10 container-custom">
             <div className="text-center mb-14">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4 heading-gradient-light">THE FACTS</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4 heading-gradient-light">MARKET MOMENT</h2>
               {/* <p className="text-gray-200 max-w-3xl mx-auto text-lg">
                 Discover key insights into the rapidly growing Hispanic market and its connection to sports.
               </p> */}

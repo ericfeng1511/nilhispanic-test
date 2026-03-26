@@ -17,9 +17,9 @@ const Index = () => {
     <div className="min-h-screen">
       <Header />
       <main>
-        <HeroSection 
-          title={<>WE EMPOWER <span className="heading-gradient-light">HISPANIC STUDENT-ATHLETES.</span></>}
-          subtitle="Unlocking opportunities for the next generation of leaders, on and off the field."
+        <HeroSection
+          title={<>REACH HISPANIC AUDIENCES AT SCALE <span className="heading-gradient-light">THROUGH TRUSTED COLLEGE STUDENT-ATHLETES.</span></>}
+          subtitle="We aggregate 1,100+ Latino and Latina college student-athletes to deliver high-performing content and on-the-ground presence across top U.S. Hispanic markets."
           backgroundImageUrl="/images/athlete-test-img-25.jpg"
           buttons={[
             {
@@ -33,9 +33,10 @@ const Index = () => {
               className: "btn-secondary"
             }
           ]}
-          className="pb-96"
-        />
-        <HowItWorksSection />
+          className="pb-20"
+        >
+          <HowItWorksSection />
+        </HeroSection>
         <AthleteSpotlight />
         <ContactSection />
       </main>

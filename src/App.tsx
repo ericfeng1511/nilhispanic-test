@@ -19,6 +19,8 @@ import AthleteDashboard from "./pages/AthleteDashboard";
 import BrandDashboard from "./pages/BrandDashboard";
 import ScrollToTop from "./components/ScrollToTop";
 import ResetPassword from "./pages/ResetPassword";
+import CommunityNetwork from "./pages/CommunityNetwork";
+import CommunityMemberDashboard from "./pages/CommunityMemberDashboard";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +46,8 @@ const App = () => (
           <Route path="/athlete/dashboard" element={<AthleteDashboard />} />
           <Route path="/brand/dashboard" element={<BrandDashboard />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/community/network" element={<CommunityNetwork />} />
+          <Route path="/community/member" element={<CommunityMemberDashboard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

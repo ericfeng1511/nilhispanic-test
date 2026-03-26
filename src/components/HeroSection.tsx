@@ -39,7 +39,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
         backgroundSize: 'cover'
       }}
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-nil-navy/85 via-nil-navy/50 to-nil-orange/45 z-0"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-nil-navy/90 via-nil-navy/75 to-nil-navy/60 z-0"></div>
       <div className="relative z-10 container-custom flex flex-col md:flex-row items-center">
         <div className="md:w-1/2 mb-10 md:mb-0">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 mt-40 text-gray-100">

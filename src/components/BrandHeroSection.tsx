@@ -8,10 +8,10 @@ const BrandHeroSection = () => {
       <div className="relative z-10 container-custom flex flex-col md:flex-row items-center">
         <div className="md:w-1/2 mb-10 md:mb-0">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 mt-40 text-gray-100">
-            UNLEASH THE POWER OF SPORTS <span className="heading-gradient-light">TO ENGAGE THE FASTEST-GROWING U.S. AUDIENCE</span>
+            ACTIVATE HISPANIC AUDIENCES <span className="heading-gradient-light">WITH TRUST, SCALE, AND PERFORMANCE</span>
           </h1>
           <p className="text-gray-300 text-lg md:text-xl mb-8 max-w-xl">
-            Tap into a powerful and authentic demographic by partnering with the next generation of Hispanic leaders and influencers.
+            ÑILHispanic™ helps brands reach Latino and Latina Gen Z audiences through a national network of 1,100+ trusted college student-athletes, delivering culturally credible content and measurable results.
           </p>
 
         </div>

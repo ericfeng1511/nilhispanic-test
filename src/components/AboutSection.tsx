@@ -4,10 +4,18 @@ const AboutSection = () => {
     <section id="about" className="">
       <div className="container-custom">
         <div className="text-center mb-14">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 heading-gradient">OUR MISSION</h2>
-          <p className="text-nil-dark-gray max-w-3xl mx-auto text-lg">
-            Empower Hispanic student-athletes to maximize their opportunities in the Name, Image, Likeness (NIL) landscape.
-          </p>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 heading-gradient">THE OPPORTUNITY</h2>
+          <div className="text-nil-dark-gray max-w-3xl mx-auto text-lg">
+            <p>
+              Hispanics are the fastest-growing and most culturally influential segment of Gen Z.
+            </p>
+            <p className="mt-6">
+              They over-index in sports fandom, social video creation, and creator engagement—yet remain under-leveraged in traditional NIL and influencer campaigns.
+            </p>
+            <p className="mt-6">
+              ÑILHispanic™ organizes cultural trust into a scalable execution system.
+            </p>
+          </div>
         </div>
         
         <div className="flex flex-col md:flex-row gap-10 items-center">
@@ -19,26 +27,33 @@ const AboutSection = () => {
             />
           </div>
           <div className="w-full md:w-2/5">
-            <h3 className="text-2xl md:text-3xl font-bold mb-4 text-nil-navy">WHAT SETS US APART</h3>
+            <h3 className="text-2xl md:text-3xl font-bold mb-4 text-nil-navy">WHY ÑILHISPANIC™?</h3>
             
             <div className="mb-6">
-              <h4 className="text-xl font-semibold mb-2 text-nil-orange">Demographic Focus</h4>
+              <h4 className="text-xl font-semibold mb-2 text-nil-orange">National Hispanic Student-Athlete Network</h4>
               <p className="text-nil-dark-gray">
-                We exclusively focus on Hispanic student-athletes, providing specialized support and opportunities tailored to their unique backgrounds and communities.
+                1,100+ Latino and Latina college student-athletes across 100+ universities in 22 states.
               </p>
             </div>
             
             <div className="mb-6">
-              <h4 className="text-xl font-semibold mb-2 text-nil-orange">Group Influencing</h4>
+              <h4 className="text-xl font-semibold mb-2 text-nil-orange">Scalable Group Influence</h4>
               <p className="text-nil-dark-gray">
-                Unlike typical NIL organizations that focus on singular influencer-athletes, we aggregate multiple nano and micro influencer-athletes to create powerful marketing campaigns with broader reach.
+                We aggregate micro- and nano-creators to deliver macro-level performance at micro-level cost.
               </p>
             </div>
             
-            <div>
-              <h4 className="text-xl font-semibold mb-2 text-nil-orange">Hybrid App & Agency</h4>
+            <div className="mb-6">
+              <h4 className="text-xl font-semibold mb-2 text-nil-orange">Built for Multi-Market Execution</h4>
               <p className="text-nil-dark-gray">
-                We guide brands to partner with the most relevant Hispanic college student-athletes in any market, and then create effective, authentic campaigns that engage Hispanic and youth audiences.
+                Activate 5 or 500 athletes across priority Hispanic markets with centralized campaign management.
+              </p>
+            </div>
+
+            <div className="mb-6">
+              <h4 className="text-xl font-semibold mb-2 text-nil-orange">Cultural Credibility</h4>
+              <p className="text-nil-dark-gray">
+                Our athletes influence families, teammates, youth clubs, and local communities. They create multiplier effects that paid media cannot replicate.
               </p>
             </div>
           </div>
