@@ -1,41 +1,34 @@
+import React, { useState } from 'react';
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import HeroSection from '@/components/HeroSection';
 import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription
-} from "@/components/ui/dialog";
-import { ContactForm } from "../components/ContactForm";
 import { ShieldCheck, Megaphone, Users, BarChart2 } from 'lucide-react';
 import InstagramPost from '@/components/InstagramPost';
+import { AuthModal } from '@/components/AuthModal';
 
 const ForAthletesPage = () => {
+  const [authModalOpen, setAuthModalOpen] = useState(false);
   const empowermentPoints = [
     {
-      icon: ShieldCheck,
-      title: "NIL Education & Compliance",
-      description: "Navigate the complexities of NIL with confidence. We provide clear, straightforward guidance on rules and regulations to ensure you stay eligible and protected."
+      icon: Megaphone,
+      title: "Brand Opportunities",
+      description: "Access national and regional brand campaigns built specifically for Hispanic student-athletes."
     },
     {
-      icon: Megaphone,
-      title: "Personal Branding",
-      description: "Your story is your brand. We help you identify your unique value, build a powerful personal narrative, and create a brand that resonates with fans and sponsors."
+      icon: ShieldCheck,
+      title: "Personal Brand Development",
+      description: "Define your story, strengthen your presence, and build a brand that resonates beyond the field."
     },
     {
       icon: BarChart2,
-      title: "Career Development",
-      description: "Prepare for life beyond sports with career planning resources, internship opportunities, and professional development workshops that help you transition successfully."
+      title: "NIL Education & Protection",
+      description: "Clear guidance on compliance, contracts, and eligibility so you operate with confidence."
     },
     {
       icon: Users,
-      title: "Community & Networking",
-      description: "Connect with a powerful network of Hispanic athletes, alumni, and business leaders. Build relationships that will support you on and off the field."
+      title: "Network & Exposure",
+      description: "Connect with fellow Hispanic athletes, alumni, and business leaders who understand your journey."
     }
   ];
 
@@ -51,19 +44,29 @@ const ForAthletesPage = () => {
       <Header />
       <main className="flex-grow">
         <HeroSection
-          title={<><span className="font-bold">YOUR TIME</span> <span className="heading-gradient-light">IS NOW</span></>}
-          subtitle="Unlock your potential, build your legacy. We're here to help you succeed."
+          title={<><span className="font-bold">TURN YOUR CULTURE</span> <span className="heading-gradient-light">INTO OPPORTUNITY</span></>}
+          subtitle="Join the only national Hispanic college student-athlete network built to connect you with real brand campaigns, community influence, and long-term career growth."
           backgroundImageUrl="/images/athlete-test-img-1.png"
           backgroundPosition="center"
           className="pb-96"
+          buttons={[
+            {
+              text: "Create Your Profile",
+              link: "#",
+              onClick: () => setAuthModalOpen(true),
+              className: "bg-nil-orange hover:bg-nil-orange/90 text-white font-semibold px-8 py-3",
+              size: "lg"
+            }
+          ]}
         />
+        <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
 
         <section className="py-16 md:py-24 bg-gradient-to-br from-nil-light-blue via-nil-orange/30 to-white bg-gradient-with-image">
           <div className="container-custom">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold heading-gradient">ATHLETE SPOTLIGHTS</h2>
               <p className="text-nil-dark-gray max-w-3xl mx-auto text-lg mt-4">
-                Stay up to date with the latest from the ÑILHispanic™ community.
+                See how Hispanic student-athletes across the country are building their brands, landing opportunities, and representing their communities.
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">
@@ -78,7 +81,7 @@ const ForAthletesPage = () => {
           <div className="absolute inset-0 bg-gradient-to-br from-nil-orange/70 via-nil-navy/80 to-nil-navy/90 z-0"></div>
           <div className="relative z-10 container-custom text-white">
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4 heading-gradient-light">HOW WE EMPOWER YOU</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4 heading-gradient-light">HOW ÑIL HISPANIC WORKS FOR YOU</h2>
             </div>
             <div className="grid md:grid-cols-2 gap-8">
               {empowermentPoints.map((point, index) => (
@@ -97,15 +100,18 @@ const ForAthletesPage = () => {
         <section className="py-16 md:py-24 bg-gradient-to-br from-nil-light-blue via-nil-orange/30 to-white bg-gradient-with-image">
           <div className="container-custom">
             <div className="text-center">
-              <h2 className="text-3xl md:text-4xl font-bold heading-gradient mb-12">EMPOWERING THE NEXT GENERATION OF HISPANIC ATHLETES</h2>
+              <h2 className="text-3xl md:text-4xl font-bold heading-gradient mb-12">YOU'RE NOT JUST AN ATHLETE. YOU'RE AN INFLUENCER.</h2>
             </div>
             <div className="grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
               <div>
                 <img src="/images/athlete-test-img-12.jpg" alt="Hispanic athletes empowerment" className="rounded-lg shadow-xl w-full" />
               </div>
-              <div className="text-left">
+              <div className="text-left space-y-4">
                 <p className="text-lg md:text-xl text-gray-700 leading-relaxed">
-                  At ÑILHispanic™, we believe in your potential. The world of Name, Image, and Likeness (NIL) has opened incredible opportunities, and we are here to provide the resources, guidance, and community you need to thrive. Our programs are designed to help you build a successful brand and prepare for a prosperous life beyond sports.
+                  Hispanic student-athletes carry influence beyond social media. You represent your family, your community, and the next generation watching you succeed.
+                </p>
+                <p className="text-lg md:text-xl text-gray-700 leading-relaxed">
+                  ÑIL Hispanic organizes that influence into real opportunities — connecting you to brands that value authenticity, culture, and leadership.
                 </p>
               </div>
             </div>
@@ -115,29 +121,23 @@ const ForAthletesPage = () => {
         <section className="relative py-16 md:py-24 bg-[url('/images/background-img-1.png')] bg-cover bg-center bg-no-repeat md:bg-fixed">
           <div className="absolute inset-0 bg-gradient-to-br from-nil-navy/85 via-nil-navy/50 to-nil-orange/45 z-0"></div>
           <div className="relative z-10 container-custom text-center text-white">
-            <h2 className="text-3xl md:text-4xl font-bold heading-gradient-light mb-6">JOIN OUR COMMUNITY</h2>
-            <div className="max-w-3xl mx-auto space-y-6 text-gray-200 text-lg">
+            <h2 className="text-3xl md:text-4xl font-bold heading-gradient-light mb-6">JOIN THE NATIONAL HISPANIC ATHLETE NETWORK</h2>
+            <div className="max-w-3xl mx-auto space-y-4 text-gray-200 text-lg">
               <p className="leading-relaxed">
-                You are not alone on this journey. Connect with fellow Hispanic athletes who share your drive and ambition. Get involved, ask questions, and grow with us.
+                Be part of a structured community designed to elevate Hispanic student-athletes across sports and universities.
+              </p>
+              <p className="leading-relaxed">
+                Build relationships. Access opportunities. Represent your culture with purpose.
               </p>
             </div>
             <div className="mt-10">
-              <Dialog>
-  <DialogTrigger asChild>
-    <Button size="lg" className="btn-primary hover:bg-nil-orange/90 transition-colors text-lg px-10 py-6">
-      Get Involved
-    </Button>
-  </DialogTrigger>
-  <DialogContent className="sm:max-w-[425px] mx-4 max-h-[90vh] overflow-y-auto">
-    <DialogHeader>
-      <DialogTitle>Contact Us</DialogTitle>
-      <DialogDescription>
-        Fill out the form below and we'll get back to you as soon as possible.
-      </DialogDescription>
-    </DialogHeader>
-    <ContactForm />
-  </DialogContent>
-</Dialog>
+              <Button
+                size="lg"
+                className="bg-nil-orange hover:bg-nil-orange/90 text-white font-semibold transition-colors text-lg px-10 py-6"
+                onClick={() => setAuthModalOpen(true)}
+              >
+                Create Your Profile
+              </Button>
             </div>
           </div>
         </section>
