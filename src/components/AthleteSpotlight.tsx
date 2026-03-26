@@ -9,8 +9,10 @@ const AthleteSpotlight = () => {
   return (
     <section
       id="our-network"
-      className="py-32 bg-nil-navy"
+      className="relative py-32 bg-nil-navy"
     >
+      {/* Fade into hero section above */}
+      <div className="absolute -top-24 inset-x-0 h-24 bg-gradient-to-b from-transparent to-nil-navy pointer-events-none z-10" />
       <div className="container-custom">
         <div className="text-center mb-14">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 heading-gradient-light">OUR NETWORK</h2>

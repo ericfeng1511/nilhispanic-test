@@ -2,6 +2,8 @@ import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
 import HowItWorksSection from "@/components/HowItWorksSection";
 import AthleteSpotlight from "@/components/AthleteSpotlight";
+import HowWeDeliverSection from "@/components/HowWeDeliverSection";
+import OurWorkSection from "@/components/OurWorkSection";
 import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/Footer";
 import { WelcomePopup } from "@/components/WelcomePopup";
@@ -38,6 +40,8 @@ const Index = () => {
           <HowItWorksSection />
         </HeroSection>
         <AthleteSpotlight />
+        <HowWeDeliverSection />
+        <OurWorkSection />
         <ContactSection />
       </main>
       <Footer />
