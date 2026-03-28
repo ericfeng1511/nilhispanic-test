@@ -10,7 +10,7 @@ const AboutSection = () => {
               Hispanics are the fastest-growing and most culturally influential segment of Gen Z.
             </p>
             <p className="mt-6">
-              They over-index in sports fandom, social video creation, and creator engagement—yet remain under-leveraged in traditional NIL and influencer campaigns.
+              We over-index in sports fandom, social video creation, and creator engagement—yet remain under-leveraged in traditional NIL and influencer campaigns.
             </p>
             <p className="mt-6">
               ÑIL Hispanic™ organizes cultural trust into a scalable execution system.
