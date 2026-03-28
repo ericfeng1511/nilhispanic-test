@@ -56,19 +56,19 @@ const ForBrandsPage = () => {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              <FactCard 
-                title="INCREASE IN POPULATION" 
-                body={<>The U.S. Hispanic population is 
-                      growing rapidly and is projected 
-                      to reach over <span className="text-nil-orange font-semibold">71 million by 2025 </span> 
-                      (~20.5% of total pop).</>} 
+              <FactCard
+                title="INCREASE IN POPULATION"
+                body={<>The U.S. Hispanic population is
+                      growing rapidly and is projected
+                      to reach over <span className="text-nil-orange font-semibold">71 million by 2026 </span>
+                      (~20.5% of total pop).</>}
               />
-              <FactCard 
-                title="HIGH PURCHASING POWER" 
-                body={<>U.S. Hispanics have a high 
-                      purchasing power, with an 
+              <FactCard
+                title="HIGH PURCHASING POWER"
+                body={<>U.S. Hispanics have a high
+                      purchasing power, with an
                       estimated <span className="text-nil-orange font-semibold">spending power of
-                      $2.6 trillion in 2025 </span>(~12% of 
+                      $4 trillion by 2026 </span>(~12% of
                       all US buying power).</>}
               />
               <FactCard 

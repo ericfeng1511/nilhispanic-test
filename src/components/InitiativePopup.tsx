@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, X, Users, Home, Award, Handshake, ExternalLink } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Home, Award, Handshake, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const POPUP_SEEN_KEY = 'hasSeenInitiativePopup';
@@ -26,24 +26,25 @@ const InitiativePopup: React.FC = () => {
 
   const initiatives: Initiative[] = [
     {
-      id: 'collective',
-      title: 'The Collective',
-      subtitle: 'Championing the success of Hispanic student-athletes nationwide',
-      description: 'At ÑILH Collective, we are revolutionizing the landscape for Hispanic college student-athletes. As a national nonprofit, we are committed to raising funds and creating impactful programs that champion their success both on and off the field.',
+      id: 'influencer-staffers',
+      title: 'Influencer-Staffers™',
+      subtitle: 'One hire. Two functions. Zero trade-off.',
+      description: 'College student-athletes who work your event and promote it to their followers. One hire activates both channels — staffing and social reach.',
       keyBenefits: [
-        'Financial support to alleviate stress on families',
-        'Networking opportunities with fellow student-athletes',
-        'Personal and professional development workshops',
-        'Community building and mentorship programs'
+        'They staff the event and post to their audience. Before, during, and after — one hire activates both channels.',
+        'Athletes are built for this. Discipline, coachability, and presence on-site. Engagement in the top 5% of their category off-site.',
+        '89% of event planners report staffing shortages hurt their last event. Influencer-Staffers™ are motivated, reliable, and come pre-built for brand alignment.',
+        'Local teams outperform imports. On-site authenticity + community credibility in the same person.'
       ],
-      icon: Users,
-      href: '/initiatives/collective',
-      bgImage: '/images/athlete-test-img-15.jpg',
-      ctaText: 'Learn More & Get Involved',
+      icon: Handshake,
+      href: '/initiatives/influencer-staffers',
+      bgImage: '/images/athlete-test-img-14.jpg',
+      ctaText: 'Hire Influencer-Staffers',
       stats: [
-        { label: '2025 Goal', value: '$1,000' },
-        { label: '2030 Target', value: '$10,000+' },
-        { label: 'Coverage', value: 'All Sports' }
+        { label: 'Non-Follower Discovery', value: '4–9×' },
+        { label: 'Engagement Rate', value: 'Top 5%' },
+        { label: 'HSAs Available', value: '1,100+' },
+        { label: 'Event Staffing Market', value: '$6.4B' }
       ]
     },
     {
@@ -86,27 +87,6 @@ const InitiativePopup: React.FC = () => {
         { label: 'Hispanic Fans', value: '73%' },
         { label: 'Grew Up Playing', value: '82%' },
         { label: 'Brand Loyalty', value: '84%' }
-      ]
-    },
-    {
-      id: 'influencer-staffers',
-      title: 'Influencer Staffers',
-      subtitle: 'Staff camps, clinics, or activations with Hispanic student athletes',
-      description: 'Our Influencer-Staffers program connects you with Hispanic student-athletes who can both provide professional event support and promote to their followers. Get reliable staffing and authentic social media reach.',
-      keyBenefits: [
-        'Trusted Staffing from disciplined athletes',
-        'Cultural Connection that resonates with Hispanic families',
-        'Authentic Promotion via social platforms',
-        'Powerful Role Models for youth audiences'
-      ],
-      icon: Handshake,
-      href: '/initiatives/influencer-staffers',
-      bgImage: '/images/athlete-test-img-14.jpg',
-      ctaText: 'Hire Influencer-Staffers',
-      stats: [
-        { label: 'Target Age', value: '17-24' },
-        { label: 'Services', value: '4 Types' },
-        { label: 'Dual Value', value: 'Staff + Promo' }
       ]
     }
   ];

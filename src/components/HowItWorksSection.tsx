@@ -1,5 +1,13 @@
 import { ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { ContactForm } from "@/components/ContactForm";
 
 const HowItWorksSection = () => {
   return (
@@ -20,12 +28,22 @@ const HowItWorksSection = () => {
             One partner. National reach. Local trust.
           </p>
 
-          <Link
-            to="/for-brands"
-            className="inline-flex items-center text-white bg-nil-orange/90 hover:bg-nil-orange px-6 py-3 rounded-lg font-bold transition-all text-lg shadow-lg"
-          >
-            Learn more <ArrowRight className="ml-2" size={20} />
-          </Link>
+          <Dialog>
+            <DialogTrigger asChild>
+              <button className="inline-flex items-center text-white bg-nil-orange/90 hover:bg-nil-orange px-6 py-3 rounded-lg font-bold transition-all text-lg shadow-lg">
+                Learn more <ArrowRight className="ml-2" size={20} />
+              </button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px] mx-4 max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Contact Us</DialogTitle>
+                <DialogDescription>
+                  Fill out the form below and we'll get back to you as soon as possible.
+                </DialogDescription>
+              </DialogHeader>
+              <ContactForm />
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -36,19 +54,19 @@ const HowItWorksSection = () => {
           <ul className="space-y-4 text-gray-300 text-lg md:text-xl">
             <li className="flex items-start">
               <span className="text-nil-orange mr-3 mt-1">•</span>
-              <span>Creator-led content drives trust and discovery</span>
+              <span>Audiences trust creators more than brands. Hispanic student-athletes are both.</span>
             </li>
             <li className="flex items-start">
               <span className="text-nil-orange mr-3 mt-1">•</span>
-              <span>Young Hispanics are the fastest-growing and most culturally influential segment of Gen Z</span>
+              <span>Young Hispanics are Gen Z's fastest-growing segment, and they're setting the cultural agenda</span>
             </li>
             <li className="flex items-start">
               <span className="text-nil-orange mr-3 mt-1">•</span>
-              <span>Hispanics over-index in sports fandom and social video engagement</span>
+              <span>Hispanic fans watch more, share more, and engage more, especially when it's sport</span>
             </li>
             <li className="flex items-start">
               <span className="text-nil-orange mr-3 mt-1">•</span>
-              <span>Major sports moments are accelerating investment in Hispanic-relevant creator campaigns</span>
+              <span>The biggest sports moments in the U.S. now have a Hispanic audience at their center</span>
             </li>
           </ul>
         </div>

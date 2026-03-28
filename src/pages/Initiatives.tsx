@@ -2,16 +2,10 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import HeroSection from "@/components/HeroSection";
 import { Link } from 'react-router-dom';
-import { Users, Home, Award, Handshake } from 'lucide-react';
+import { Home, Award, Handshake } from 'lucide-react';
 
 const InitiativesPage = () => {
   const initiatives = [
-    {
-      title: 'The Collective',
-      description: 'A unified fund supporting Hispanic student-athletes across all sports and universities.',
-      icon: Users,
-      href: '/initiatives/collective',
-    },
     {
       title: 'HOLA Houses',
       description: 'On-campus community spaces across U.S. universities specifically designed for Hispanic student-athletes.',
@@ -50,7 +44,7 @@ const InitiativesPage = () => {
                 EXPLORE OUR CURRENT PROGRAMS
               </h2>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {initiatives.map((item) => {
                 const Icon = item.icon;
                 return (
