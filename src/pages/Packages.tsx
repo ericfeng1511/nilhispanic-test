@@ -1,7 +1,6 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
 import {
   Dialog,
   DialogTrigger,
@@ -12,192 +11,170 @@ import {
 } from "@/components/ui/dialog";
 import { ContactForm } from "@/components/ContactForm";
 
+const ContactDialog = ({ label, description, children }: { label: string; description: string; children: React.ReactNode }) => (
+  <Dialog>
+    <DialogTrigger asChild>{children}</DialogTrigger>
+    <DialogContent className="sm:max-w-[425px] mx-4 max-h-[90vh] overflow-y-auto">
+      <DialogHeader>
+        <DialogTitle>{label}</DialogTitle>
+        <DialogDescription>{description}</DialogDescription>
+      </DialogHeader>
+      <ContactForm />
+    </DialogContent>
+  </Dialog>
+);
+
 const PackagesPage = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-grow">
 
-        {/* ── HERO ── */}
+        {/* ── SECTION HEADER ── */}
         <section className="bg-nil-navy pt-28 pb-20">
           <div className="container-custom">
-            <div className="md:w-1/2 mt-10">
+            <div className="text-center mt-10">
+              <p className="text-nil-orange text-xs font-semibold uppercase tracking-widest mb-4">ÑIL Hispanic · Brand Packages</p>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 text-gray-100">
-                STRUCTURED <span className="heading-gradient-light">HISPANIC</span> REACH.
+                Reach the Market<br />
+                <span className="heading-gradient-light">They Trust.</span>
               </h1>
-              <p className="text-gray-300 text-lg md:text-xl mb-8 max-w-xl">
-                200–500 Hispanic college student-athletes organized across major U.S. markets. Authentic content. Proven cultural trust. Built for brands that need real penetration — not impressions.
+              <p className="text-gray-300 text-lg md:text-xl max-w-2xl mx-auto">
+                Organized Hispanic college student-athletes across 100+ universities in 22 states. Authentic content. Measurable campaigns. Built for brands that need real penetration — not just impressions.
               </p>
-              <Link to="/for-brands">
-                <Button size="lg" className="bg-nil-orange text-white hover:bg-nil-orange/90 transition-colors text-lg px-10 py-6 font-semibold rounded-md">
-                  Schedule a Call
-                </Button>
-              </Link>
             </div>
           </div>
         </section>
 
-        {/* ── RATE MODEL ── */}
-        <section className="py-16 md:py-24 bg-gradient-to-br from-nil-light-blue via-nil-orange/30 to-white bg-gradient-with-image">
+        {/* ── CHISPA PILOT BANNER ── */}
+        <section className="py-12 bg-gradient-to-br from-nil-light-blue via-nil-orange/30 to-white bg-gradient-with-image">
           <div className="container-custom">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4 heading-gradient">THE MODEL</h2>
-              <p className="text-nil-dark-gray max-w-2xl mx-auto text-lg">
-                Two simple rates. One transparent fee structure. Total brand cost is always 2× HSA compensation — no hidden markups, no talent arbitrage.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {[
-                { label: "Content Rate", value: "$250", sub: "per post or reel / per HSA" },
-                { label: "Onsite Rate", sub2: "Influencer-Staffer™", value: "$50", sub: "per hour / per HSA" },
-                { label: "Fee Structure", value: "50 / 50", sub: "50% HSA pay · 50% ÑILH fee" },
-                { label: "Transparency", value: "2×", sub: "Total brand cost equals 2× HSA compensation. Always." },
-              ].map((item) => (
-                <div key={item.label} className="bg-white p-6 rounded-lg shadow-lg text-center hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
-                  <p className="text-sm font-semibold text-nil-dark-gray uppercase tracking-wide mb-1">{item.label}</p>
-                  {item.sub2 && <p className="text-xs text-nil-orange mb-3">{item.sub2}</p>}
-                  <p className="text-4xl font-bold text-nil-orange my-3">{item.value}</p>
-                  <p className="text-gray-600 text-sm">{item.sub}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+            <div className="bg-orange-50 border border-orange-200 border-l-4 border-l-nil-orange rounded-lg p-8 grid grid-cols-1 md:grid-cols-[auto_1fr_auto] gap-8 items-center relative overflow-hidden">
+              {/* Watermark */}
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-8xl font-black text-nil-orange/5 pointer-events-none select-none hidden md:block">CHISPA</span>
 
-        {/* ── CHISPA PILOT ── */}
-        <section className="py-16 md:py-24 bg-nil-navy">
-          <div className="container-custom">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4 heading-gradient-light">ENTRY POINT</h2>
-              <p className="text-gray-300 max-w-xl mx-auto text-lg">Start small. Prove the model. Scale with confidence.</p>
-            </div>
-            <div className="max-w-3xl mx-auto border border-white/15 rounded-lg p-8 hover:border-nil-orange/50 transition-all duration-300">
-              <div className="flex items-center gap-3 mb-2">
-                <span className="bg-nil-orange text-white text-xs font-semibold px-3 py-1 rounded uppercase tracking-wide">Pilot Program</span>
+              {/* Left */}
+              <div>
+                <span className="inline-block bg-nil-orange text-white text-xs font-bold uppercase tracking-widest px-3 py-1 rounded mb-3">Pilot · Entry Point</span>
+                <h2 className="text-4xl font-black uppercase tracking-wide text-nil-navy mb-1">Chispa</h2>
+                <p className="text-gray-500 text-sm font-light">Low-risk proof of concept. One market. Real athletes. Real results.</p>
               </div>
-              <h3 className="text-4xl font-bold text-white mb-1">CHISPA</h3>
-              <p className="text-gray-400 text-base mb-8">Low-risk proof of concept. One market. Real athletes. Real results.</p>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+
+              {/* Middle — specs */}
+              <div className="flex flex-wrap gap-x-8 gap-y-4">
                 {[
-                  { value: "5 HSAs", label: "Single market" },
-                  { value: "1 Reel Each", label: "+ 4 hrs onsite" },
-                  { value: "3–4 Weeks", label: "Campaign window" },
-                  { value: "Post-Pilot", label: "Analytics + upgrade path" },
-                ].map((s) => (
-                  <div key={s.value} className="text-center">
-                    <p className="text-nil-orange font-bold text-lg">{s.value}</p>
-                    <p className="text-gray-400 text-sm mt-1">{s.label}</p>
+                  ["HSAs", "5 athletes"],
+                  ["Market", "1 city / DMA"],
+                  ["Content", "1 reel each"],
+                  ["Onsite", "4 hrs / HSA"],
+                  ["Duration", "3–4 weeks"],
+                  ["Includes", "IS™ · Analytics · Upgrade path"],
+                ].map(([label, val]) => (
+                  <div key={label}>
+                    <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-0.5">{label}</p>
+                    <p className="text-sm font-semibold text-nil-navy">{val}</p>
                   </div>
                 ))}
               </div>
-              <div className="border-t border-white/10 pt-6 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-                <div>
-                  <p className="text-5xl font-bold text-white leading-none">$5,000</p>
-                  <p className="text-gray-400 text-sm mt-1">Total Investment · Minimum Floor</p>
-                  <p className="text-gray-500 text-xs mt-3 leading-relaxed">
-                    5 × $250 (reel) = $1,250 &nbsp;·&nbsp; 5 × 4 × $50 (onsite) = $1,000<br />
-                    HSA Total: $2,500 → 2× = <span className="text-nil-orange">$5,000</span>
-                  </p>
+
+              {/* Right — price + CTA */}
+              <div className="flex flex-col items-start md:items-end gap-3 flex-shrink-0">
+                <div className="text-right">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1">Total investment</p>
+                  <p className="text-5xl font-black text-nil-orange leading-none">$5,000</p>
                 </div>
-                <Link to="/for-brands">
-                  <Button size="lg" className="btn-primary hover:bg-nil-orange/90 transition-colors text-lg px-10 py-6 whitespace-nowrap">
-                    Start with a Pilot →
+                <ContactDialog label="Start with a Pilot" description="Tell us about your brand and we'll get your Chispa pilot started.">
+                  <Button className="bg-nil-orange text-white hover:bg-nil-orange/90 font-semibold uppercase tracking-wide text-xs px-6 py-3 h-auto rounded whitespace-nowrap">
+                    Start with a Pilot
                   </Button>
-                </Link>
+                </ContactDialog>
               </div>
             </div>
           </div>
         </section>
 
         {/* ── 3 CANONICAL PACKAGES ── */}
-        <section className="py-16 md:py-24 bg-gradient-to-br from-nil-light-blue via-nil-orange/30 to-white bg-gradient-with-image">
+        <section className="pb-0 pt-4 bg-gradient-to-br from-nil-light-blue via-nil-orange/30 to-white bg-gradient-with-image">
           <div className="container-custom">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4 heading-gradient">CANONICAL PACKAGES</h2>
-              <p className="text-nil-dark-gray max-w-2xl mx-auto text-lg">Three structured options from single-market entry to national season-long integration.</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+            <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-6">Campaign Packages</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
 
               {/* 01 ENTRADA */}
-              <div className="bg-white rounded-lg shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 flex flex-col overflow-hidden">
-                <div className="bg-nil-navy px-6 py-4">
-                  <p className="text-gray-400 text-xs uppercase tracking-wide mb-1">01 / Market Entry</p>
-                  <h3 className="text-3xl font-bold text-white">ENTRADA</h3>
-                  <p className="text-gray-400 text-sm mt-1">Single-market validation. Proven before you scale.</p>
-                </div>
-                <div className="p-6 flex flex-col flex-1">
-                  <div className="mb-6">
-                    <p className="text-5xl font-bold text-nil-navy leading-none">$15,000</p>
-                    <p className="text-gray-400 text-xs uppercase tracking-wide mt-1">Total Investment</p>
+              <div className="bg-white border border-gray-200 border-l-[3px] border-l-gray-300 rounded flex flex-col overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                <div className="h-1 bg-gray-300" />
+                <div className="p-7 flex flex-col flex-1">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">01 · Market Entry</p>
+                  <h3 className="text-4xl font-black uppercase tracking-wide text-nil-navy mb-1">Entrada</h3>
+                  <p className="text-sm font-light text-gray-500 mb-5 pb-5 border-b border-gray-100">Single-market validation. Proven before you scale.</p>
+                  <div className="mb-5">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1">Total investment</p>
+                    <p className="text-5xl font-black text-nil-navy leading-none">$15,000</p>
                   </div>
-                  <div className="divide-y divide-gray-100 mb-6">
+                  <div className="grid grid-cols-2 gap-px bg-gray-100 rounded overflow-hidden mb-5">
                     {[
                       ["HSAs", "10 athletes"],
-                      ["Markets", "1 city / DMA"],
-                      ["Content", "2 posts or reels each"],
+                      ["Market", "1 city / DMA"],
+                      ["Content", "2 posts / reels ea"],
                       ["Onsite", "4 hrs / HSA"],
                       ["Duration", "4–6 weeks"],
+                      ["Analytics", "Post-campaign"],
                     ].map(([k, v]) => (
-                      <div key={k} className="flex justify-between py-2.5">
-                        <span className="text-gray-500 text-sm">{k}</span>
-                        <span className="text-nil-navy text-sm font-semibold">{v}</span>
+                      <div key={k} className="bg-white px-3 py-2.5">
+                        <p className="text-xs uppercase tracking-wide text-gray-400 mb-0.5">{k}</p>
+                        <p className="text-sm font-semibold text-nil-navy">{v}</p>
                       </div>
                     ))}
                   </div>
-                  <p className="text-xs font-semibold text-nil-dark-gray uppercase tracking-wide mb-3">Included</p>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">Included</p>
                   <ul className="flex-1 space-y-2 mb-6">
                     {[
                       "HSA sourcing, vetting & contracting",
                       "Campaign brief + content guidelines",
-                      "Posting coordination & compliance review",
-                      "Post-campaign performance report",
+                      "Posting coordination & compliance",
                       "Influencer-Staffer™ onsite deployment",
+                      "Post-campaign performance report",
                     ].map((item) => (
-                      <li key={item} className="flex items-start gap-3">
-                        <span className="text-nil-orange mt-0.5 leading-none font-bold">•</span>
-                        <span className="text-gray-600 text-sm">{item}</span>
+                      <li key={item} className="flex items-start gap-2 text-sm text-gray-600 border-b border-gray-50 pb-2 last:border-0">
+                        <span className="text-nil-orange font-bold mt-0.5 flex-shrink-0">+</span>
+                        {item}
                       </li>
                     ))}
                   </ul>
-                  <div className="bg-gray-50 rounded p-3 text-xs text-gray-500 leading-relaxed mb-6">
-                    10 × 2 reels × $250 = $5,000<br />
-                    10 × 4 hrs × $50 = $2,000<br />
-                    HSA: $7,500 → 2× = <span className="text-nil-orange font-semibold">$15,000</span>
-                  </div>
-                  <div className="flex flex-col gap-2 mt-auto">
-                    <Link to="/for-brands"><Button className="btn-primary w-full">Schedule a 20-Min Call</Button></Link>
-                    <Link to="/for-brands"><Button variant="outline" className="btn-secondary w-full">Download One-Pager</Button></Link>
-                  </div>
+                  <ContactDialog label="Get Started — Entrada" description="Let's get your single-market campaign started.">
+                    <Button variant="outline" className="w-full uppercase tracking-widest text-xs font-semibold border-gray-200 text-gray-500 hover:border-nil-navy hover:text-nil-navy h-11">
+                      Get Started
+                    </Button>
+                  </ContactDialog>
                 </div>
               </div>
 
               {/* 02 CAMPO — featured */}
-              <div className="bg-nil-navy rounded-lg shadow-2xl hover:-translate-y-2 transition-all duration-300 flex flex-col overflow-hidden border border-nil-orange/40">
-                <div className="bg-nil-orange px-6 py-4">
-                  <p className="text-orange-100 text-xs uppercase tracking-wide mb-1">02 / Multi-Market · Most Popular</p>
-                  <h3 className="text-3xl font-bold text-white">CAMPO</h3>
-                  <p className="text-orange-100 text-sm mt-1">Sustained, multi-city presence. Built to move product.</p>
-                </div>
-                <div className="p-6 flex flex-col flex-1">
-                  <div className="mb-6">
-                    <p className="text-5xl font-bold text-nil-orange leading-none">$54,000</p>
-                    <p className="text-gray-400 text-xs uppercase tracking-wide mt-1">Total Investment</p>
+              <div className="bg-white border border-l-[3px] border-nil-orange rounded flex flex-col overflow-hidden shadow-lg shadow-nil-orange/10 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                <div className="h-1 bg-nil-orange" />
+                <div className="p-7 flex flex-col flex-1">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-nil-orange mb-2">02 · Multi-Market  ★ Most Popular</p>
+                  <h3 className="text-4xl font-black uppercase tracking-wide text-nil-orange mb-1">Campo</h3>
+                  <p className="text-sm font-light text-gray-500 mb-5 pb-5 border-b border-gray-100">Sustained, multi-city presence. Built to move product.</p>
+                  <div className="mb-5">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1">Total investment</p>
+                    <p className="text-5xl font-black text-nil-orange leading-none">$54,000</p>
                   </div>
-                  <div className="divide-y divide-white/10 mb-6">
+                  <div className="grid grid-cols-2 gap-px bg-gray-100 rounded overflow-hidden mb-5">
                     {[
                       ["HSAs", "15 / market"],
                       ["Markets", "3 cities / DMAs"],
-                      ["Content", "3 posts or reels each"],
+                      ["Content", "3 posts / reels ea"],
                       ["Onsite", "8 hrs / HSA"],
                       ["Duration", "8–10 weeks"],
+                      ["Analytics", "Full + mid-opt"],
                     ].map(([k, v]) => (
-                      <div key={k} className="flex justify-between py-2.5">
-                        <span className="text-gray-400 text-sm">{k}</span>
-                        <span className="text-white text-sm font-semibold">{v}</span>
+                      <div key={k} className="bg-white px-3 py-2.5">
+                        <p className="text-xs uppercase tracking-wide text-gray-400 mb-0.5">{k}</p>
+                        <p className="text-sm font-semibold text-nil-navy">{v}</p>
                       </div>
                     ))}
                   </div>
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Included</p>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">Included</p>
                   <ul className="flex-1 space-y-2 mb-6">
                     {[
                       "Everything in Entrada",
@@ -205,54 +182,50 @@ const PackagesPage = () => {
                       "Dedicated campaign manager",
                       "Brand integration briefing session",
                       "Mid-campaign optimization check",
-                      "Full analytics: reach, engagement, sentiment",
+                      "Reach, engagement & sentiment report",
                       "Influencer-Staffer™ across all 3 markets",
                     ].map((item) => (
-                      <li key={item} className="flex items-start gap-3">
-                        <span className="text-nil-orange mt-0.5 leading-none font-bold">•</span>
-                        <span className="text-gray-300 text-sm">{item}</span>
+                      <li key={item} className="flex items-start gap-2 text-sm text-gray-600 border-b border-gray-50 pb-2 last:border-0">
+                        <span className="text-nil-orange font-bold mt-0.5 flex-shrink-0">+</span>
+                        {item}
                       </li>
                     ))}
                   </ul>
-                  <div className="bg-black/30 rounded p-3 text-xs text-gray-400 leading-relaxed mb-6">
-                    45 posts × $250 = $11,250<br />
-                    15 × 8 hrs × $50 × 3 mkts = $18,000<br />
-                    Blended total → <span className="text-nil-orange font-semibold">$54,000</span>
-                  </div>
-                  <div className="flex flex-col gap-2 mt-auto">
-                    <Link to="/for-brands"><Button size="lg" className="btn-primary w-full hover:bg-nil-orange/90">Schedule a 20-Min Call</Button></Link>
-                    <Link to="/for-brands"><Button variant="ghost" className="w-full text-gray-400 hover:text-white">Download One-Pager</Button></Link>
-                  </div>
+                  <ContactDialog label="Get Started — Campo" description="Let's build your multi-market campaign.">
+                    <Button className="w-full bg-nil-orange text-white hover:bg-nil-orange/90 uppercase tracking-widest text-xs font-semibold h-11">
+                      Get Started
+                    </Button>
+                  </ContactDialog>
                 </div>
               </div>
 
               {/* 03 NACIÓN */}
-              <div className="bg-white rounded-lg shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 flex flex-col overflow-hidden">
-                <div className="bg-nil-navy px-6 py-4">
-                  <p className="text-gray-400 text-xs uppercase tracking-wide mb-1">03 / National</p>
-                  <h3 className="text-3xl font-bold text-white">NACIÓN</h3>
-                  <p className="text-gray-400 text-sm mt-1">National footprint. Season-long brand integration.</p>
-                </div>
-                <div className="p-6 flex flex-col flex-1">
-                  <div className="mb-6">
-                    <p className="text-5xl font-bold text-nil-navy leading-none">$150K<span className="text-2xl text-gray-400">+</span></p>
-                    <p className="text-gray-400 text-xs uppercase tracking-wide mt-1">Total Investment · Custom Scoped</p>
+              <div className="bg-white border border-gray-200 border-l-[3px] border-l-nil-navy rounded flex flex-col overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                <div className="h-1 bg-nil-navy" />
+                <div className="p-7 flex flex-col flex-1">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2">03 · National</p>
+                  <h3 className="text-4xl font-black uppercase tracking-wide text-nil-navy mb-1">Nación</h3>
+                  <p className="text-sm font-light text-gray-500 mb-5 pb-5 border-b border-gray-100">National footprint. Season-long brand integration.</p>
+                  <div className="mb-5">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1">Starting at</p>
+                    <p className="text-5xl font-black text-nil-navy leading-none">$150,000</p>
                   </div>
-                  <div className="divide-y divide-gray-100 mb-6">
+                  <div className="grid grid-cols-2 gap-px bg-gray-100 rounded overflow-hidden mb-5">
                     {[
                       ["HSAs", "50+ athletes"],
                       ["Markets", "5–8 cities / DMAs"],
-                      ["Content", "4+ posts or reels each"],
+                      ["Content", "4+ posts / reels ea"],
                       ["Onsite", "12+ hrs / HSA"],
-                      ["Duration", "Quarter or full season"],
+                      ["Duration", "Quarter / Season"],
+                      ["Analytics", "Weekly + data intel"],
                     ].map(([k, v]) => (
-                      <div key={k} className="flex justify-between py-2.5">
-                        <span className="text-gray-500 text-sm">{k}</span>
-                        <span className="text-nil-navy text-sm font-semibold">{v}</span>
+                      <div key={k} className="bg-white px-3 py-2.5">
+                        <p className="text-xs uppercase tracking-wide text-gray-400 mb-0.5">{k}</p>
+                        <p className="text-sm font-semibold text-nil-navy">{v}</p>
                       </div>
                     ))}
                   </div>
-                  <p className="text-xs font-semibold text-nil-dark-gray uppercase tracking-wide mb-3">Included</p>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">Included</p>
                   <ul className="flex-1 space-y-2 mb-6">
                     {[
                       "Everything in Campo",
@@ -263,21 +236,17 @@ const PackagesPage = () => {
                       "Data intelligence: reach, purchase intent, cultural lift",
                       "Influencer-Staffer™ scaled nationally",
                     ].map((item) => (
-                      <li key={item} className="flex items-start gap-3">
-                        <span className="text-nil-orange mt-0.5 leading-none font-bold">•</span>
-                        <span className="text-gray-600 text-sm">{item}</span>
+                      <li key={item} className="flex items-start gap-2 text-sm text-gray-600 border-b border-gray-50 pb-2 last:border-0">
+                        <span className="text-nil-orange font-bold mt-0.5 flex-shrink-0">+</span>
+                        {item}
                       </li>
                     ))}
                   </ul>
-                  <div className="bg-gray-50 rounded p-3 text-xs text-gray-500 leading-relaxed mb-6">
-                    50 × 4 reels × $250 = $50,000<br />
-                    50 × 12 hrs × $50 = $30,000<br />
-                    HSA: $80,000 → 2× = <span className="text-nil-orange font-semibold">$160,000 baseline</span>
-                  </div>
-                  <div className="flex flex-col gap-2 mt-auto">
-                    <Link to="/for-brands"><Button className="btn-primary w-full">Request a Proposal</Button></Link>
-                    <Link to="/for-brands"><Button variant="outline" className="btn-secondary w-full">Schedule a Discovery Call</Button></Link>
-                  </div>
+                  <ContactDialog label="Request a Proposal — Nación" description="Let's scope your national campaign.">
+                    <Button variant="outline" className="w-full uppercase tracking-widest text-xs font-semibold border-gray-200 text-gray-500 hover:border-nil-navy hover:text-nil-navy h-11">
+                      Request a Proposal
+                    </Button>
+                  </ContactDialog>
                 </div>
               </div>
 
@@ -285,133 +254,69 @@ const PackagesPage = () => {
           </div>
         </section>
 
-        {/* ── HECHO A MEDIDA ── */}
-        <section className="py-16 md:py-24 bg-nil-navy">
+        {/* ── HECHO A MEDIDA STRIP ── */}
+        <section className="bg-gradient-to-br from-nil-light-blue via-nil-orange/30 to-white bg-gradient-with-image pb-16">
           <div className="container-custom">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4 heading-gradient-light">HECHO A MEDIDA</h2>
-              <p className="text-gray-300 max-w-2xl mx-auto text-lg">
-                Your market. Your athlete count. Your content mix. Priced from the rate card up — no minimums guessed, no budget wasted.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+            <div className="bg-nil-navy rounded mt-4 p-10 grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-10 items-center relative overflow-hidden">
+              {/* Watermark */}
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-7xl font-black text-nil-orange/5 pointer-events-none select-none hidden lg:block whitespace-nowrap">HECHO A MEDIDA</span>
 
-              {/* Left — rates + CTA */}
+              {/* Left */}
               <div>
-                <div className="border-l-4 border-nil-orange/60 bg-white/5 px-5 py-4 mb-8">
-                  <p className="text-gray-300 text-sm leading-relaxed italic">
-                    We publish our rates because we have nothing to hide. HSAs earn half. We earn half. The value is in the network we've built — not a margin we're protecting.
-                  </p>
-                </div>
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  {[
-                    { label: "Content", value: "$250", desc: "per post or reel / per HSA" },
-                    { label: "Onsite (Influencer-Staffer™)", value: "$50", desc: "per hour / per HSA" },
-                    { label: "HSA Pay", value: "50%", desc: "always direct to athletes" },
-                    { label: "ÑILH Fee", value: "50%", desc: "platform, management & ops" },
-                  ].map((cell) => (
-                    <div key={cell.label} className="border border-white/15 rounded-lg p-5 hover:border-nil-orange/50 transition-all duration-300">
-                      <p className="text-gray-400 text-xs uppercase tracking-wide mb-2">{cell.label}</p>
-                      <p className="text-3xl font-bold text-nil-orange leading-none mb-1">{cell.value}</p>
-                      <p className="text-gray-400 text-xs">{cell.desc}</p>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-gray-300 text-sm mb-6 border border-nil-orange/30 rounded p-3 bg-nil-orange/5">
-                  <span className="font-semibold text-nil-orange">Minimum engagement: $5,000</span> (Chispa Pilot). Below this threshold, operational quality cannot be guaranteed.
+                <span className="inline-block bg-nil-orange/20 border border-nil-orange/30 text-nil-orange text-xs font-bold uppercase tracking-widest px-3 py-1 rounded mb-3">Customized</span>
+                <h2 className="text-4xl font-black uppercase tracking-wide text-nil-orange mb-3">Hecho a Medida</h2>
+                <p className="text-gray-400 text-sm font-light leading-relaxed max-w-sm">
+                  Not every brand fits a standard package. Define your market, athlete count, content mix, and activation hours — we scope it, price it, and execute it.
                 </p>
-                <Link to="/for-brands">
-                  <Button size="lg" className="btn-primary hover:bg-nil-orange/90 transition-colors text-lg px-10 py-6">
-                    Build Your Package →
-                  </Button>
-                </Link>
               </div>
 
-              {/* Right — config list + example calc */}
+              {/* Middle — config */}
               <div>
-                <div className="border border-white/15 rounded-lg p-8 hover:border-nil-orange/50 transition-all duration-300 mb-8">
-                  <h3 className="text-xl font-bold text-white mb-5">What You Configure</h3>
-                  <ul className="space-y-3">
-                    {[
-                      "Number of HSAs (5 minimum per market)",
-                      "Markets / DMAs — single city or national sweep",
-                      "Content type: posts, reels, stories, bilingual",
-                      "Sport, gender, or school targeting (HSI, HBCU)",
-                      "Onsite hours: retail, events, sampling, grassroots",
-                      "Timing: one-time activation or multi-wave",
-                      "World Cup, Liga MX, or tentpole event alignment",
-                      "Latina athlete cohort or flag football integration",
-                    ].map((item) => (
-                      <li key={item} className="flex items-start gap-3">
-                        <span className="text-nil-orange mt-0.5 leading-none font-bold">•</span>
-                        <span className="text-gray-300 text-sm">{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="border border-white/15 rounded-lg p-6">
-                  <p className="text-nil-orange font-semibold text-sm uppercase tracking-wide mb-4">Example — 15 HSAs / 1 Market</p>
-                  <div className="space-y-2 text-sm">
-                    {[
-                      ["15 HSA × 1 reel × $250", "$3,750"],
-                      ["15 HSA × 4 hrs × $50", "$3,000"],
-                      ["HSA Compensation Total", "$6,750"],
-                    ].map(([label, val]) => (
-                      <div key={label} className="flex justify-between text-gray-400">
-                        <span>{label}</span><span>{val}</span>
-                      </div>
-                    ))}
-                    <div className="flex justify-between text-white font-bold border-t border-white/10 pt-3 mt-2">
-                      <span>Total Brand Investment (2×)</span><span className="text-nil-orange">$13,500</span>
-                    </div>
-                  </div>
-                </div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-white/25 mb-4">What You Configure</p>
+                <ul className="grid grid-cols-2 gap-x-6 gap-y-2">
+                  {[
+                    "HSA count — 5 minimum per market",
+                    "Markets / DMAs — 1 city or national",
+                    "Content: posts, reels, stories, bilingual",
+                    "Sport, gender, or school targeting",
+                    "Onsite: retail, events, sampling, grassroots",
+                    "World Cup / Liga MX / tentpole alignment",
+                    "Latina cohort or flag football integration",
+                    "One-time activation or multi-wave campaign",
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-2 text-xs text-white/60 font-light leading-snug">
+                      <span className="text-nil-orange mt-0.5 flex-shrink-0">→</span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
               </div>
 
+              {/* Right — floor + CTA */}
+              <div className="flex flex-col items-center gap-3 flex-shrink-0">
+                <div className="text-center">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-white/25 mb-1">Minimum engagement</p>
+                  <p className="text-3xl font-black text-nil-orange leading-none">$5,000</p>
+                </div>
+                <ContactDialog label="Build Your Package" description="Tell us your goals and we'll scope a custom campaign for your brand.">
+                  <Button className="bg-nil-orange text-white hover:bg-nil-orange/90 uppercase tracking-widest text-xs font-semibold px-6 py-3 h-auto rounded whitespace-nowrap">
+                    Build Your Package
+                  </Button>
+                </ContactDialog>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* ── FOOTER NOTE + CONTACT ── */}
-        <section className="py-16 md:py-24 bg-gradient-to-br from-nil-light-blue via-nil-orange/30 to-white bg-gradient-with-image">
-          <div className="container-custom">
-            <div>
-              <h3 className="text-xl font-bold text-nil-navy mb-3">Influencer-Staffer™</h3>
-              <p className="text-nil-dark-gray leading-relaxed mb-4">
-                A proprietary ÑIL Hispanic™ model. Unlike standard event staff, our HSAs are active social influencers within their community — deployed onsite while simultaneously promoting to their own networks. You get the physical presence and the digital amplification in one hire.
-              </p>
-              <h3 className="text-xl font-bold text-nil-navy mb-3">All Packages Include</h3>
-              <ul className="space-y-2 mb-8">
-                {[
-                  "NIL-compliant contracts",
-                  "HSA direct pay",
-                  "Campaign oversight",
-                  "Post-campaign reporting",
-                  "No agency commissions on top — what you see is what you pay",
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-3">
-                    <span className="text-nil-orange mt-0.5 leading-none font-bold">•</span>
-                    <span className="text-nil-dark-gray text-sm">{item}</span>
-                  </li>
-                ))}
-              </ul>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button size="lg" className="bg-nil-orange text-white hover:bg-nil-orange/90 transition-colors text-lg px-10 py-6 font-semibold rounded-md">
-                    Book a Meeting
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px] mx-4 max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>Contact Us</DialogTitle>
-                    <DialogDescription>
-                      Fill out the form below and we'll get back to you as soon as possible.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <ContactForm />
-                </DialogContent>
-              </Dialog>
-            </div>
+        {/* ── FOOTNOTE ── */}
+        <section className="py-10 bg-gradient-to-br from-nil-light-blue via-nil-orange/30 to-white bg-gradient-with-image border-t border-gray-200">
+          <div className="container-custom flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <p className="text-xs text-gray-400 font-light leading-relaxed max-w-2xl">
+              <span className="text-gray-500 font-semibold">Influencer-Staffer™</span> is a proprietary ÑIL Hispanic model. HSAs are deployed onsite while simultaneously promoting to their own social networks — physical presence and digital amplification in one hire. All packages include NIL-compliant contracts, HSA compensation, campaign oversight, and post-campaign analytics.
+            </p>
+            <a href="https://nilhispanic.com" className="text-nil-orange font-bold text-lg uppercase tracking-widest hover:text-nil-navy transition-colors flex-shrink-0">
+              NILHispanic.com
+            </a>
           </div>
         </section>
 
