@@ -36,11 +36,10 @@ const PackagesPage = () => {
             <div className="text-center mt-10">
               <p className="text-nil-orange text-xs font-semibold uppercase tracking-widest mb-4">ÑIL Hispanic · Brand Packages</p>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 text-gray-100">
-                Reach the Market<br />
-                <span className="heading-gradient-light">They Trust.</span>
+                THE MARKET <span className="heading-gradient-light">TRUSTS THEM.</span>
               </h1>
               <p className="text-gray-300 text-lg md:text-xl max-w-2xl mx-auto">
-                Organized Hispanic college student-athletes across 100+ universities in 22 states. Authentic content. Measurable campaigns. Built for brands that need real penetration — not just impressions.
+                Organized Hispanic college student-athletes across 100+ universities. Authentic content. Measurable campaigns. Built for brands that need real connection.
               </p>
             </div>
           </div>
