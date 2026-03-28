@@ -29,7 +29,7 @@ const PackagesPage = () => {
                 200–500 Hispanic college student-athletes organized across major U.S. markets. Authentic content. Proven cultural trust. Built for brands that need real penetration — not impressions.
               </p>
               <Link to="/for-brands">
-                <Button size="lg" className="btn-primary hover:bg-nil-orange/90 transition-colors text-lg px-10 py-6">
+                <Button size="lg" className="bg-nil-orange text-white hover:bg-nil-orange/90 transition-colors text-lg px-10 py-6 font-semibold rounded-md">
                   Schedule a Call
                 </Button>
               </Link>
