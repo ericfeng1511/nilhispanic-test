@@ -2,6 +2,15 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { ContactForm } from "@/components/ContactForm";
 
 const PackagesPage = () => {
   return (
@@ -366,47 +375,42 @@ const PackagesPage = () => {
         {/* ── FOOTER NOTE + CONTACT ── */}
         <section className="py-16 md:py-24 bg-gradient-to-br from-nil-light-blue via-nil-orange/30 to-white bg-gradient-with-image">
           <div className="container-custom">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-              <div>
-                <h3 className="text-xl font-bold text-nil-navy mb-3">Influencer-Staffer™</h3>
-                <p className="text-nil-dark-gray leading-relaxed mb-4">
-                  A proprietary ÑIL Hispanic™ model. Unlike standard event staff, our HSAs are active social influencers within their community — deployed onsite while simultaneously promoting to their own networks. You get the physical presence and the digital amplification in one hire.
-                </p>
-                <h3 className="text-xl font-bold text-nil-navy mb-3">All Packages Include</h3>
-                <ul className="space-y-2">
-                  {[
-                    "NIL-compliant contracts",
-                    "HSA direct pay",
-                    "Campaign oversight",
-                    "Post-campaign reporting",
-                    "No agency commissions on top — what you see is what you pay",
-                  ].map((item) => (
-                    <li key={item} className="flex items-start gap-3">
-                      <span className="text-nil-orange mt-0.5 leading-none font-bold">•</span>
-                      <span className="text-nil-dark-gray text-sm">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="bg-nil-navy rounded-lg p-8 text-white">
-                <h3 className="text-2xl font-bold mb-6">Start the Conversation</h3>
-                <div className="space-y-4 mb-8">
-                  <div>
-                    <p className="text-nil-orange text-sm font-semibold mb-1">Website</p>
-                    <a href="https://nilhispanic.com" className="text-white hover:text-nil-orange transition-colors">NILHispanic.com</a>
-                  </div>
-                  <div>
-                    <p className="text-nil-orange text-sm font-semibold mb-1">Email</p>
-                    <a href="mailto:anthony@nilhispanic.com" className="text-white hover:text-nil-orange transition-colors">anthony@nilhispanic.com</a>
-                  </div>
-                </div>
-                <p className="text-gray-400 text-sm mb-6">20-min calls via Calendly — no form, no wait.</p>
-                <Link to="/for-brands">
-                  <Button size="lg" className="btn-primary hover:bg-nil-orange/90 transition-colors w-full text-lg py-6">
+            <div>
+              <h3 className="text-xl font-bold text-nil-navy mb-3">Influencer-Staffer™</h3>
+              <p className="text-nil-dark-gray leading-relaxed mb-4">
+                A proprietary ÑIL Hispanic™ model. Unlike standard event staff, our HSAs are active social influencers within their community — deployed onsite while simultaneously promoting to their own networks. You get the physical presence and the digital amplification in one hire.
+              </p>
+              <h3 className="text-xl font-bold text-nil-navy mb-3">All Packages Include</h3>
+              <ul className="space-y-2 mb-8">
+                {[
+                  "NIL-compliant contracts",
+                  "HSA direct pay",
+                  "Campaign oversight",
+                  "Post-campaign reporting",
+                  "No agency commissions on top — what you see is what you pay",
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-3">
+                    <span className="text-nil-orange mt-0.5 leading-none font-bold">•</span>
+                    <span className="text-nil-dark-gray text-sm">{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button size="lg" className="bg-nil-orange text-white hover:bg-nil-orange/90 transition-colors text-lg px-10 py-6 font-semibold rounded-md">
                     Book a Meeting
                   </Button>
-                </Link>
-              </div>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px] mx-4 max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Contact Us</DialogTitle>
+                    <DialogDescription>
+                      Fill out the form below and we'll get back to you as soon as possible.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <ContactForm />
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
         </section>
