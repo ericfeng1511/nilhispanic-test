@@ -120,10 +120,10 @@ const Header = () => {
               </Link>
             </HoverCardTrigger>
             <HoverCardContent className="w-48 p-1">
-              <Link to="/initiatives/collective" className="block px-2 py-1.5 text-sm rounded-sm hover:bg-gray-100">ÑILH Collective</Link>
               <Link to="/initiatives/hola-houses" className="block px-2 py-1.5 text-sm rounded-sm hover:bg-gray-100">HOLA Houses</Link>
               <Link to="/initiatives/soccer" className="block px-2 py-1.5 text-sm rounded-sm hover:bg-gray-100">ÑILH Soccer</Link>
               <Link to="/initiatives/influencer-staffers" className="block px-2 py-1.5 text-sm rounded-sm hover:bg-gray-100">Influencer Staffers</Link>
+              <Link to="/initiatives/university-partnerships" className="block px-2 py-1.5 text-sm rounded-sm hover:bg-gray-100">University Partnerships</Link>
             </HoverCardContent>
           </HoverCard>
           <Link to="/work-with-us" className="text-nil-navy hover:text-nil-orange transition-colors">Work With Us</Link>
@@ -394,10 +394,10 @@ const Header = () => {
             <Link to="/for-athletes" className="px-8 py-3 hover:bg-nil-light-gray">For Athletes</Link>
             <Link to="/packages" className="px-8 py-3 hover:bg-nil-light-gray">Packages</Link>
             <Link to="/initiatives" className="px-8 py-3 hover:bg-nil-light-gray">Initiatives</Link>
-            <Link to="/initiatives/collective" className="pl-12 pr-8 py-3 hover:bg-nil-light-gray text-sm">ÑILH Collective</Link>
             <Link to="/initiatives/hola-houses" className="pl-12 pr-8 py-3 hover:bg-nil-light-gray text-sm">HOLA Houses</Link>
             <Link to="/initiatives/soccer" className="pl-12 pr-8 py-3 hover:bg-nil-light-gray text-sm">ÑILH Soccer</Link>
             <Link to="/initiatives/influencer-staffers" className="pl-12 pr-8 py-3 hover:bg-nil-light-gray text-sm">Influencer Staffers</Link>
+            <Link to="/initiatives/university-partnerships" className="pl-12 pr-8 py-3 hover:bg-nil-light-gray text-sm">University Partnerships</Link>
             <Link to="/work-with-us" className="px-8 py-3 hover:bg-nil-light-gray">Work With Us</Link>
             <div className="px-8 py-3">
               <Dialog>

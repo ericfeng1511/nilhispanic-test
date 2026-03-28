@@ -9,10 +9,11 @@ import NotFound from "./pages/NotFound";
 import ForBrandsPage from "./pages/ForBrands";
 import ForAthletesPage from "./pages/ForAthletes";
 import InitiativesPage from "./pages/Initiatives";
-import CollectivePage from "./pages/Collective";
+
 import HolaHousesPage from "./pages/HOLAHouses";
 import SoccerPage from "./pages/Soccer";
 import InfluencerStaffersPage from "./pages/InfluencerStaffers";
+import UniversityPartnershipsPage from "./pages/UniversityPartnerships";
 import WorkWithUsPage from "./pages/WorkWithUs";
 import PackagesPage from "./pages/Packages";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -39,10 +40,11 @@ const App = () => (
           <Route path="/for-athletes" element={<ForAthletesPage />} />
           <Route path="/packages" element={<PackagesPage />} />
           <Route path="/initiatives" element={<InitiativesPage />} />
-          <Route path="/initiatives/collective" element={<CollectivePage />} />
+          {/* <Route path="/initiatives/collective" element={<CollectivePage />} /> */}
           <Route path="/initiatives/hola-houses" element={<HolaHousesPage />} />
           <Route path="/initiatives/soccer" element={<SoccerPage />} />
           <Route path="/initiatives/influencer-staffers" element={<InfluencerStaffersPage />} />
+          <Route path="/initiatives/university-partnerships" element={<UniversityPartnershipsPage />} />
           <Route path="/work-with-us" element={<WorkWithUsPage />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/athlete/dashboard" element={<AthleteDashboard />} />

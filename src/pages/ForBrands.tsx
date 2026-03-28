@@ -6,16 +6,10 @@ import FactCard from '@/components/FactCard';
 import AboutSection from '@/components/AboutSection';
 import BrandsSection from '@/components/BrandsSection';
 import { Link } from 'react-router-dom';
-import { Users, Home, Award, Handshake } from 'lucide-react';
+import { Home, Award, Handshake, GraduationCap } from 'lucide-react';
 
 const ForBrandsPage = () => {
   const initiatives = [
-    {
-      title: 'The Collective',
-      description: 'A unified fund supporting Hispanic student-athletes across all sports and universities.',
-      icon: Users,
-      href: '/initiatives/collective',
-    },
     {
       title: 'HOLA Houses',
       description: 'On-campus community spaces across U.S. universities specifically designed for Hispanic student-athletes.',
@@ -33,6 +27,12 @@ const ForBrandsPage = () => {
       description: 'Staff camps, clinics, or activations with Hispanic student athletes who can also promote to their followers.',
       icon: Handshake,
       href: '/initiatives/influencer-staffers',
+    },
+    {
+      title: 'University Partnerships',
+      description: 'Connecting Hispanic student-athletes to national brands through structured university partnerships.',
+      icon: GraduationCap,
+      href: '/initiatives/university-partnerships',
     },
   ];
 
@@ -60,7 +60,7 @@ const ForBrandsPage = () => {
                 title="INCREASE IN POPULATION"
                 body={<>The U.S. Hispanic population is
                       growing rapidly and is projected
-                      to reach over <span className="text-nil-orange font-semibold">71 million by 2026 </span>
+                      to reach over <span className="text-nil-orange font-semibold">71 million</span>{' '}
                       (~20.5% of total pop).</>}
               />
               <FactCard
@@ -68,7 +68,7 @@ const ForBrandsPage = () => {
                 body={<>U.S. Hispanics have a high
                       purchasing power, with an
                       estimated <span className="text-nil-orange font-semibold">spending power of
-                      $4 trillion by 2026 </span>(~12% of
+                      $2.6 trillion</span> (~12% of
                       all US buying power).</>}
               />
               <FactCard 

@@ -7,9 +7,9 @@ const Footer = () => {
       <div className="container-custom">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
           <div>
-            <h3 className="text-2xl font-bold mb-4">ÑIL<span className="text-nil-orange">Hispanic</span>™</h3>
+            <h3 className="text-2xl font-bold mb-4">ÑIL <span className="text-nil-orange">Hispanic</span>™</h3>
             <p className="text-gray-300 mb-4">
-              Empowering Hispanic student-athletes to maximize their NIL opportunities while connecting brands with an untapped demographic.
+              Reaching Hispanic audiences at scale through trusted college student-athletes.
             </p>
           </div>
           
@@ -19,6 +19,7 @@ const Footer = () => {
               <li><Link to="/" className="text-gray-300 hover:text-nil-orange">About</Link></li>
               <li><Link to="/for-brands" className="text-gray-300 hover:text-nil-orange">For Brands</Link></li>
               <li><Link to="/for-athletes" className="text-gray-300 hover:text-nil-orange">For Athletes</Link></li>
+              <li><Link to="/packages" className="text-gray-300 hover:text-nil-orange">Packages</Link></li>
               <li><Link to="/initiatives" className="text-gray-300 hover:text-nil-orange">Initiatives</Link></li>
               <li><Link to="/work-with-us" className="text-gray-300 hover:text-nil-orange">Work With Us</Link></li>
             </ul>

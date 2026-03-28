@@ -2,7 +2,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import HeroSection from "@/components/HeroSection";
 import { Link } from 'react-router-dom';
-import { Home, Award, Handshake } from 'lucide-react';
+import { Home, Award, Handshake, GraduationCap } from 'lucide-react';
 
 const InitiativesPage = () => {
   const initiatives = [
@@ -24,6 +24,12 @@ const InitiativesPage = () => {
       icon: Handshake,
       href: '/initiatives/influencer-staffers',
     },
+    {
+      title: 'University Partnerships',
+      description: 'Connecting Hispanic student-athletes to national brands through structured university partnerships.',
+      icon: GraduationCap,
+      href: '/initiatives/university-partnerships',
+    },
   ];
   return (
     <div className="min-h-screen flex flex-col">
@@ -44,7 +50,7 @@ const InitiativesPage = () => {
                 EXPLORE OUR CURRENT PROGRAMS
               </h2>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {initiatives.map((item) => {
                 const Icon = item.icon;
                 return (
