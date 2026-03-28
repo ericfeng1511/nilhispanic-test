@@ -14,6 +14,7 @@ import HolaHousesPage from "./pages/HOLAHouses";
 import SoccerPage from "./pages/Soccer";
 import InfluencerStaffersPage from "./pages/InfluencerStaffers";
 import WorkWithUsPage from "./pages/WorkWithUs";
+import PackagesPage from "./pages/Packages";
 import AdminDashboard from "./pages/AdminDashboard";
 import AthleteDashboard from "./pages/AthleteDashboard";
 import BrandDashboard from "./pages/BrandDashboard";
@@ -36,6 +37,7 @@ const App = () => (
           
           <Route path="/for-brands" element={<ForBrandsPage />} />
           <Route path="/for-athletes" element={<ForAthletesPage />} />
+          <Route path="/packages" element={<PackagesPage />} />
           <Route path="/initiatives" element={<InitiativesPage />} />
           <Route path="/initiatives/collective" element={<CollectivePage />} />
           <Route path="/initiatives/hola-houses" element={<HolaHousesPage />} />
