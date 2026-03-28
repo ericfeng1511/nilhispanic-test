@@ -98,7 +98,7 @@ const UniversityPartnershipsPage = () => {
     { value: "$4T", label: "Hispanic Market", sub: "5th largest economy if standalone" },
     { value: "72%", label: "Gen Z or Millennials", sub: "Of Hispanic sports fans" },
     { value: "63%", label: "Want Cultural Content", sub: "Of Hispanics seek content reflecting their identity" },
-    { value: "$45B", label: "Sports Market Growth", sub: "Attributed to Hispanics through 2035" },
+    { value: "$50B", label: "Sports Market Growth", sub: "Attributed to Hispanics through 2035" },
     { value: "+70%", label: "HSA Growth", sub: "In Hispanic student-athlete participation over the last decade" },
   ];
 

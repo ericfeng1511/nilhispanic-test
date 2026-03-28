@@ -26,7 +26,7 @@ const InitiativesPage = () => {
     },
     {
       title: 'University Partnerships',
-      description: 'Connecting Hispanic student-athletes to national brands through structured university partnerships.',
+      description: 'We run the NIL infrastructure for your Hispanic student-athletes. Your program gets the credit, the recruiting tool, and the revenue.',
       icon: GraduationCap,
       href: '/initiatives/university-partnerships',
     },
