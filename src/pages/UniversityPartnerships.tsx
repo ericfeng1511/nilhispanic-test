@@ -66,7 +66,7 @@ const UniversityPartnershipsPage = () => {
       number: "02",
       tag: "Paid Engagement",
       title: "Hispanic NIL Advisory",
-      price: "From $25,000 / year",
+      price: "Paid Engagement",
       priceSub: "tiered by HSA roster",
       description: "We work directly with your HSAs across all sports and your staff. Structured, school-specific advisory built around who these athletes are.",
       pitch: null,
