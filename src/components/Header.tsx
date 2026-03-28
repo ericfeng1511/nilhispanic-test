@@ -103,7 +103,7 @@ const Header = () => {
       <div className="container-custom flex justify-between items-center">
         <div className="flex items-center">
           <a href="/" aria-label="Go to homepage">
-            <img src="/logo.jpg" alt="NILHispanic Logo" className="h-11 w-auto" />
+            <img src="/logo.jpg" alt="ÑIL Hispanic™ Logo" className="h-11 w-auto" />
           </a>
         </div>
         

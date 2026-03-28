@@ -111,7 +111,7 @@ const ForAthletesPage = () => {
                   Hispanic student-athletes carry influence beyond social media. You represent your family, your community, and the next generation watching you succeed.
                 </p>
                 <p className="text-lg md:text-xl text-gray-700 leading-relaxed">
-                  ÑIL Hispanic organizes that influence into real opportunities — connecting you to brands that value authenticity, culture, and leadership.
+                  ÑIL Hispanic™ organizes that influence into real opportunities — connecting you to brands that value authenticity, culture, and leadership.
                 </p>
               </div>
             </div>

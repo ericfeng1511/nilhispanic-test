@@ -136,11 +136,11 @@ const BrandDashboard: React.FC = () => {
                   <InfoTooltip 
                     variant="desktop" 
                     title="Profile Information"
-                    content={"Complete 100% of your profile to help ÑILHispanic™ match you with Hispanic Student-Athletes."}
+                    content={"Complete 100% of your profile to help ÑIL Hispanic™ match you with Hispanic Student-Athletes."}
                   />
                 </div>
                 <p className="text-gray-600 mt-1">
-                  Manage your ÑILHispanic™ Brand Representative Profile
+                  Manage your ÑIL Hispanic™ Brand Representative Profile
                 </p>
               </div>
             </div>
@@ -315,7 +315,7 @@ const BrandDashboard: React.FC = () => {
                 <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="text-sm font-medium text-amber-800">One or more fields not completed.</p>
-                  <p className="text-sm text-amber-700 mt-1">Please fill in your basic info to help ÑIL Hispanic match you with opportunities.</p>
+                  <p className="text-sm text-amber-700 mt-1">Please fill in your basic info to help ÑIL Hispanic™ match you with opportunities.</p>
                 </div>
               </div>
             )}

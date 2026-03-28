@@ -66,15 +66,15 @@ const SoccerPage = () => {
     },
     {
       title: "Hispanic Market Growth & Soccer’s Central Role",
-      description: "Soccer is central to Hispanic culture, with 70% of fans naming it their favorite sport. Partnering with ÑIL Hispanic Soccer lets your brand connect authentically with a community that values tradition and family."
+      description: "Soccer is central to Hispanic culture, with 70% of fans naming it their favorite sport. Partnering with ÑIL Hispanic™ Soccer lets your brand connect authentically with a community that values tradition and family."
     },
     {
       title: "Women’s Soccer: An Emerging Marketing Goldmine",
-      description: "The 2023 Women’s World Cup broke records, and NWSL attendance surged 48%. Supporting ÑIL Hispanic Soccer aligns your brand with women’s sports, equality, empowerment and innovation."
+      description: "The 2023 Women’s World Cup broke records, and NWSL attendance surged 48%. Supporting ÑIL Hispanic™ Soccer aligns your brand with women’s sports, equality, empowerment and innovation."
     },
     {
       title: "Amplify Your Reach Through Influencers",
-      description: "ÑIL Hispanic initiatives offer brand exposure at all levels of soccer, nurturing talent and community to position your brand as a trusted supporter of Hispanic soccer."
+      description: "ÑIL Hispanic™ initiatives offer brand exposure at all levels of soccer, nurturing talent and community to position your brand as a trusted supporter of Hispanic soccer."
     }
   ];
 
@@ -85,7 +85,7 @@ const SoccerPage = () => {
       <Header />
       <main>
         <HeroSection
-          title={<span className="heading-gradient-light">ÑILHISPANIC™ SOCCER</span>}
+          title={<span className="heading-gradient-light">ÑIL HISPANIC™ SOCCER</span>}
           subtitle="Position your brand as a champion of soccer’s growth in the U.S."
           backgroundImageUrl="/images/athlete-test-img-4.jpg"
           backgroundPosition="center"
@@ -106,7 +106,7 @@ const SoccerPage = () => {
               </div>
               <div className="text-left">
                 <p className="text-lg md:text-xl text-gray-700 leading-relaxed">
-                  With the Men's World Cup (2026), Women's World Cup (2027), and LA28 Olympics on the horizon, the time is now to position your brand as a champion of soccer’s growth in the U.S. Women’s soccer, led by the NWSL and fueled by role models on and off the field, is exploding in popularity. Associating with ÑILHispanic™ programs showcases your commitment to equality, representation, and empowerment.
+                  With the Men's World Cup (2026), Women's World Cup (2027), and LA28 Olympics on the horizon, the time is now to position your brand as a champion of soccer’s growth in the U.S. Women’s soccer, led by the NWSL and fueled by role models on and off the field, is exploding in popularity. Associating with ÑIL Hispanic™ programs showcases your commitment to equality, representation, and empowerment.
                 </p>
               </div>
             </div>
@@ -123,7 +123,7 @@ const SoccerPage = () => {
             </p>
             <img src="/images/world-cup-cities.png" alt="World Cup 2026 Host Cities Map" className="mx-auto mb-8 rounded-lg shadow-2xl" />
             <p className="text-lg md:text-xl max-w-3xl mx-auto bg-white/10 p-6 rounded-lg shadow-lg">
-              Six of these are major Hispanic markets, home to dozens of ÑILHispanic™ schools and hundreds of soccer student-athletes.
+              Six of these are major Hispanic markets, home to dozens of ÑIL Hispanic™ schools and hundreds of soccer student-athletes.
             </p>
           </div>
         </section>
@@ -159,7 +159,7 @@ const SoccerPage = () => {
           <div className="relative z-10 container-custom text-white">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold heading-gradient-light">
-                WHY SPONSOR ÑILHISPANIC™ SOCCER?
+                WHY SPONSOR ÑIL HISPANIC™ SOCCER?
               </h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
@@ -180,7 +180,7 @@ const SoccerPage = () => {
             <h2 className="text-3xl md:text-4xl font-bold heading-gradient-light mb-6">JOIN THE MOVEMENT</h2>
             <div className="max-w-3xl mx-auto space-y-6 text-gray-200 text-lg">
                 <p className="leading-relaxed">
-                    Partner with ÑILHispanic™ Soccer and connect with a passionate, loyal, and growing audience. Let's build the future of soccer together.
+                    Partner with ÑIL Hispanic™ Soccer and connect with a passionate, loyal, and growing audience. Let's build the future of soccer together.
                 </p>
             </div>
             <div className="mt-10">

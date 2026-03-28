@@ -13,7 +13,7 @@ const AboutSection = () => {
               They over-index in sports fandom, social video creation, and creator engagement—yet remain under-leveraged in traditional NIL and influencer campaigns.
             </p>
             <p className="mt-6">
-              ÑILHispanic™ organizes cultural trust into a scalable execution system.
+              ÑIL Hispanic™ organizes cultural trust into a scalable execution system.
             </p>
           </div>
         </div>

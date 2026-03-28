@@ -1,6 +1,6 @@
 const HowWeDeliverSection = () => {
   const metrics = [
-    { value: "8–9×", label: "Non-Follower Discovery" },
+    { value: "4–9×", label: "Non-Follower Discovery" },
     { value: "Top 5%", label: "Engagement Rates" },
   ];
 
@@ -33,7 +33,7 @@ const HowWeDeliverSection = () => {
         </div>
 
         {/* Subtext */}
-        <p className="text-gray-400 text-lg md:text-xl leading-relaxed text-center max-w-2xl mx-auto mb-16">
+        <p className="text-white text-lg md:text-xl leading-relaxed text-center max-w-2xl mx-auto mb-16">
           Hispanic student-athletes are primarily micro- and nano-creators aggregated to deliver
           macro-level impact at micro-level cost.
         </p>
@@ -46,7 +46,7 @@ const HowWeDeliverSection = () => {
               className="border border-white/15 rounded-lg p-8 text-center transition-all duration-300 hover:-translate-y-2 hover:border-nil-orange/50"
             >
               <p className="text-4xl md:text-5xl font-bold text-nil-orange mb-3">{item.value}</p>
-              <p className="text-gray-300 text-lg">{item.label}</p>
+              <p className="text-white text-lg">{item.label}</p>
             </div>
           ))}
         </div>
@@ -58,8 +58,8 @@ const HowWeDeliverSection = () => {
               key={i}
               className="border border-white/15 border-l-nil-orange border-l-4 rounded-lg p-8 transition-all duration-300 hover:-translate-y-2 hover:border-nil-orange/50"
             >
-              <p className="text-white font-bold text-xl mb-2">{item.heading}</p>
-              <p className="text-gray-400 text-base leading-relaxed">{item.body}</p>
+              <p className="text-nil-orange font-bold text-xl mb-2">{item.heading}</p>
+              <p className="text-white text-base leading-relaxed">{item.body}</p>
             </div>
           ))}
         </div>

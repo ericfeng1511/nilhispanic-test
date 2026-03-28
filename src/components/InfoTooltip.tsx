@@ -18,7 +18,7 @@ export const InfoTooltip: React.FC<InfoTooltipProps> = ({
 
   const mobileText = "Complete 100% of your profile so we can match you with NIL deals. Free, no obligation.";
   
-  const desktopText = `Complete 100% of your profile to help ÑIL Hispanic match you with NIL opportunities.
+  const desktopText = `Complete 100% of your profile to help ÑIL Hispanic™ match you with NIL opportunities.
 We'll also share deal details here when available.
 Always free, with no obligation or commitment.`;
 

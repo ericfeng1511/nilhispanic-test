@@ -673,7 +673,7 @@ const AthleteDashboard: React.FC = () => {
                 </div>
 
                 <p className="text-gray-600 mt-1">
-                  Manage your ÑILHispanic™ Athlete Profile
+                  Manage your ÑIL Hispanic™ Athlete Profile
                 </p>
               </div>
             </div>
@@ -836,7 +836,7 @@ const AthleteDashboard: React.FC = () => {
                     One or more fields not completed.
                   </p>
                   <p className="text-sm text-amber-700 mt-1">
-                    Please fill in your basic info to help ÑIL Hispanic match you with NIL opportunities.
+                    Please fill in your basic info to help ÑIL Hispanic™ match you with NIL opportunities.
                   </p>
                 </div>
               </div>

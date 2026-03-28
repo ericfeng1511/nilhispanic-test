@@ -16,6 +16,10 @@ const HowItWorksSection = () => {
             We help brands convert cultural credibility into measurable performance by sourcing, managing, and activating campaigns with 5 or 500 Hispanic student-athletes.
           </p>
 
+          <p className="text-gray-300 text-lg md:text-xl mb-8">
+            One partner. National reach. Local trust.
+          </p>
+
           <Link
             to="/for-brands"
             className="inline-flex items-center text-white bg-nil-orange/90 hover:bg-nil-orange px-6 py-3 rounded-lg font-bold transition-all text-lg shadow-lg"

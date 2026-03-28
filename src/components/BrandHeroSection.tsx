@@ -11,7 +11,9 @@ const BrandHeroSection = () => {
             ACTIVATE HISPANIC AUDIENCES <span className="heading-gradient-light">WITH TRUST, SCALE, AND PERFORMANCE</span>
           </h1>
           <p className="text-gray-300 text-lg md:text-xl mb-8 max-w-xl">
-            ÑILHispanic™ helps brands reach Latino and Latina Gen Z audiences through a national network of 1,100+ trusted college student-athletes, delivering culturally credible content and measurable results.
+            ÑIL Hispanic™ helps brands reach Latino and Latina Gen Z audiences, their families, and
+            communities through a national network of 1,100+ trusted college student-athletes —
+            delivering culturally credible content and measurable results.
           </p>
 
         </div>

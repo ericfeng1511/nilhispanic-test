@@ -19,7 +19,7 @@ const ContactSection = () => {
         <div className="text-center mb-14">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 heading-gradient">GET IN TOUCH</h2>
           <p className="text-nil-dark-gray max-w-3xl mx-auto text-lg">
-            Ready to learn more about how ÑILHispanic™ can help your brand connect with Hispanic student-athletes? Let's start a conversation.
+            Ready to learn more about how ÑIL Hispanic™ can help your brand connect with Hispanic student-athletes? Let's start a conversation.
           </p>
         </div>
         
@@ -92,10 +92,10 @@ const ContactSection = () => {
             
             <div className="mt-10">
               <h4 className="text-xl font-bold mb-4">Schedule a Meeting</h4>
-              <p className="mb-4">Interested in learning more? Schedule a virtual consultation with our team to discuss how ÑIL Hispanic can help your brand.</p>
+              <p className="mb-4">Interested in learning more? Schedule a virtual consultation with our team to discuss how ÑIL Hispanic™ can help your brand.</p>
               {/* <SchedulingModal 
                 title="Book a Meeting"
-                description="Let's discuss how ÑIL Hispanic can help you connect with Hispanic student-athletes and grow your brand."
+                description="Let's discuss how ÑIL Hispanic™ can help you connect with Hispanic student-athletes and grow your brand."
                 source="About Page - Book Meeting Button"
               >
                 <Button className="bg-nil-orange hover:bg-opacity-90 text-white w-full h-12 touch-manipulation">Book Meeting</Button>

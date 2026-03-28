@@ -1,24 +1,28 @@
 const brands = [
   {
     name: "NFL",
+    logo: "/images/nfl-logo.png",
     campaign: null,
     summary:
       "Activated HSAs for Latino Youth Honors and Latinos in Sports events. Mobilized Hispanic communities for Mexico–U.S. flag football game. Executed targeted NFL Experience ticket campaigns.",
   },
   {
     name: "Lowe's",
+    logo: "/images/lowes-logo.png",
     campaign: '"Move Like Messi"',
     summary:
       "30+ bilingual HSAs. 10 activations. 3 states. Multi-weekend execution with hands-on family engagement.",
   },
   {
     name: "Chevron",
+    logo: "/images/chevron-logo.png",
     campaign: "Soccer Academy",
     summary:
       "Integrated Latina college soccer HSAs as coaches and role models. Community impact + brand integration.",
   },
   {
     name: "Raising Cane's",
+    logo: "/images/raising-canes-logo.png",
     campaign: null,
     summary:
       "Managed HSAs for NY/NJ store launch campaign. Delivered high-performing social content and local Hispanic reach.",
@@ -50,7 +54,8 @@ const OurWorkSection = () => {
                   key={i}
                   className="border border-white/15 rounded-lg p-6 transition-all duration-300 hover:-translate-y-1 hover:border-nil-orange/50 flex flex-col gap-3"
                 >
-                  <div className="flex items-baseline gap-3 flex-wrap">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <img src={brand.logo} alt={brand.name} className="h-8 w-auto object-contain" />
                     <span className="text-white font-bold text-xl leading-none">{brand.name}</span>
                     {brand.campaign && (
                       <span className="text-nil-orange text-sm font-medium">{brand.campaign}</span>

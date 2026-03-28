@@ -21,7 +21,7 @@ const WhatsNILPage = () => {
             <h2 className="text-3xl md:text-4xl font-bold mb-4 heading-gradient">Understanding NIL</h2>
             <p className="text-nil-dark-gray max-w-3xl mx-auto text-lg mb-8">
               This section will provide detailed information about Name, Image, and Likeness (NIL) rights for student-athletes. 
-              We'll cover the rules, opportunities, and how NILHispanic can help you navigate this landscape.
+              We'll cover the rules, opportunities, and how ÑIL Hispanic™ can help you navigate this landscape.
             </p>
             {/* Placeholder content to make the section scrollable */}
             <div className="space-y-4 text-left max-w-2xl mx-auto text-nil-dark-gray">

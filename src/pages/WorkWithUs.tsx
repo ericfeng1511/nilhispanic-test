@@ -43,7 +43,7 @@ const WorkWithUsPage = () => {
     {
       icon: Megaphone,
       title: "Brand Ambassador",
-      description: "Inform national brands at the local level about your involvement and the mission of ÑIL Hispanic."
+      description: "Inform national brands at the local level about your involvement and the mission of ÑIL Hispanic™."
     }
   ];
   return (
@@ -106,7 +106,7 @@ const WorkWithUsPage = () => {
                   <DialogHeader>
                     <DialogTitle>Join Our Team</DialogTitle>
                     <DialogDescription>
-                      Tell us about your skills and interests, and we'll connect you with the right opportunities to contribute to the ÑIL Hispanic mission.
+                      Tell us about your skills and interests, and we'll connect you with the right opportunities to contribute to the ÑIL Hispanic™ mission.
                     </DialogDescription>
                   </DialogHeader>
                   <ContactForm />
