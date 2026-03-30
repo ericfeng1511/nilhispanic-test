@@ -111,7 +111,7 @@ const UniversityPartnershipsPage = () => {
         <HeroSection
           title={<>UNIVERSITY <span className="heading-gradient-light">PARTNERSHIP PROGRAM</span></>}
           subtitle="The only agency-platform connecting Hispanic college athletes to national brands across every sport — at no cost to your program."
-          backgroundImageUrl="/images/athlete-test-img-15.jpg"
+          backgroundImageUrl="/images/background-img-2.png"
           backgroundPosition="right"
           className="pb-96"
         />
@@ -168,7 +168,7 @@ const UniversityPartnershipsPage = () => {
         </section>
 
         {/* WHY PROGRAMS SHOULD ACT */}
-        <section className="relative py-16 md:py-24 bg-[url('/images/athlete-test-img-23.jpg')] bg-cover bg-center bg-no-repeat md:bg-fixed">
+        <section className="relative py-16 md:py-24 bg-[url('/images/background-img-4.png')] bg-cover bg-center bg-no-repeat md:bg-fixed">
           <div className="absolute inset-0 bg-gradient-to-br from-nil-navy/90 via-nil-navy/70 to-nil-orange/60 z-0"></div>
           <div className="relative z-10 container-custom text-white">
             <div className="text-center mb-12">
@@ -237,7 +237,7 @@ const UniversityPartnershipsPage = () => {
         </section>
 
         {/* WHAT ÑIL HISPANIC DELIVERS */}
-        <section className="relative py-16 md:py-24 bg-[url('/images/athlete-test-img-6.jpg')] bg-cover bg-center bg-no-repeat md:bg-fixed">
+        <section className="relative py-16 md:py-24 bg-[url('/images/background-img-5.png')] bg-cover bg-center bg-no-repeat md:bg-fixed">
           <div className="absolute inset-0 bg-gradient-to-br from-nil-navy/90 via-nil-navy/70 to-nil-orange/60 z-0"></div>
           <div className="relative z-10 container-custom text-white">
             <div className="text-center mb-12">
