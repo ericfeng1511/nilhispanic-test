@@ -27,7 +27,7 @@ const AboutSection = () => {
             />
           </div>
           <div className="w-full md:w-2/5">
-            <h3 className="text-2xl md:text-3xl font-bold mb-4 text-nil-navy">WHY ÑIL HISPANIC™?</h3>
+            <h3 className="text-2xl md:text-3xl font-bold mb-4 text-nil-navy">WHY ÑIL HISPANIC™</h3>
             
             <div className="mb-6">
               <h4 className="text-xl font-semibold mb-2 text-nil-orange">National Hispanic Student-Athlete Network</h4>
