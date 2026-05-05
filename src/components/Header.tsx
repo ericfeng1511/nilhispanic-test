@@ -13,7 +13,7 @@ import { AuthModal } from "./AuthModal";
 import ResetPasswordModal from "./ResetPasswordModal";
 import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'react-router-dom';
-import { Menu, ChevronDown, LogOut, User, Settings, Shield, Trophy, Building2, Bell } from 'lucide-react';
+import { Menu, ChevronDown, LogOut, User, Shield, Trophy, Building2, Bell, Users, GraduationCap } from 'lucide-react';
 import {
   HoverCard,
   HoverCardContent,
@@ -30,6 +30,17 @@ import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { ChatService } from '@/services/chatService';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+
+const roleLabel = (role: string) => {
+  switch (role) {
+    case 'admin': return 'Admin';
+    case 'athlete': return 'Student Athlete';
+    case 'high_school_athlete': return 'High School Athlete';
+    case 'family_friend': return 'Family/Friends';
+    case 'brand': return 'Brand Representative';
+    default: return role;
+  }
+};
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -223,7 +234,7 @@ const Header = () => {
                       </div>
                       {profile?.role && (
                         <div className="text-xs text-gray-600">
-                          {profile.role}
+                          {roleLabel(profile.role)}
                         </div>
                       )}
                     </div>
@@ -247,6 +258,18 @@ const Header = () => {
                   {profile?.role === 'brand' && (
                     <Link to="/brand/dashboard" className="flex items-center space-x-2 w-full px-2 py-2 text-sm rounded-sm hover:bg-gray-100">
                       <Building2 size={16} />
+                      <span>Dashboard</span>
+                    </Link>
+                  )}
+                  {profile?.role === 'family_friend' && (
+                    <Link to="/family/dashboard" className="flex items-center space-x-2 w-full px-2 py-2 text-sm rounded-sm hover:bg-gray-100">
+                      <Users size={16} />
+                      <span>Dashboard</span>
+                    </Link>
+                  )}
+                  {profile?.role === 'high_school_athlete' && (
+                    <Link to="/highschool/dashboard" className="flex items-center space-x-2 w-full px-2 py-2 text-sm rounded-sm hover:bg-gray-100">
+                      <GraduationCap size={16} />
                       <span>Dashboard</span>
                     </Link>
                   )}
@@ -350,6 +373,16 @@ const Header = () => {
                     <Link to="/brand/dashboard">Dashboard</Link>
                   </DropdownMenuItem>
                 )}
+                {profile?.role === 'family_friend' && (
+                  <DropdownMenuItem asChild>
+                    <Link to="/family/dashboard">Dashboard</Link>
+                  </DropdownMenuItem>
+                )}
+                {profile?.role === 'high_school_athlete' && (
+                  <DropdownMenuItem asChild>
+                    <Link to="/highschool/dashboard">Dashboard</Link>
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={(e) => {
@@ -433,7 +466,7 @@ const Header = () => {
                       </div>
                       {profile?.role && (
                         <div className="text-xs text-gray-600">
-                          {profile.role}
+                          {roleLabel(profile.role)}
                         </div>
                       )}
                     </div>
@@ -475,8 +508,8 @@ const Header = () => {
                     </Link>
                   )}
                   {profile?.role === 'brand' && (
-                    <Link 
-                      to="/brand/dashboard" 
+                    <Link
+                      to="/brand/dashboard"
                       className="w-full text-left px-3 py-3 text-sm hover:bg-nil-light-gray flex items-center space-x-2 rounded-md"
                       onClick={() => setMobileMenuOpen(false)}
                     >
@@ -484,7 +517,27 @@ const Header = () => {
                       <span>Dashboard</span>
                     </Link>
                   )}
-                  
+                  {profile?.role === 'family_friend' && (
+                    <Link
+                      to="/family/dashboard"
+                      className="w-full text-left px-3 py-3 text-sm hover:bg-nil-light-gray flex items-center space-x-2 rounded-md"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <Users size={16} />
+                      <span>Dashboard</span>
+                    </Link>
+                  )}
+                  {profile?.role === 'high_school_athlete' && (
+                    <Link
+                      to="/highschool/dashboard"
+                      className="w-full text-left px-3 py-3 text-sm hover:bg-nil-light-gray flex items-center space-x-2 rounded-md"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <GraduationCap size={16} />
+                      <span>Dashboard</span>
+                    </Link>
+                  )}
+
                   {/* Separator */}
                   <div className="border-t border-gray-200"></div>
                   

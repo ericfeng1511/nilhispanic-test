@@ -3,7 +3,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabaseClient';
 
 // Always redirect verified email links to the live site
-const EMAIL_REDIRECT_URL = 'https://nilhispanic.com/athlete/dashboard';
+const EMAIL_REDIRECT_URL = 'https://nilhispanic.com/auth/verify';
 // Compute a reset-password redirect URL for both dev and prod
 const RESET_PASSWORD_REDIRECT_URL = (typeof window !== 'undefined' && window.location?.origin)
   ? `${window.location.origin}/reset-password`
@@ -13,7 +13,7 @@ interface Profile {
   id: string;
   email: string;
   full_name: string | null;
-  role: 'admin' | 'athlete' | 'brand';
+  role: 'admin' | 'athlete' | 'high_school_athlete' | 'family_friend' | 'brand';
   created_at: string;
   updated_at: string;
 }
@@ -23,7 +23,7 @@ interface AuthContextType {
   profile: Profile | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, fullName: string, role?: 'athlete' | 'brand' | 'admin') => Promise<{ error: any; needsVerification?: boolean }>;
+  signUp: (email: string, password: string, fullName: string, role?: 'athlete' | 'high_school_athlete' | 'family_friend' | 'brand' | 'admin') => Promise<{ error: any; needsVerification?: boolean }>;
   signIn: (email: string, password: string) => Promise<{ error: any; needsVerification?: boolean }>;
   signOut: () => Promise<void>;
   updateProfile: (updates: Partial<Profile>) => Promise<{ error: any }>;
@@ -88,7 +88,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const role = userMetadata?.role;
     
     if (role !== 'athlete') {
-      console.log('User is not an athlete, skipping student athlete creation');
+      console.log('User is not a college athlete, skipping student athlete creation');
       return;
     }
 
@@ -213,7 +213,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  const signUp = async (email: string, password: string, fullName: string, role: 'athlete' | 'brand' | 'admin' = 'athlete') => {
+  const signUp = async (email: string, password: string, fullName: string, role: 'athlete' | 'high_school_athlete' | 'family_friend' | 'brand' | 'admin' = 'athlete') => {
     try {
       console.log('Attempting signup for:', email, 'with role:', role);
 
@@ -399,11 +399,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
       
-      if (data.user && role !== 'athlete' && role !== 'brand') {
+      // High school athlete: create stub row
+      if (data.user && role === 'high_school_athlete') {
+        try {
+          const { error: hsError } = await supabase
+            .from('high_school_athletes')
+            .insert({ profile_id: data.user.id, name: fullName });
+          if (hsError) {
+            console.error('Error creating high_school_athletes entry:', hsError);
+          } else {
+            console.log('High school athlete entry created successfully!');
+          }
+        } catch (e) {
+          console.error('Exception creating high_school_athletes entry:', e);
+        }
+      }
+
+      // Family & friends: create stub row
+      if (data.user && role === 'family_friend') {
+        try {
+          const { error: ffError } = await supabase
+            .from('family_friends')
+            .insert({ profile_id: data.user.id, name: fullName });
+          if (ffError) {
+            console.error('Error creating family_friends entry:', ffError);
+          } else {
+            console.log('Family & friends entry created successfully!');
+          }
+        } catch (e) {
+          console.error('Exception creating family_friends entry:', e);
+        }
+      }
+
+      if (data.user && !['athlete', 'brand', 'high_school_athlete', 'family_friend'].includes(role)) {
         console.log('Skipping automatic table entry creation:');
-        console.log('- Signup error:', false);
         console.log('- User created:', !!data.user);
-        console.log('- Role:', role, '(not athlete or brand)');
+        console.log('- Role:', role, '(not a role with a linked table)');
       }
 
       // Check if user needs to verify email

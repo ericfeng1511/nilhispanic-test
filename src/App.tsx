@@ -23,6 +23,9 @@ import ScrollToTop from "./components/ScrollToTop";
 import ResetPassword from "./pages/ResetPassword";
 import CommunityNetwork from "./pages/CommunityNetwork";
 import CommunityMemberDashboard from "./pages/CommunityMemberDashboard";
+import FamilyFriendDashboard from "./pages/FamilyFriendDashboard";
+import HighSchoolAthleteDashboard from "./pages/HighSchoolAthleteDashboard";
+import AuthVerify from "./pages/AuthVerify";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +55,9 @@ const App = () => (
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/community/network" element={<CommunityNetwork />} />
           <Route path="/community/member" element={<CommunityMemberDashboard />} />
+          <Route path="/family/dashboard" element={<FamilyFriendDashboard />} />
+          <Route path="/highschool/dashboard" element={<HighSchoolAthleteDashboard />} />
+          <Route path="/auth/verify" element={<AuthVerify />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
