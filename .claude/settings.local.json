@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(pdftotext:*)",
-      "Bash(grep -E '\\\\.\\(json|ts|js|yaml|yml|dockerfile|env\\)$')"
+      "Bash(grep -E '\\\\.\\(json|ts|js|yaml|yml|dockerfile|env\\)$')",
+      "Bash(git *)"
     ]
   }
 }
