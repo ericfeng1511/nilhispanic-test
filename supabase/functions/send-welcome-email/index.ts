@@ -26,68 +26,57 @@ Deno.serve(async (req: Request) => {
 
     const htmlContent = `
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-</head>
-<body style="margin:0;padding:0;background-color:#f4f4f4;font-family:'Helvetica Neue',Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f4;padding:40px 0;">
-    <tr>
-      <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:8px;overflow:hidden;max-width:600px;width:100%;">
+<html lang="en" style="margin:0;padding:0;">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="x-apple-disable-message-reformatting" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="supported-color-schemes" content="light dark" />
+    <title>Welcome to NIL Hispanic!</title>
+  </head>
+  <body style="margin:0;padding:0;background:#0b1b2a;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#0b1b2a;">
+      <tr>
+        <td align="center" style="padding:32px 16px;">
 
-          <!-- Header -->
-          <tr>
-            <td style="background-color:#1A1F2C;padding:32px 40px;text-align:center;">
-              <h1 style="margin:0;color:#ffffff;font-size:24px;letter-spacing:1px;">NILHispanic</h1>
-            </td>
-          </tr>
+          <!-- Card -->
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#ffffff;border-radius:12px;">
+            <tr>
+              <td style="padding:24px;font-family:Arial,Helvetica,sans-serif;color:#0b1b2a;">
+                <h1 style="margin:0 0 12px 0;font-size:22px;line-height:1.35;">Welcome to NIL Hispanic, ${fullName}!</h1>
+                <p style="margin:0 0 16px 0;font-size:16px;line-height:1.6;color:#334155;">
+                  Your email has been verified and your ÑILHispanic account is ready to go.
+                </p>
+                <p style="margin:0 0 18px 0;font-size:16px;line-height:1.6;color:#334155;">
+                  NILHispanic is the platform built to connect Hispanic student-athletes with brands,
+                  opportunities, and a community that celebrates your story. We're glad you're here.
+                </p>
 
-          <!-- Body -->
-          <tr>
-            <td style="padding:40px;">
-              <h2 style="margin:0 0 16px;color:#1A1F2C;font-size:22px;">Welcome, ${fullName}!</h2>
-              <p style="margin:0 0 16px;color:#444;font-size:15px;line-height:1.6;">
-                Your email has been verified and your NILHispanic account is ready to go.
-              </p>
-              <p style="margin:0 0 24px;color:#444;font-size:15px;line-height:1.6;">
-                NILHispanic is the platform built to connect Hispanic student-athletes with brands,
-                opportunities, and a community that celebrates your story. We're glad you're here.
-              </p>
+                <!-- Primary CTA button -->
+                <p style="margin:0 0 18px 0;">
+                  <a
+                    href="https://nilhispanic.com"
+                    style="background:#ff6a00;color:#ffffff;text-decoration:none;padding:12px 18px;border-radius:8px;display:inline-block;font-weight:bold;font-size:16px;"
+                  >
+                    Go to NILHispanic
+                  </a>
+                </p>
 
-              <!-- CTA button -->
-              <table cellpadding="0" cellspacing="0" style="margin:0 0 32px;">
-                <tr>
-                  <td style="background-color:#F97316;border-radius:6px;">
-                    <a href="https://nilhispanic.com" style="display:inline-block;padding:14px 28px;color:#ffffff;font-size:15px;font-weight:bold;text-decoration:none;">
-                      Go to your dashboard →
-                    </a>
-                  </td>
-                </tr>
-              </table>
-
-              <p style="margin:0;color:#444;font-size:15px;line-height:1.6;">
-                If you have any questions, reply to this email and we'll be happy to help.
-              </p>
-            </td>
-          </tr>
+                <p style="margin:0;font-size:13px;line-height:1.5;color:#64748b;">
+                  If you have any questions, reply to this email and we'll be happy to help.
+                </p>
+              </td>
+            </tr>
+          </table>
 
           <!-- Footer -->
-          <tr>
-            <td style="background-color:#f4f4f4;padding:24px 40px;text-align:center;">
-              <p style="margin:0;color:#888;font-size:12px;">
-                © ${new Date().getFullYear()} NILHispanic. All rights reserved.<br />
-                You're receiving this because you created an account at nilhispanic.com.
-              </p>
-            </td>
-          </tr>
-
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
+          <p style="font-family:Arial,Helvetica,sans-serif;color:#94a3b8;font-size:12px;margin:14px 0 0 0;">
+            You're receiving this because you created an account at nilhispanic.com.
+          </p>
+        </td>
+      </tr>
+    </table>
+  </body>
 </html>
     `.trim();
 
