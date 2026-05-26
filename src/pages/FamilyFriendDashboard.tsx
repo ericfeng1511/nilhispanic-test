@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { ArrowLeft, User, Edit3, Save, X, Trash2, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, User, Edit3, Save, X, Trash2, AlertTriangle, Instagram, ChevronDown, MessageSquare } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
@@ -9,11 +9,24 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Checkbox } from '@/components/ui/checkbox';
+
+const CULTURAL_ROOT_OPTIONS = [
+  'Argentina', 'Bolivia', 'Chile', 'Colombia', 'Costa Rica', 'Cuba',
+  'Dominican Republic', 'Ecuador', 'El Salvador', 'Guatemala', 'Honduras',
+  'Mexico', 'Nicaragua', 'Panama', 'Paraguay', 'Peru', 'Puerto Rico',
+  'Spain', 'Uruguay', 'Venezuela', 'Other',
+];
 
 interface FFProfile {
   age: number | undefined;
   city_id: number | undefined;
   hometown: string;
+  relationship_type: string;
+  cultural_roots: string[];
+  instagram_handle: string;
 }
 
 const FamilyFriendDashboard: React.FC = () => {
@@ -25,7 +38,14 @@ const FamilyFriendDashboard: React.FC = () => {
     age: undefined,
     city_id: undefined,
     hometown: '',
+    relationship_type: '',
+    cultural_roots: [],
+    instagram_handle: '',
   });
+
+  // Social media edit state
+  const [isEditingSocial, setIsEditingSocial] = useState(false);
+  const [originalInstagramHandle, setOriginalInstagramHandle] = useState('');
 
   // City autocomplete state
   const [cityQuery, setCityQuery] = useState('');
@@ -61,6 +81,9 @@ const FamilyFriendDashboard: React.FC = () => {
         age: typeof updates.age === 'number' ? updates.age : null,
         city_id: typeof updates.city_id === 'number' ? updates.city_id : null,
         hometown: updates.hometown || null,
+        relationship_type: updates.relationship_type || null,
+        cultural_roots: updates.cultural_roots?.length ? updates.cultural_roots : null,
+        instagram_handle: updates.instagram_handle || null,
       };
       if (!currentData) {
         const { error } = await supabase
@@ -81,12 +104,30 @@ const FamilyFriendDashboard: React.FC = () => {
     },
   });
 
+  const updateSocialMutation = useMutation({
+    mutationFn: async (instagram_handle: string) => {
+      if (!profile?.id) throw new Error('No profile ID available');
+      const { error } = await supabase
+        .from('family_friends')
+        .update({ instagram_handle: instagram_handle || null })
+        .eq('profile_id', profile.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['family-friend-profile', profile?.id] });
+      setIsEditingSocial(false);
+    },
+  });
+
   useEffect(() => {
     if (!currentData) return;
     setFfProfile({
       age: currentData.age ?? undefined,
       city_id: currentData.city_id ?? undefined,
       hometown: currentData.hometown || '',
+      relationship_type: currentData.relationship_type || '',
+      cultural_roots: currentData.cultural_roots || [],
+      instagram_handle: currentData.instagram_handle || '',
     });
 
     const loadCityData = async () => {
@@ -124,9 +165,12 @@ const FamilyFriendDashboard: React.FC = () => {
         age: currentData.age ?? undefined,
         city_id: currentData.city_id ?? undefined,
         hometown: currentData.hometown || '',
+        relationship_type: currentData.relationship_type || '',
+        cultural_roots: currentData.cultural_roots || [],
+        instagram_handle: currentData.instagram_handle || '',
       });
     } else {
-      setFfProfile({ age: undefined, city_id: undefined, hometown: '' });
+      setFfProfile({ age: undefined, city_id: undefined, hometown: '', relationship_type: '', cultural_roots: [], instagram_handle: '' });
     }
     setIsEditing(false);
     setCityQuery(originalCityQuery);
@@ -134,9 +178,23 @@ const FamilyFriendDashboard: React.FC = () => {
   };
 
   const handleClearAll = () => {
-    setFfProfile({ age: undefined, city_id: undefined, hometown: '' });
+    setFfProfile({ age: undefined, city_id: undefined, hometown: '', relationship_type: '', cultural_roots: [], instagram_handle: ffProfile.instagram_handle });
     setCityQuery('');
     setSelectedCityLabel('');
+  };
+
+  const startSocialEdit = () => {
+    setOriginalInstagramHandle(ffProfile.instagram_handle);
+    setIsEditingSocial(true);
+  };
+
+  const handleSaveSocial = () => {
+    updateSocialMutation.mutate(ffProfile.instagram_handle);
+  };
+
+  const handleCancelSocial = () => {
+    setFfProfile(prev => ({ ...prev, instagram_handle: originalInstagramHandle }));
+    setIsEditingSocial(false);
   };
 
   const isProfileComplete = () =>
@@ -336,6 +394,30 @@ const FamilyFriendDashboard: React.FC = () => {
                 )}
               </div>
 
+              {/* Relationship Type Field */}
+              <div className="space-y-2">
+                <Label htmlFor="relationship_type">Relationship</Label>
+                {isEditing ? (
+                  <Select
+                    value={ffProfile.relationship_type}
+                    onValueChange={(value) => setFfProfile(prev => ({ ...prev, relationship_type: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select relationship" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Parent">Parent</SelectItem>
+                      <SelectItem value="Family">Family</SelectItem>
+                      <SelectItem value="Friend">Friend</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <div className="p-3 bg-gray-50 rounded-md">
+                    {ffProfile.relationship_type || 'Not specified'}
+                  </div>
+                )}
+              </div>
+
               {/* Hometown (City) Field with Autocomplete */}
               <div className="space-y-2 relative">
                 <Label htmlFor="hometown">Hometown <span className="text-red-500">*</span></Label>
@@ -394,6 +476,165 @@ const FamilyFriendDashboard: React.FC = () => {
                 ) : (
                   <div className="p-3 bg-gray-50 rounded-md">
                     {selectedCityLabel || ffProfile.hometown || 'Not specified'}
+                  </div>
+                )}
+              </div>
+
+              {/* Cultural Roots Field (Multi-select) */}
+              <div className="space-y-2">
+                <Label htmlFor="cultural_roots">Cultural Roots</Label>
+                {isEditing ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                      >
+                        <span className="truncate text-left">
+                          {ffProfile.cultural_roots && ffProfile.cultural_roots.length > 0
+                            ? `${ffProfile.cultural_roots.length} selected`
+                            : 'Select cultural roots'}
+                        </span>
+                        <ChevronDown className="h-4 w-4 opacity-50" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-72 p-0">
+                      <div className="max-h-60 overflow-y-auto py-1">
+                        {CULTURAL_ROOT_OPTIONS.map((opt) => {
+                          const id = `root-${opt.replace(/\s+/g, '-').toLowerCase()}`;
+                          const checked = !!(ffProfile.cultural_roots || []).includes(opt);
+                          return (
+                            <button
+                              key={opt}
+                              type="button"
+                              onClick={() => {
+                                setFfProfile(prev => {
+                                  const curr = prev.cultural_roots || [];
+                                  const exists = curr.includes(opt);
+                                  return {
+                                    ...prev,
+                                    cultural_roots: exists
+                                      ? curr.filter(r => r !== opt)
+                                      : [...curr, opt],
+                                  };
+                                });
+                              }}
+                              className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-accent hover:text-accent-foreground ${checked ? 'bg-accent/50' : ''}`}
+                            >
+                              <Checkbox
+                                id={id}
+                                checked={checked}
+                                onCheckedChange={() => { /* handled by button onClick */ }}
+                                className="pointer-events-none"
+                              />
+                              <label htmlFor={id} className="leading-none cursor-pointer select-none flex-1">
+                                {opt}
+                              </label>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <div className="p-3 bg-gray-50 rounded-md">
+                    {ffProfile.cultural_roots && ffProfile.cultural_roots.length > 0
+                      ? ffProfile.cultural_roots.join(', ')
+                      : 'Not specified'}
+                  </div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Social Media Card */}
+        <Card className="bg-white/75 backdrop-blur-sm border-white/20">
+          <CardHeader>
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+              <CardTitle className="flex items-center gap-2">
+                <MessageSquare className="w-5 h-5 text-nil-orange" />
+                Social Media Presence
+              </CardTitle>
+              {!isEditingSocial ? (
+                <Button
+                  onClick={startSocialEdit}
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2 self-start sm:self-auto"
+                >
+                  <Edit3 className="w-4 h-4" />
+                  Edit
+                </Button>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    onClick={handleSaveSocial}
+                    disabled={updateSocialMutation.isPending}
+                    size="sm"
+                    className="flex items-center gap-2 bg-nil-orange hover:bg-nil-navy disabled:opacity-50"
+                  >
+                    {updateSocialMutation.isPending ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                    ) : (
+                      <Save className="w-4 h-4" />
+                    )}
+                    {updateSocialMutation.isPending ? 'Saving...' : 'Save'}
+                  </Button>
+                  <Button
+                    onClick={handleCancelSocial}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2"
+                  >
+                    <X className="w-4 h-4" />
+                    Cancel
+                  </Button>
+                </div>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            {!ffProfile.instagram_handle && (
+              <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-amber-800">No social media connected.</p>
+                  <p className="text-sm text-amber-700 mt-1">
+                    ÑIL Hispanic recommends connecting at least one social media account.
+                  </p>
+                </div>
+              </div>
+            )}
+            <div className="space-y-8">
+              {/* Instagram */}
+              <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                    <Instagram className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-gray-900">Instagram</h4>
+                    <p className="text-sm text-gray-500">
+                      {ffProfile.instagram_handle
+                        ? `@${ffProfile.instagram_handle.replace(/^@+/, '')}`
+                        : 'Not connected'}
+                    </p>
+                  </div>
+                </div>
+                {isEditingSocial && (
+                  <div className="relative">
+                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500">@</span>
+                    <Input
+                      value={ffProfile.instagram_handle || ''}
+                      onChange={(e) => {
+                        const cleaned = e.target.value.replace(/^@+/, '').replace(/[^a-zA-Z0-9._-]/g, '');
+                        setFfProfile(prev => ({ ...prev, instagram_handle: cleaned }));
+                      }}
+                      placeholder="username"
+                      className="w-40 pl-6"
+                      inputMode="text"
+                    />
                   </div>
                 )}
               </div>

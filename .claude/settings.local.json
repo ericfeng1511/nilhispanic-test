@@ -3,7 +3,10 @@
     "allow": [
       "Bash(pdftotext:*)",
       "Bash(grep -E '\\\\.\\(json|ts|js|yaml|yml|dockerfile|env\\)$')",
-      "Bash(git *)"
+      "Bash(git *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\ericf\\\\documents\\\\nilhispanic-test\" -Directory)",
+      "Bash(Select-Object Name)",
+      "Bash(npx tsc *)"
     ]
   }
 }
