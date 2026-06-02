@@ -43,12 +43,12 @@ Deno.serve(async (req: Request) => {
           <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#ffffff;border-radius:12px;">
             <tr>
               <td style="padding:24px;font-family:Arial,Helvetica,sans-serif;color:#0b1b2a;">
-                <h1 style="margin:0 0 12px 0;font-size:22px;line-height:1.35;">Welcome to NIL Hispanic, ${fullName}!</h1>
+                <h1 style="margin:0 0 12px 0;font-size:22px;line-height:1.35;">Welcome to ÑIL Hispanic™, ${fullName}!</h1>
                 <p style="margin:0 0 16px 0;font-size:16px;line-height:1.6;color:#334155;">
-                  Your email has been verified and your ÑILHispanic account is ready to go.
+                  Your email has been verified and your ÑIL Hispanic™ account is ready to go.
                 </p>
                 <p style="margin:0 0 18px 0;font-size:16px;line-height:1.6;color:#334155;">
-                  NILHispanic is the platform built to connect Hispanic student-athletes with brands,
+                  ÑIL Hispanic™ is the platform built to connect Hispanic student-athletes with brands,
                   opportunities, and a community that celebrates your story. We're glad you're here.
                 </p>
 
@@ -58,7 +58,7 @@ Deno.serve(async (req: Request) => {
                     href="https://nilhispanic.com"
                     style="background:#ff6a00;color:#ffffff;text-decoration:none;padding:12px 18px;border-radius:8px;display:inline-block;font-weight:bold;font-size:16px;"
                   >
-                    Go to NILHispanic
+                    Go to ÑIL Hispanic™
                   </a>
                 </p>
 
