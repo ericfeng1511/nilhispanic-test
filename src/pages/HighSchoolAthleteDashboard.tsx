@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { ArrowLeft, User, Edit3, Save, X, Trash2, AlertTriangle, Instagram, ChevronDown, MessageSquare } from 'lucide-react';
+import { ArrowLeft, User, Edit3, Save, X, Trash2, AlertTriangle, Instagram, ChevronDown, MessageSquare, Camera } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
+import PhotoCropperModal from '@/components/PhotoCropperModal';
 
 const CULTURAL_ROOT_OPTIONS = [
   'Argentina', 'Bolivia', 'Chile', 'Colombia', 'Costa Rica', 'Cuba',
@@ -29,6 +30,7 @@ interface HSProfile {
   hometown: string;
   cultural_roots: string[];
   instagram_handle: string;
+  photo?: string;
 }
 
 const HighSchoolAthleteDashboard: React.FC = () => {
@@ -46,6 +48,12 @@ const HighSchoolAthleteDashboard: React.FC = () => {
     cultural_roots: [],
     instagram_handle: '',
   });
+
+  // Photo upload state
+  const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
 
   // Social media edit state
   const [isEditingSocial, setIsEditingSocial] = useState(false);
@@ -91,9 +99,28 @@ const HighSchoolAthleteDashboard: React.FC = () => {
       .filter(sport => sport && sport.toLowerCase().includes(input.toLowerCase()))
       .slice(0, 5);
 
+  const photoUploadMutation = useMutation({
+    mutationFn: async (file: File): Promise<string> => {
+      if (!profile?.id) throw new Error('No profile ID available');
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${profile.id}-${Date.now()}.${fileExt}`;
+      const filePath = `hs-athlete-photos/${fileName}`;
+      const { error } = await supabase.storage
+        .from('athlete-photos')
+        .upload(filePath, file, { cacheControl: '3600', upsert: true });
+      if (error) throw new Error(`Failed to upload photo: ${error.message}`);
+      const { data: { publicUrl } } = supabase.storage.from('athlete-photos').getPublicUrl(filePath);
+      return publicUrl;
+    },
+  });
+
   const updateMutation = useMutation({
     mutationFn: async (updates: HSProfile) => {
       if (!profile?.id) throw new Error('No profile ID available');
+      let photoUrl = updates.photo;
+      if (selectedPhoto) {
+        photoUrl = await photoUploadMutation.mutateAsync(selectedPhoto);
+      }
       const payload = {
         sport: updates.sport || null,
         grade: typeof updates.grade === 'number' ? updates.grade : null,
@@ -102,6 +129,7 @@ const HighSchoolAthleteDashboard: React.FC = () => {
         hometown: updates.hometown || null,
         cultural_roots: updates.cultural_roots?.length ? updates.cultural_roots : null,
         instagram_handle: updates.instagram_handle || null,
+        photo: photoUrl || null,
       };
       if (!currentData) {
         const { error } = await supabase
@@ -118,6 +146,8 @@ const HighSchoolAthleteDashboard: React.FC = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['hs-athlete-profile', profile?.id] });
+      setSelectedPhoto(null);
+      setPhotoPreview(null);
       setIsEditing(false);
     },
   });
@@ -147,6 +177,7 @@ const HighSchoolAthleteDashboard: React.FC = () => {
       hometown: currentData.hometown || '',
       cultural_roots: currentData.cultural_roots || [],
       instagram_handle: currentData.instagram_handle || '',
+      photo: currentData.photo || '',
     });
 
     const loadCityData = async () => {
@@ -215,6 +246,31 @@ const HighSchoolAthleteDashboard: React.FC = () => {
   const handleCancelSocial = () => {
     setHsProfile(prev => ({ ...prev, instagram_handle: originalInstagramHandle }));
     setIsEditingSocial(false);
+  };
+
+  const handlePhotoUploadClick = () => setIsPhotoModalOpen(true);
+
+  const handleCroppedSave = (file: File, previewDataUrl: string) => {
+    setSelectedPhoto(file);
+    setPhotoPreview(previewDataUrl);
+    setIsPhotoModalOpen(false);
+  };
+
+  const handlePhotoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { alert('Please select an image file.'); return; }
+    if (file.size > 5 * 1024 * 1024) { alert('Please select an image smaller than 5MB.'); return; }
+    setSelectedPhoto(file);
+    const reader = new FileReader();
+    reader.onload = (e) => setPhotoPreview(e.target?.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemovePhoto = () => {
+    setSelectedPhoto(null);
+    setPhotoPreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const isProfileComplete = () =>
@@ -293,8 +349,33 @@ const HighSchoolAthleteDashboard: React.FC = () => {
         <Card className="mb-6 bg-white/75 backdrop-blur-sm border-white/20">
           <CardContent className="pt-6">
             <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-              <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 border-4 border-white shadow-lg flex items-center justify-center bg-gradient-to-br from-nil-orange to-nil-navy">
-                <User className="w-12 h-12 text-white" />
+              <div className="relative">
+                <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 border-4 border-white shadow-lg">
+                  {photoPreview || hsProfile.photo ? (
+                    <img
+                      src={photoPreview || hsProfile.photo}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-nil-orange to-nil-navy">
+                      <User className="w-12 h-12 text-white" />
+                    </div>
+                  )}
+                </div>
+                <button
+                  onClick={handlePhotoUploadClick}
+                  className="absolute bottom-2 right-2 w-8 h-8 bg-nil-orange hover:bg-nil-navy text-white rounded-full flex items-center justify-center shadow-lg transition-colors"
+                >
+                  <Camera className="w-4 h-4" />
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoSelect}
+                  className="hidden"
+                />
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
@@ -306,10 +387,33 @@ const HighSchoolAthleteDashboard: React.FC = () => {
                 {user?.email && (
                   <div className="text-gray-600 text-sm break-all">{user.email}</div>
                 )}
+                {(selectedPhoto || photoPreview) && (
+                  <div className="mt-3 flex gap-2">
+                    <Button
+                      onClick={handleSave}
+                      disabled={updateMutation.isPending}
+                      size="sm"
+                      className="bg-nil-orange hover:bg-nil-navy"
+                    >
+                      {updateMutation.isPending ? 'Saving...' : 'Save Photo'}
+                    </Button>
+                    <Button onClick={handleRemovePhoto} variant="outline" size="sm">
+                      Cancel
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </CardContent>
         </Card>
+
+        <PhotoCropperModal
+          open={isPhotoModalOpen}
+          onOpenChange={setIsPhotoModalOpen}
+          onSave={handleCroppedSave}
+          initialImageUrl={hsProfile.photo || null}
+          title="Update Profile Photo"
+        />
 
         {/* Basic Information Card */}
         <Card className="mb-6 bg-white/75 backdrop-blur-sm border-white/20">

@@ -4,11 +4,19 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useStudentAthletes } from '@/hooks/useStudentAthletes';
 import { useSchoolContacts } from '@/hooks/useSchoolContacts';
 import { useColleges } from '@/hooks/useColleges';
+import { useHighSchoolAthletes } from '@/hooks/useHighSchoolAthletes';
+import { useFamilyFriends } from '@/hooks/useFamilyFriends';
 import { StudentAthlete } from '@/types/studentAthlete';
 import { SchoolContact } from '@/types/schoolContact';
+import { HighSchoolAthleteUser } from '@/services/highSchoolAthleteService';
+import { FamilyFriendUser } from '@/services/familyFriendService';
 import { AthleteCard } from '@/components/admin/AthleteCard';
 import { ContactCard } from '@/components/admin/ContactCard';
 import { AthleteDetailModal } from '@/components/admin/AthleteDetailModal';
+import { HsAthleteCard } from '@/components/admin/HsAthleteCard';
+import { HsAthleteDetailModal } from '@/components/admin/HsAthleteDetailModal';
+import { FamilyFriendCard } from '@/components/admin/FamilyFriendCard';
+import { FamilyFriendDetailModal } from '@/components/admin/FamilyFriendDetailModal';
 import { SelectedStatsModal } from '@/components/admin/SelectedStatsModal';
 import CollegeMap from '@/components/admin/CollegeMap';
 import { GeocodingPanel } from '@/components/admin/GeocodingPanel';
@@ -19,7 +27,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Users, Database, RefreshCw, AlertCircle, Shield, GraduationCap, Building2, ArrowLeft, CheckSquare, Square, BarChart3, MessageSquare, User, Plus, MoreHorizontal } from 'lucide-react';
+import { Loader2, Users, Database, RefreshCw, AlertCircle, Shield, GraduationCap, Building2, ArrowLeft, CheckSquare, Square, BarChart3, MessageSquare, User, Plus, MoreHorizontal, School, Heart, Search, Instagram } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
@@ -36,7 +44,7 @@ import { StudentAthleteService } from '@/services/studentAthleteService';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 
-type TabType = 'athletes' | 'contacts' | 'colleges';
+type TabType = 'athletes' | 'contacts' | 'colleges' | 'hs_athletes' | 'family_friends';
 
 const AdminDashboard: React.FC = () => {
   const { profile, loading: authLoading } = useAuth();
@@ -46,6 +54,10 @@ const AdminDashboard: React.FC = () => {
   const [selectedAthlete, setSelectedAthlete] = useState<StudentAthlete | null>(null);
   const [selectedContact, setSelectedContact] = useState<SchoolContact | null>(null);
   const [isAthleteModalOpen, setIsAthleteModalOpen] = useState(false);
+  const [selectedHsAthlete, setSelectedHsAthlete] = useState<HighSchoolAthleteUser | null>(null);
+  const [isHsAthleteModalOpen, setIsHsAthleteModalOpen] = useState(false);
+  const [selectedFamilyFriend, setSelectedFamilyFriend] = useState<FamilyFriendUser | null>(null);
+  const [isFamilyFriendModalOpen, setIsFamilyFriendModalOpen] = useState(false);
   const [selectedAthleteIds, setSelectedAthleteIds] = useState<Set<string>>(new Set());
   const [selectionMode, setSelectionMode] = useState(false);
   const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
@@ -135,6 +147,28 @@ const AdminDashboard: React.FC = () => {
     stats: collegeStats,
     refetch: refetchColleges,
   } = useColleges();
+
+  const {
+    users: hsAthletes,
+    total: totalHsAthletes,
+    isLoading: hsAthletesLoading,
+    isError: hsAthletesError,
+    error: hsAthletesErrorMsg,
+    refetch: refetchHsAthletes,
+    search: hsSearch,
+    setSearch: setHsSearch,
+  } = useHighSchoolAthletes();
+
+  const {
+    users: familyFriends,
+    total: totalFamilyFriends,
+    isLoading: familyFriendsLoading,
+    isError: familyFriendsError,
+    error: familyFriendsErrorMsg,
+    refetch: refetchFamilyFriends,
+    search: ffSearch,
+    setSearch: setFfSearch,
+  } = useFamilyFriends();
 
   // Realtime: refresh athletes list when student_athletes change (insert/update/delete)
   useEffect(() => {
@@ -402,18 +436,26 @@ const AdminDashboard: React.FC = () => {
   }
 
   // Get current tab data
-  const isLoading = activeTab === 'athletes' ? athletesLoading : 
-                   activeTab === 'contacts' ? contactsLoading : 
-                   activeTab === 'colleges' ? collegesLoading : false;
-  const isError = activeTab === 'athletes' ? athletesError : 
-                 activeTab === 'contacts' ? contactsError : 
-                 activeTab === 'colleges' ? collegesError : false;
-  const error = activeTab === 'athletes' ? athletesErrorMsg : 
-               activeTab === 'contacts' ? contactsErrorMsg : 
-               activeTab === 'colleges' ? collegesErrorMsg : null;
-  const refetch = activeTab === 'athletes' ? refetchAthletes : 
-                 activeTab === 'contacts' ? refetchContacts : 
-                 activeTab === 'colleges' ? refetchColleges : () => {};
+  const isLoading = activeTab === 'athletes' ? athletesLoading :
+                   activeTab === 'contacts' ? contactsLoading :
+                   activeTab === 'colleges' ? collegesLoading :
+                   activeTab === 'hs_athletes' ? hsAthletesLoading :
+                   activeTab === 'family_friends' ? familyFriendsLoading : false;
+  const isError = activeTab === 'athletes' ? athletesError :
+                 activeTab === 'contacts' ? contactsError :
+                 activeTab === 'colleges' ? collegesError :
+                 activeTab === 'hs_athletes' ? hsAthletesError :
+                 activeTab === 'family_friends' ? familyFriendsError : false;
+  const error = activeTab === 'athletes' ? athletesErrorMsg :
+               activeTab === 'contacts' ? contactsErrorMsg :
+               activeTab === 'colleges' ? collegesErrorMsg :
+               activeTab === 'hs_athletes' ? hsAthletesErrorMsg :
+               activeTab === 'family_friends' ? familyFriendsErrorMsg : null;
+  const refetch = activeTab === 'athletes' ? refetchAthletes :
+                 activeTab === 'contacts' ? refetchContacts :
+                 activeTab === 'colleges' ? refetchColleges :
+                 activeTab === 'hs_athletes' ? refetchHsAthletes :
+                 activeTab === 'family_friends' ? refetchFamilyFriends : () => {};
 
   // Error state
   if (isError) {
@@ -483,18 +525,26 @@ const AdminDashboard: React.FC = () => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as TabType)} className="mb-8">
-          <TabsList className="grid w-full max-w-3xl grid-cols-3">
-            <TabsTrigger value="athletes" className="flex items-center gap-2">
-              <GraduationCap className="w-4 h-4" />
-              Student Athletes
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="athletes" className="flex items-center gap-1.5 text-xs sm:text-sm">
+              <GraduationCap className="w-4 h-4 flex-shrink-0" />
+              <span className="hidden sm:inline">Student </span>Athletes
             </TabsTrigger>
-            <TabsTrigger value="contacts" className="flex items-center gap-2">
-              <Building2 className="w-4 h-4" />
-              School Contacts
+            <TabsTrigger value="contacts" className="flex items-center gap-1.5 text-xs sm:text-sm">
+              <Building2 className="w-4 h-4 flex-shrink-0" />
+              <span className="hidden sm:inline">School </span>Contacts
             </TabsTrigger>
-            <TabsTrigger value="colleges" className="flex items-center gap-2">
-              <GraduationCap className="w-4 h-4" />
+            <TabsTrigger value="colleges" className="flex items-center gap-1.5 text-xs sm:text-sm">
+              <GraduationCap className="w-4 h-4 flex-shrink-0" />
               Colleges
+            </TabsTrigger>
+            <TabsTrigger value="hs_athletes" className="flex items-center gap-1.5 text-xs sm:text-sm">
+              <School className="w-4 h-4 flex-shrink-0" />
+              <span className="hidden sm:inline">HS </span>Athletes
+            </TabsTrigger>
+            <TabsTrigger value="family_friends" className="flex items-center gap-1.5 text-xs sm:text-sm">
+              <Heart className="w-4 h-4 flex-shrink-0" />
+              <span className="hidden sm:inline">Family/</span>Friends
             </TabsTrigger>
           </TabsList>
 
@@ -622,6 +672,60 @@ const AdminDashboard: React.FC = () => {
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Different schools represented
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="hs_athletes" className="mt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total HS Athletes</CardTitle>
+                  <School className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{totalHsAthletes.toLocaleString()}</div>
+                  <p className="text-xs text-muted-foreground">Registered accounts</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Showing</CardTitle>
+                  <Search className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{hsAthletes.length.toLocaleString()}</div>
+                  <p className="text-xs text-muted-foreground">
+                    {hsSearch ? 'Matching search' : 'All records'}
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="family_friends" className="mt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Family/Friends</CardTitle>
+                  <Heart className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{totalFamilyFriends.toLocaleString()}</div>
+                  <p className="text-xs text-muted-foreground">Registered accounts</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Showing</CardTitle>
+                  <Search className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{familyFriends.length.toLocaleString()}</div>
+                  <p className="text-xs text-muted-foreground">
+                    {ffSearch ? 'Matching search' : 'All records'}
                   </p>
                 </CardContent>
               </Card>
@@ -941,14 +1045,130 @@ const AdminDashboard: React.FC = () => {
             </div> */}
 
             {/* Interactive College Map */}
-            <CollegeMap 
-              colleges={allColleges} 
+            <CollegeMap
+              colleges={allColleges}
               isLoading={collegesLoading}
               onCollegeSelect={(college) => {
                 console.log('Selected college:', college);
                 // Future: Open college detail modal or navigate to college page
               }}
             />
+          </TabsContent>
+
+          <TabsContent value="hs_athletes">
+            {/* Search */}
+            <div className="mb-6">
+              <div className="relative max-w-sm">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  className="pl-9"
+                  placeholder="Search by name, sport, or hometown..."
+                  value={hsSearch}
+                  onChange={(e) => setHsSearch(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {hsAthletesLoading && (
+              <div className="flex items-center justify-center py-12">
+                <div className="flex items-center gap-2 text-gray-600">
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                  <span>Loading high school athletes...</span>
+                </div>
+              </div>
+            )}
+
+            {!hsAthletesLoading && (
+              hsAthletes.length === 0 ? (
+                <Card>
+                  <CardContent className="p-12 text-center">
+                    <School className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      No high school athletes found
+                    </h3>
+                    <p className="text-gray-600">
+                      {hsSearch ? 'Try adjusting your search.' : 'No high school athletes have registered yet.'}
+                    </p>
+                    {hsSearch && (
+                      <Button onClick={() => setHsSearch('')} variant="outline" className="mt-4">
+                        Clear Search
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-6">
+                  {hsAthletes.map((u) => (
+                    <HsAthleteCard
+                      key={u.id}
+                      user={u}
+                      onClick={() => {
+                        setSelectedHsAthlete(u);
+                        setIsHsAthleteModalOpen(true);
+                      }}
+                    />
+                  ))}
+                </div>
+              )
+            )}
+          </TabsContent>
+
+          <TabsContent value="family_friends">
+            {/* Search */}
+            <div className="mb-6">
+              <div className="relative max-w-sm">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  className="pl-9"
+                  placeholder="Search by name, relationship, or hometown..."
+                  value={ffSearch}
+                  onChange={(e) => setFfSearch(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {familyFriendsLoading && (
+              <div className="flex items-center justify-center py-12">
+                <div className="flex items-center gap-2 text-gray-600">
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                  <span>Loading family/friends...</span>
+                </div>
+              </div>
+            )}
+
+            {!familyFriendsLoading && (
+              familyFriends.length === 0 ? (
+                <Card>
+                  <CardContent className="p-12 text-center">
+                    <Heart className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      No family/friends found
+                    </h3>
+                    <p className="text-gray-600">
+                      {ffSearch ? 'Try adjusting your search.' : 'No family/friend accounts have registered yet.'}
+                    </p>
+                    {ffSearch && (
+                      <Button onClick={() => setFfSearch('')} variant="outline" className="mt-4">
+                        Clear Search
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-6">
+                  {familyFriends.map((u) => (
+                    <FamilyFriendCard
+                      key={u.id}
+                      user={u}
+                      onClick={() => {
+                        setSelectedFamilyFriend(u);
+                        setIsFamilyFriendModalOpen(true);
+                      }}
+                    />
+                  ))}
+                </div>
+              )
+            )}
           </TabsContent>
         </Tabs>
       </div>
@@ -962,7 +1182,27 @@ const AdminDashboard: React.FC = () => {
           setSelectedAthlete(null);
         }}
       />
-      
+
+      {/* HS Athlete Detail Modal */}
+      <HsAthleteDetailModal
+        user={selectedHsAthlete}
+        isOpen={isHsAthleteModalOpen}
+        onClose={() => {
+          setIsHsAthleteModalOpen(false);
+          setSelectedHsAthlete(null);
+        }}
+      />
+
+      {/* Family/Friend Detail Modal */}
+      <FamilyFriendDetailModal
+        user={selectedFamilyFriend}
+        isOpen={isFamilyFriendModalOpen}
+        onClose={() => {
+          setIsFamilyFriendModalOpen(false);
+          setSelectedFamilyFriend(null);
+        }}
+      />
+
       {/* Selected Stats Modal */}
       <SelectedStatsModal
         isOpen={isStatsModalOpen}

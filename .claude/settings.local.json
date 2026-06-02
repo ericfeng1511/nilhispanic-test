@@ -6,7 +6,8 @@
       "Bash(git *)",
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\ericf\\\\documents\\\\nilhispanic-test\" -Directory)",
       "Bash(Select-Object Name)",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(npm run *)"
     ]
   }
 }
