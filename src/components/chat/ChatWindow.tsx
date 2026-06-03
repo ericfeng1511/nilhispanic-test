@@ -3,6 +3,8 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ChatService } from '@/services/chatService';
 import { StudentAthleteService } from '@/services/studentAthleteService';
+import { HighSchoolAthleteService } from '@/services/highSchoolAthleteService';
+import { FamilyFriendService } from '@/services/familyFriendService';
 import type { Message } from '@/types/chat';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
@@ -51,23 +53,34 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     loadMessages();
   }, [loadMessages]);
 
-  // Load conversation participants to determine avatar photos (athlete only for now)
+  // Load conversation participants to determine avatar photos
   useEffect(() => {
     let active = true;
     const loadAvatars = async () => {
       try {
         const convo = await ChatService.getConversationById(conversationId);
-        // Track both participant IDs
+        const participantId = convo?.participant_id ?? null;
+        const participantType = convo?.participant_type ?? 'athlete';
         if (active) {
-          setAthleteId(convo?.athlete_id ?? null);
+          setAthleteId(participantId);
           setAdminId(convo?.admin_id ?? null);
         }
-        // Load athlete avatar
-        if (convo?.athlete_id) {
-          const athlete = await StudentAthleteService.fetchStudentAthleteByProfileId(convo.athlete_id);
+        // Load participant avatar based on type
+        if (participantId) {
+          let photo: string | null = null;
+          if (participantType === 'high_school_athlete') {
+            const result = await HighSchoolAthleteService.fetchByProfileId(participantId);
+            photo = result?.photo ?? null;
+          } else if (participantType === 'family_friend') {
+            const result = await FamilyFriendService.fetchByProfileId(participantId);
+            photo = result?.photo ?? null;
+          } else {
+            const athlete = await StudentAthleteService.fetchStudentAthleteByProfileId(participantId);
+            photo = athlete?.photo ?? null;
+          }
           if (!active) return;
-          if (athlete?.photo && athlete.photo.trim() !== '') {
-            setAvatars((prev) => ({ ...prev, [convo.athlete_id]: athlete.photo }));
+          if (photo && photo.trim() !== '') {
+            setAvatars((prev) => ({ ...prev, [participantId]: photo as string }));
           }
         }
 

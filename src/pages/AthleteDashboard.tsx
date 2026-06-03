@@ -27,6 +27,7 @@ import { InfoTooltip } from '@/components/InfoTooltip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
 import PhotoCropperModal from '@/components/PhotoCropperModal';
+import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 
 // Custom TikTok Icon Component
 const TikTokIcon = ({ className }: { className?: string }) => (
@@ -87,7 +88,8 @@ const AthleteDashboard: React.FC = () => {
   const { allAthletes, uniqueSports, uniqueColleges } = useStudentAthletes();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  
+  const { count: unreadCount } = useUnreadMessages();
+
   // Form state
   const [isEditing, setIsEditing] = useState(false);
   const [athleteProfile, setAthleteProfile] = useState<AthleteProfile>({
@@ -677,9 +679,14 @@ const AthleteDashboard: React.FC = () => {
                 </p>
               </div>
             </div>
-            <Button onClick={handleOpenMessages} className="bg-nil-orange hover:bg-nil-navy flex items-center gap-2">
+            <Button onClick={handleOpenMessages} className="relative bg-nil-orange hover:bg-nil-navy flex items-center gap-2">
               <MessageSquare className="w-4 h-4" />
               Messages
+              {unreadCount > 0 && (
+                <span className="ml-1 inline-flex items-center justify-center px-2 py-0.5 text-xs font-medium leading-none text-white bg-red-600 rounded-full">
+                  {unreadCount}
+                </span>
+              )}
             </Button>
           </div>
         </div>

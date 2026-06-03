@@ -148,20 +148,20 @@ export class ChatService {
     };
   }
 
-  // Fetch or create a one-to-one conversation between admin and athlete
+  // Fetch or create a one-to-one conversation between admin and participant
   static async getOrCreateConversation(input: CreateConversationInput): Promise<Conversation> {
-    const { admin_id, athlete_id } = input;
+    const { admin_id, participant_id, participant_type } = input;
 
     // First try to find existing
     const { data: existing, error: findError } = await supabase
       .from(CONVERSATIONS_TABLE)
       .select('*')
       .eq('admin_id', admin_id)
-      .eq('athlete_id', athlete_id)
+      .eq('participant_id', participant_id)
+      .eq('participant_type', participant_type)
       .maybeSingle();
 
     if (findError && findError.code !== 'PGRST116') {
-      // PGRST116 = no rows, safe to ignore
       throw new Error(`Failed to lookup conversation: ${findError.message}`);
     }
 
@@ -170,7 +170,7 @@ export class ChatService {
     // Create new (RLS must allow only admins)
     const { data, error } = await supabase
       .from(CONVERSATIONS_TABLE)
-      .insert({ admin_id, athlete_id })
+      .insert({ admin_id, participant_id, participant_type })
       .select('*')
       .single();
 
@@ -196,7 +196,7 @@ export class ChatService {
     if (role === 'admin') {
       query.eq('admin_id', userId);
     } else {
-      query.eq('athlete_id', userId);
+      query.eq('participant_id', userId);
     }
 
     const { data, error, count } = await query.range(from, to);
@@ -401,7 +401,7 @@ export class ChatService {
     role: UserRole,
     onInsert: (conversation: Conversation) => void
   ) {
-    const filterColumn = role === 'admin' ? 'admin_id' : 'athlete_id';
+    const filterColumn = role === 'admin' ? 'admin_id' : 'participant_id';
 
     const channel = supabase
       .channel(`conversations-user-${userId}`)

@@ -50,4 +50,19 @@ export class HighSchoolAthleteService {
       photo: detailMap[p.id]?.photo ?? null,
     }));
   }
+
+  static async fetchByProfileId(profileId: string): Promise<{ name: string | null; photo: string | null } | null> {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('full_name')
+      .eq('id', profileId)
+      .single();
+    if (!profile) return null;
+    const { data: detail } = await supabase
+      .from('high_school_athletes')
+      .select('photo')
+      .eq('profile_id', profileId)
+      .maybeSingle();
+    return { name: profile.full_name, photo: detail?.photo ?? null };
+  }
 }

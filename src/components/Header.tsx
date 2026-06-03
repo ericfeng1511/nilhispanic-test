@@ -53,10 +53,22 @@ const Header = () => {
   const [loadingPreviews, setLoadingPreviews] = useState(false);
   const [previews, setPreviews] = useState<Array<{ conversation_id: string; latest_message: any; unread_count: number }>>([]);
 
+  const PARTICIPANT_ROLES = ['admin', 'athlete', 'high_school_athlete', 'family_friend'];
+
+  const dashboardPath = (role: string | undefined) => {
+    switch (role) {
+      case 'admin': return '/admin/dashboard';
+      case 'athlete': return '/athlete/dashboard';
+      case 'high_school_athlete': return '/highschool/dashboard';
+      case 'family_friend': return '/family/dashboard';
+      default: return '/';
+    }
+  };
+
   // Load previews when dropdown opens
   useEffect(() => {
     const load = async () => {
-      if (!previewsOpen || !user || !profile?.role || (profile.role !== 'admin' && profile.role !== 'athlete')) return;
+      if (!previewsOpen || !user || !profile?.role || !PARTICIPANT_ROLES.includes(profile.role)) return;
       setLoadingPreviews(true);
       try {
         const res = await ChatService.getUnreadPreviewsForUser(user.id, profile.role as any, 1, 20);
@@ -158,8 +170,8 @@ const Header = () => {
             </div>
           ) : user ? (
             <div className="flex items-center space-x-3">
-              {/* Unread messages icon (desktop) for admins and athletes */}
-              {(profile?.role === 'admin' || profile?.role === 'athlete') && (
+              {/* Unread messages icon (desktop) for all messaging-enabled roles */}
+              {profile?.role && PARTICIPANT_ROLES.includes(profile.role) && (
                 <DropdownMenu onOpenChange={setPreviewsOpen}>
                   <DropdownMenuTrigger asChild>
                     <button
@@ -188,10 +200,8 @@ const Header = () => {
                             <button
                               key={p.conversation_id}
                               onClick={async () => {
-                                // Optimistic close dropdown and navigate
                                 setPreviewsOpen(false);
-                                const target = profile.role === 'admin' ? '/admin/dashboard' : '/athlete/dashboard';
-                                // Optionally mark read immediately; dashboard will also mark upon open
+                                const target = dashboardPath(profile?.role);
                                 try { await ChatService.markConversationRead(p.conversation_id, user!.id); } catch {}
                                 navigate(`${target}?openChat=${p.conversation_id}`);
                               }}
@@ -213,7 +223,7 @@ const Header = () => {
                       <div className="border-t mt-2" />
                       <div className="px-3 py-2">
                         <Link
-                          to={profile.role === 'admin' ? '/admin/dashboard' : '/athlete/dashboard'}
+                          to={dashboardPath(profile?.role)}
                           className="text-sm text-nil-orange hover:underline"
                         >
                           View all messages
@@ -305,7 +315,7 @@ const Header = () => {
                 >
                   <User size={16} />
                   <span className="max-w-[110px] truncate">{profile?.full_name || user.email}</span>
-                  {(profile?.role === 'admin' || profile?.role === 'athlete') && unreadCount > 0 && (
+                  {profile?.role && PARTICIPANT_ROLES.includes(profile.role) && unreadCount > 0 && (
                     <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[11px] leading-[18px] font-semibold">
                       {unreadCount > 99 ? '99+' : unreadCount}
                     </span>
@@ -313,8 +323,8 @@ const Header = () => {
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-52 p-1">
-                {/* Notifications Preview (mobile - only for admin/athlete) */}
-                {(profile?.role === 'admin' || profile?.role === 'athlete') && (
+                {/* Notifications Preview (mobile) */}
+                {profile?.role && PARTICIPANT_ROLES.includes(profile.role) && (
                   <div className="py-2">
                     <div className="px-2 pb-1 text-xs font-semibold text-nil-navy">Unread messages</div>
                     {loadingPreviews ? (
@@ -328,8 +338,7 @@ const Header = () => {
                             key={p.conversation_id}
                             onClick={async () => {
                               setPreviewsOpen(false);
-                              const role = profile?.role;
-                              const target = role === 'admin' ? '/admin/dashboard' : '/athlete/dashboard';
+                              const target = dashboardPath(profile?.role);
                               try { await ChatService.markConversationRead(p.conversation_id, user!.id); } catch {}
                               navigate(`${target}?openChat=${p.conversation_id}`);
                             }}
@@ -349,7 +358,7 @@ const Header = () => {
                     <div className="border-t mt-2" />
                     <div className="px-2 py-2">
                       <Link
-                        to={(profile?.role === 'admin') ? '/admin/dashboard' : '/athlete/dashboard'}
+                        to={dashboardPath(profile?.role)}
                         className="text-xs text-nil-orange hover:underline"
                       >
                         View all messages
@@ -357,7 +366,7 @@ const Header = () => {
                     </div>
                   </div>
                 )}
-                {(profile?.role === 'admin' || profile?.role === 'athlete') && <DropdownMenuSeparator />}
+                {profile?.role && PARTICIPANT_ROLES.includes(profile.role) && <DropdownMenuSeparator />}
                 {profile?.role === 'admin' && (
                   <DropdownMenuItem asChild>
                     <Link to="/admin/dashboard">Dashboard</Link>

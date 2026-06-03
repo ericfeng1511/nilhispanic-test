@@ -41,6 +41,8 @@ import type { Conversation } from '@/types/chat';
 import type { GroupConversation } from '@/types/chatGroup';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { StudentAthleteService } from '@/services/studentAthleteService';
+import { HighSchoolAthleteService } from '@/services/highSchoolAthleteService';
+import { FamilyFriendService } from '@/services/familyFriendService';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 
@@ -87,6 +89,7 @@ const AdminDashboard: React.FC = () => {
   // New Message dialog state
   const [isNewMessageOpen, setIsNewMessageOpen] = useState(false);
   const [newMessageMode, setNewMessageMode] = useState<'direct' | 'group'>('direct');
+  const [newMessageUserType, setNewMessageUserType] = useState<'athlete' | 'high_school_athlete' | 'family_friend'>('athlete');
   const [newMessageCreatingId, setNewMessageCreatingId] = useState<string | null>(null);
   const [newGroupSelected, setNewGroupSelected] = useState<Set<string>>(new Set());
   const [newGroupTitleInput, setNewGroupTitleInput] = useState('');
@@ -335,7 +338,8 @@ const AdminDashboard: React.FC = () => {
       setChatTitle(athlete.name);
       const conv = await ChatService.getOrCreateConversation({
         admin_id: profile.id,
-        athlete_id: athlete.profile_id,
+        participant_id: athlete.profile_id,
+        participant_type: 'athlete',
       });
       setChatConversationId(conv.id);
       setIsChatOpen(true);
@@ -365,22 +369,34 @@ const AdminDashboard: React.FC = () => {
         const previews = await ChatService.getUnreadPreviewsForUser(profile.id, 'admin');
         setUnreadConvoIds(new Set(previews.map(p => p.conversation_id)));
       } catch {}
-      // Enrich with athlete names and photos for display
+      // Enrich with participant names and photos for display
       try {
-        const uniqueAthleteIds = Array.from(new Set(list.map((c) => c.athlete_id).filter(Boolean)));
         const nameMap: Record<string, string> = {};
         const photoMap: Record<string, string> = {};
         await Promise.all(
-          uniqueAthleteIds.map(async (id) => {
-            const a = await StudentAthleteService.fetchStudentAthleteByProfileId(id);
-            if (a?.name) nameMap[id] = a.name;
-            if (a?.photo && a.photo.trim() !== '') photoMap[id] = a.photo;
+          list.map(async (c) => {
+            const pid = c.participant_id;
+            const ptype = (c as any).participant_type ?? 'athlete';
+            if (!pid) return;
+            if (ptype === 'high_school_athlete') {
+              const r = await HighSchoolAthleteService.fetchByProfileId(pid);
+              if (r?.name) nameMap[pid] = r.name;
+              if (r?.photo && r.photo.trim() !== '') photoMap[pid] = r.photo;
+            } else if (ptype === 'family_friend') {
+              const r = await FamilyFriendService.fetchByProfileId(pid);
+              if (r?.name) nameMap[pid] = r.name;
+              if (r?.photo && r.photo.trim() !== '') photoMap[pid] = r.photo;
+            } else {
+              const a = await StudentAthleteService.fetchStudentAthleteByProfileId(pid);
+              if (a?.name) nameMap[pid] = a.name;
+              if (a?.photo && a.photo.trim() !== '') photoMap[pid] = a.photo;
+            }
           })
         );
         const enriched = list.map((c) => ({
           ...c,
-          athlete_name: (c as any).athlete_name || nameMap[c.athlete_id] || '',
-          athlete_photo: (c as any).athlete_photo || photoMap[c.athlete_id] || '',
+          athlete_name: (c as any).athlete_name || nameMap[c.participant_id] || '',
+          athlete_photo: (c as any).athlete_photo || photoMap[c.participant_id] || '',
         }));
         setConversations(enriched as Conversation[]);
       } catch {
@@ -1265,97 +1281,224 @@ const AdminDashboard: React.FC = () => {
                 {newMessageMode === 'group' ? 'Group selection (coming soon)' : 'Direct message'}
               </div>
             </div>
+            {/* User type selector */}
+            <div className="inline-flex rounded-md border overflow-hidden text-xs">
+              <button
+                className={`px-3 py-1.5 ${newMessageUserType === 'athlete' ? 'bg-nil-navy text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+                onClick={() => setNewMessageUserType('athlete')}
+              >
+                Athletes
+              </button>
+              <button
+                className={`px-3 py-1.5 border-l ${newMessageUserType === 'high_school_athlete' ? 'bg-nil-navy text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+                onClick={() => setNewMessageUserType('high_school_athlete')}
+              >
+                HS Athletes
+              </button>
+              <button
+                className={`px-3 py-1.5 border-l ${newMessageUserType === 'family_friend' ? 'bg-nil-navy text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+                onClick={() => setNewMessageUserType('family_friend')}
+              >
+                Family/Friends
+              </button>
+            </div>
             <div className="max-h-96 overflow-y-auto divide-y rounded-md border">
-              {allAthletes.filter(a => !!a.profile_id && a.profile_id.trim() !== '').length === 0 ? (
-                <div className="p-4 text-gray-600">No athletes with profiles available.</div>
-              ) : (
-                allAthletes
-                  .filter(a => !!a.profile_id && a.profile_id.trim() !== '')
-                  .map((athlete) => (
-                    <div key={athlete.id} className="p-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3 min-w-0">
-                          {newMessageMode === 'group' && (
-                            <input
-                              type="checkbox"
-                              className="h-4 w-4"
-                              aria-label="Select for group chat"
-                              checked={newGroupSelected.has(athlete.profile_id as string)}
-                              onChange={(e) => {
-                                const next = new Set(newGroupSelected);
-                                const uid = String(athlete.profile_id);
-                                if (e.currentTarget.checked) next.add(uid); else next.delete(uid);
-                                setNewGroupSelected(next);
-                              }}
-                            />
-                          )}
-                          <div className="relative w-10 h-10 flex-shrink-0">
-                            {athlete.photo ? (
-                              <img
-                                src={athlete.photo}
-                                alt={athlete.name || 'Athlete avatar'}
-                                className="w-10 h-10 rounded-full object-cover bg-gray-100"
-                                onError={(e) => {
-                                  (e.currentTarget as HTMLImageElement).style.display = 'none';
-                                  const placeholder = (e.currentTarget.nextElementSibling as HTMLElement | null);
-                                  if (placeholder) placeholder.classList.remove('hidden');
+              {newMessageUserType === 'athlete' ? (
+                allAthletes.filter(a => !!a.profile_id && a.profile_id.trim() !== '').length === 0 ? (
+                  <div className="p-4 text-gray-600">No athletes with profiles available.</div>
+                ) : (
+                  allAthletes
+                    .filter(a => !!a.profile_id && a.profile_id.trim() !== '')
+                    .map((athlete) => (
+                      <div key={athlete.id} className="p-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3 min-w-0">
+                            {newMessageMode === 'group' && (
+                              <input
+                                type="checkbox"
+                                className="h-4 w-4"
+                                aria-label="Select for group chat"
+                                checked={newGroupSelected.has(athlete.profile_id as string)}
+                                onChange={(e) => {
+                                  const next = new Set(newGroupSelected);
+                                  const uid = String(athlete.profile_id);
+                                  if (e.currentTarget.checked) next.add(uid); else next.delete(uid);
+                                  setNewGroupSelected(next);
                                 }}
                               />
+                            )}
+                            <div className="relative w-10 h-10 flex-shrink-0">
+                              {athlete.photo ? (
+                                <img
+                                  src={athlete.photo}
+                                  alt={athlete.name || 'Athlete avatar'}
+                                  className="w-10 h-10 rounded-full object-cover bg-gray-100"
+                                  onError={(e) => {
+                                    (e.currentTarget as HTMLImageElement).style.display = 'none';
+                                    const placeholder = (e.currentTarget.nextElementSibling as HTMLElement | null);
+                                    if (placeholder) placeholder.classList.remove('hidden');
+                                  }}
+                                />
+                              ) : null}
+                              <div className={athlete.photo ? 'hidden absolute inset-0 flex items-center justify-center rounded-full bg-gradient-to-br from-nil-light-blue to-nil-navy' : 'absolute inset-0 flex items-center justify-center rounded-full bg-gradient-to-br from-nil-light-blue to-nil-navy'}>
+                                <User className="w-5 h-5 text-white opacity-70" />
+                              </div>
+                            </div>
+                            <div className="min-w-0">
+                              <div className="font-medium text-gray-900 truncate">{athlete.name || 'Unnamed Athlete'}</div>
+                              <div className="text-xs text-gray-600 truncate">
+                                {[athlete.sport, athlete.college].filter(Boolean).join(' • ')}
+                              </div>
+                            </div>
+                          </div>
+                          {newMessageMode === 'direct' ? (
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              aria-label="Start new message"
+                              disabled={!profile?.id || !athlete.profile_id || newMessageCreatingId === athlete.id}
+                              onClick={async () => {
+                                if (!profile?.id || !athlete.profile_id) return;
+                                try {
+                                  setNewMessageCreatingId(athlete.id);
+                                  const conv = await ChatService.getOrCreateConversation({
+                                    admin_id: profile.id,
+                                    participant_id: athlete.profile_id,
+                                    participant_type: 'athlete',
+                                  });
+                                  setIsNewMessageOpen(false);
+                                  setChatConversationId(conv.id);
+                                  setChatTitle(athlete.name);
+                                  setChatTarget(athlete);
+                                  try { await ChatService.markConversationRead(conv.id, profile.id); } catch {}
+                                } catch (e: any) {
+                                  toast({ title: 'Failed to start chat', description: e?.message || 'Please try again.', variant: 'destructive' } as any);
+                                } finally {
+                                  setNewMessageCreatingId(null);
+                                }
+                              }}
+                            >
+                              <Plus className={newMessageCreatingId === athlete.id ? 'w-4 h-4 opacity-50' : 'w-4 h-4'} />
+                            </Button>
+                          ) : (
+                            <div className="text-xs text-gray-500 select-none">
+                              {newGroupSelected.has(String(athlete.profile_id)) ? 'Selected' : ''}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                )
+              ) : newMessageUserType === 'high_school_athlete' ? (
+                hsAthletes.filter(u => !!u.id).length === 0 ? (
+                  <div className="p-4 text-gray-600">No high school athletes available.</div>
+                ) : (
+                  hsAthletes.map((u) => (
+                    <div key={u.id} className="p-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="relative w-10 h-10 flex-shrink-0">
+                            {u.photo ? (
+                              <img src={u.photo} alt={u.full_name || 'User avatar'} className="w-10 h-10 rounded-full object-cover bg-gray-100" />
                             ) : null}
-                            <div className={athlete.photo ? 'hidden absolute inset-0 flex items-center justify-center rounded-full bg-gradient-to-br from-nil-light-blue to-nil-navy' : 'absolute inset-0 flex items-center justify-center rounded-full bg-gradient-to-br from-nil-light-blue to-nil-navy'}>
+                            <div className={u.photo ? 'hidden absolute inset-0 flex items-center justify-center rounded-full bg-gradient-to-br from-nil-light-blue to-nil-navy' : 'absolute inset-0 flex items-center justify-center rounded-full bg-gradient-to-br from-nil-light-blue to-nil-navy'}>
                               <User className="w-5 h-5 text-white opacity-70" />
                             </div>
                           </div>
                           <div className="min-w-0">
-                            <div className="font-medium text-gray-900 truncate">{athlete.name || 'Unnamed Athlete'}</div>
-                            <div className="text-xs text-gray-600 truncate">
-                              {[athlete.sport, athlete.college].filter(Boolean).join(' • ')}
-                            </div>
+                            <div className="font-medium text-gray-900 truncate">{u.full_name || 'Unnamed'}</div>
+                            <div className="text-xs text-gray-600 truncate">{[u.sport, u.hometown].filter(Boolean).join(' • ')}</div>
                           </div>
                         </div>
-                        {/* Actions */}
-                        {newMessageMode === 'direct' ? (
+                        {newMessageMode === 'direct' && (
                           <Button
                             size="icon"
                             variant="ghost"
                             aria-label="Start new message"
-                            disabled={!profile?.id || !athlete.profile_id || newMessageCreatingId === athlete.id}
+                            disabled={!profile?.id || newMessageCreatingId === u.id}
                             onClick={async () => {
-                              if (!profile?.id || !athlete.profile_id) return;
+                              if (!profile?.id) return;
                               try {
-                                setNewMessageCreatingId(athlete.id);
+                                setNewMessageCreatingId(u.id);
                                 const conv = await ChatService.getOrCreateConversation({
                                   admin_id: profile.id,
-                                  athlete_id: athlete.profile_id,
+                                  participant_id: u.id,
+                                  participant_type: 'high_school_athlete',
                                 });
-                                // Open the conversation in the chat window
                                 setIsNewMessageOpen(false);
                                 setChatConversationId(conv.id);
-                                setChatTitle(athlete.name);
-                                setChatTarget(athlete);
-                                // Optionally mark as read for admin
+                                setChatTitle(u.full_name || 'HS Athlete');
+                                setChatTarget(null);
                                 try { await ChatService.markConversationRead(conv.id, profile.id); } catch {}
                               } catch (e: any) {
-                                toast({
-                                  title: 'Failed to start chat',
-                                  description: e?.message || 'Please try again.',
-                                  variant: 'destructive',
-                                } as any);
+                                toast({ title: 'Failed to start chat', description: e?.message || 'Please try again.', variant: 'destructive' } as any);
                               } finally {
                                 setNewMessageCreatingId(null);
                               }
                             }}
                           >
-                            <Plus className={newMessageCreatingId === athlete.id ? 'w-4 h-4 opacity-50' : 'w-4 h-4'} />
+                            <Plus className={newMessageCreatingId === u.id ? 'w-4 h-4 opacity-50' : 'w-4 h-4'} />
                           </Button>
-                        ) : (
-                          <div className="text-xs text-gray-500 select-none">
-                            {newGroupSelected.has(String(athlete.profile_id)) ? 'Selected' : ''}
-                          </div>
                         )}
                       </div>
                     </div>
                   ))
+                )
+              ) : (
+                familyFriends.filter(u => !!u.id).length === 0 ? (
+                  <div className="p-4 text-gray-600">No family/friend users available.</div>
+                ) : (
+                  familyFriends.map((u) => (
+                    <div key={u.id} className="p-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="relative w-10 h-10 flex-shrink-0">
+                            {u.photo ? (
+                              <img src={u.photo} alt={u.full_name || 'User avatar'} className="w-10 h-10 rounded-full object-cover bg-gray-100" />
+                            ) : null}
+                            <div className={u.photo ? 'hidden absolute inset-0 flex items-center justify-center rounded-full bg-gradient-to-br from-nil-light-blue to-nil-navy' : 'absolute inset-0 flex items-center justify-center rounded-full bg-gradient-to-br from-nil-light-blue to-nil-navy'}>
+                              <User className="w-5 h-5 text-white opacity-70" />
+                            </div>
+                          </div>
+                          <div className="min-w-0">
+                            <div className="font-medium text-gray-900 truncate">{u.full_name || 'Unnamed'}</div>
+                            <div className="text-xs text-gray-600 truncate">{[u.relationship_type, u.hometown].filter(Boolean).join(' • ')}</div>
+                          </div>
+                        </div>
+                        {newMessageMode === 'direct' && (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            aria-label="Start new message"
+                            disabled={!profile?.id || newMessageCreatingId === u.id}
+                            onClick={async () => {
+                              if (!profile?.id) return;
+                              try {
+                                setNewMessageCreatingId(u.id);
+                                const conv = await ChatService.getOrCreateConversation({
+                                  admin_id: profile.id,
+                                  participant_id: u.id,
+                                  participant_type: 'family_friend',
+                                });
+                                setIsNewMessageOpen(false);
+                                setChatConversationId(conv.id);
+                                setChatTitle(u.full_name || 'Family/Friend');
+                                setChatTarget(null);
+                                try { await ChatService.markConversationRead(conv.id, profile.id); } catch {}
+                              } catch (e: any) {
+                                toast({ title: 'Failed to start chat', description: e?.message || 'Please try again.', variant: 'destructive' } as any);
+                              } finally {
+                                setNewMessageCreatingId(null);
+                              }
+                            }}
+                          >
+                            <Plus className={newMessageCreatingId === u.id ? 'w-4 h-4 opacity-50' : 'w-4 h-4'} />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )
               )}
             </div>
             {/* Group creation controls */}
@@ -1603,11 +1746,14 @@ const AdminDashboard: React.FC = () => {
                                 setChatConversationId(conv.id);
                                 const otherName = (conv as any).athlete_name as string | undefined;
                                 if (otherName) setChatTitle(otherName);
-                                // Fetch athlete name to ensure title is correct
-                                const athlete = await StudentAthleteService.fetchStudentAthleteByProfileId(conv.athlete_id);
-                                if (athlete) {
-                                  setChatTarget(athlete);
-                                  if (!otherName && athlete.name) setChatTitle(athlete.name);
+                                // For college athletes, also set chatTarget for compatibility
+                                const ptype = (conv as any).participant_type ?? 'athlete';
+                                if (ptype === 'athlete') {
+                                  const athlete = await StudentAthleteService.fetchStudentAthleteByProfileId(conv.participant_id);
+                                  if (athlete) {
+                                    setChatTarget(athlete);
+                                    if (!otherName && athlete.name) setChatTitle(athlete.name);
+                                  }
                                 }
                                 if (profile?.id) {
                                   try { await ChatService.markConversationRead(conv.id, profile.id); } catch {}

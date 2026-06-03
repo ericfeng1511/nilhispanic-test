@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, Navigate } from 'react-router-dom';
-import { ArrowLeft, User, Edit3, Save, X, Trash2, AlertTriangle, Instagram, ChevronDown, MessageSquare, Camera } from 'lucide-react';
+import { Link, Navigate, useSearchParams } from 'react-router-dom';
+import { ArrowLeft, User, Edit3, Save, X, Trash2, AlertTriangle, Instagram, ChevronDown, MessageSquare, Camera, MoreHorizontal } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
@@ -13,7 +13,14 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import PhotoCropperModal from '@/components/PhotoCropperModal';
+import ChatWindow from '@/components/chat/ChatWindow';
+import { ChatService } from '@/services/chatService';
+import { useToast } from '@/hooks/use-toast';
+import type { Conversation } from '@/types/chat';
+import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 
 const CULTURAL_ROOT_OPTIONS = [
   'Argentina', 'Bolivia', 'Chile', 'Colombia', 'Costa Rica', 'Cuba',
@@ -37,6 +44,7 @@ const HighSchoolAthleteDashboard: React.FC = () => {
   const { profile, loading: authLoading, user } = useAuth();
   const { uniqueSports } = useStudentAthletes();
   const queryClient = useQueryClient();
+  const { count: unreadCount } = useUnreadMessages();
 
   const [isEditing, setIsEditing] = useState(false);
   const [hsProfile, setHsProfile] = useState<HSProfile>({
@@ -73,6 +81,15 @@ const HighSchoolAthleteDashboard: React.FC = () => {
   // Original values for cancel
   const [originalCityQuery, setOriginalCityQuery] = useState<string>('');
   const [originalSelectedCityLabel, setOriginalSelectedCityLabel] = useState<string>('');
+
+  // Chat state
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [convLoading, setConvLoading] = useState(false);
+  const [chatConversationId, setChatConversationId] = useState<string | null>(null);
+  const [unreadConvoIds, setUnreadConvoIds] = useState<Set<string>>(new Set());
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { toast } = useToast();
 
   const { data: currentData, isLoading: dataLoading } = useQuery({
     queryKey: ['hs-athlete-profile', profile?.id],
@@ -279,6 +296,38 @@ const HighSchoolAthleteDashboard: React.FC = () => {
     typeof hsProfile.age === 'number' &&
     (selectedCityLabel.trim() !== '' || hsProfile.hometown.trim() !== '');
 
+  // Open a specific conversation if openChat query param is present
+  useEffect(() => {
+    const convoId = searchParams.get('openChat');
+    if (convoId && profile?.id && profile.role === 'high_school_athlete') {
+      setIsChatOpen(true);
+      setChatConversationId(convoId);
+      ChatService.markConversationRead(convoId, profile.id).catch(() => {});
+      const sp = new URLSearchParams(searchParams);
+      sp.delete('openChat');
+      setSearchParams(sp, { replace: true });
+    }
+  }, [searchParams, profile?.id, profile?.role]);
+
+  const handleOpenMessages = async () => {
+    setIsChatOpen(true);
+    setChatConversationId(null);
+    setConvLoading(true);
+    try {
+      if (!profile?.id) return;
+      const res = await ChatService.listConversationsForUser(profile.id, 'high_school_athlete', 1, 50);
+      setConversations(res.data || []);
+      try {
+        const previews = await ChatService.getUnreadPreviewsForUser(profile.id, 'high_school_athlete');
+        setUnreadConvoIds(new Set(previews.map((p) => p.conversation_id)));
+      } catch {}
+    } catch (e: any) {
+      toast({ title: 'Failed to load messages', description: e?.message || 'Please try again.' } as any);
+    } finally {
+      setConvLoading(false);
+    }
+  };
+
   if (authLoading || dataLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -328,20 +377,31 @@ const HighSchoolAthleteDashboard: React.FC = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-4">
-            <Link
-              to="/"
-              aria-label="Go back to homepage"
-              className="p-2 rounded-full text-gray-500 hover:bg-gray-200 hover:text-gray-800 transition-colors"
-            >
-              <ArrowLeft className="w-6 h-6" />
-            </Link>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
-              <p className="text-gray-600 mt-1">
-                Manage your ÑIL Hispanic™ High School Athlete Profile
-              </p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Link
+                to="/"
+                aria-label="Go back to homepage"
+                className="p-2 rounded-full text-gray-500 hover:bg-gray-200 hover:text-gray-800 transition-colors"
+              >
+                <ArrowLeft className="w-6 h-6" />
+              </Link>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
+                <p className="text-gray-600 mt-1">
+                  Manage your ÑIL Hispanic™ High School Athlete Profile
+                </p>
+              </div>
             </div>
+            <Button onClick={handleOpenMessages} className="relative bg-nil-orange hover:bg-nil-navy flex items-center gap-2">
+              <MessageSquare className="w-4 h-4" />
+              Messages
+              {unreadCount > 0 && (
+                <span className="ml-1 inline-flex items-center justify-center px-2 py-0.5 text-xs font-medium leading-none text-white bg-red-600 rounded-full">
+                  {unreadCount}
+                </span>
+              )}
+            </Button>
           </div>
         </div>
 
@@ -814,6 +874,98 @@ const HighSchoolAthleteDashboard: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Chat Modal */}
+        <Dialog open={isChatOpen} onOpenChange={(open) => {
+          setIsChatOpen(open);
+          if (!open) setChatConversationId(null);
+        }}>
+          <DialogContent className="max-w-3xl w-full">
+            <DialogHeader>
+              <DialogTitle>
+                {chatConversationId ? 'Conversation' : 'Your Messages'}
+              </DialogTitle>
+            </DialogHeader>
+            {chatConversationId && profile ? (
+              <ChatWindow
+                conversationId={chatConversationId}
+                currentUserId={profile.id}
+                title="Admin"
+                onBack={() => setChatConversationId(null)}
+              />
+            ) : (
+              <div className="space-y-3">
+                {convLoading ? (
+                  <div className="py-6 text-center text-gray-500">Loading conversations...</div>
+                ) : conversations.length === 0 ? (
+                  <div className="py-6 text-center text-gray-500">No conversations yet.</div>
+                ) : (
+                  <div className="max-h-[50vh] overflow-y-auto">
+                    <div className="divide-y rounded-md border">
+                      {conversations.map((c) => (
+                        <button
+                          key={c.id}
+                          className="w-full text-left px-4 py-3 hover:bg-gray-50 focus:outline-none"
+                          onClick={async () => {
+                            setChatConversationId(c.id);
+                            if (profile?.id) {
+                              try { await ChatService.markConversationRead(c.id, profile.id); } catch {}
+                              setUnreadConvoIds((prev) => {
+                                const next = new Set(prev);
+                                next.delete(c.id);
+                                return next;
+                              });
+                            }
+                          }}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3 min-w-0">
+                              {unreadConvoIds.has(c.id) ? (
+                                <span className="inline-block w-2.5 h-2.5 rounded-full bg-red-600 flex-shrink-0" aria-label="Unread messages" />
+                              ) : null}
+                              <div className="font-medium truncate">Chat with Admin</div>
+                            </div>
+                            <div className="flex items-center gap-2 ml-3 flex-shrink-0">
+                              <div className="text-xs text-gray-500">
+                                {c.last_message_at ? new Date(c.last_message_at).toLocaleString() : '—'}
+                              </div>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <button
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="p-1 rounded hover:bg-gray-100 focus:outline-none"
+                                    aria-label="Conversation options"
+                                  >
+                                    <MoreHorizontal className="w-5 h-5 text-gray-500" />
+                                  </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                                  <DropdownMenuItem
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      setUnreadConvoIds((prev) => {
+                                        const next = new Set(prev);
+                                        next.add(c.id);
+                                        return next;
+                                      });
+                                    }}
+                                  >
+                                    Mark as Unread
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

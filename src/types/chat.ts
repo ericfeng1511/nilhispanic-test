@@ -2,18 +2,20 @@
 // These interfaces are intentionally conservative to avoid tight coupling
 // with any single migration. Optional fields accommodate schema evolution.
 
-export type UserRole = 'admin' | 'athlete';
+export type UserRole = 'admin' | 'athlete' | 'high_school_athlete' | 'family_friend';
+export type ParticipantType = 'athlete' | 'high_school_athlete' | 'family_friend';
 
 export interface Conversation {
   id: string; // uuid
   admin_id: string; // uuid of admin profile/user
-  athlete_id: string; // uuid of athlete profile/user
+  participant_id: string; // uuid of participant profile/user (was athlete_id)
+  participant_type?: ParticipantType; // discriminator; null treated as 'athlete' for legacy rows
   created_at: string; // ISO timestamp
   updated_at?: string; // ISO timestamp
   last_message_at?: string; // ISO timestamp of most recent message
   // Optional display helpers (not stored in DB)
   admin_name?: string;
-  athlete_name?: string;
+  athlete_name?: string; // display name for the participant (kept generic for UI reuse)
 }
 
 export interface Message {
@@ -30,7 +32,8 @@ export interface Message {
 
 export interface CreateConversationInput {
   admin_id: string;
-  athlete_id: string;
+  participant_id: string;
+  participant_type: ParticipantType;
 }
 
 export interface SendMessageInput {

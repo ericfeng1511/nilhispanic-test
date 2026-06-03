@@ -16,7 +16,10 @@ export function useUnreadMessages() {
 
   const role = useMemo<UserRole | null>(() => {
     if (!profile) return null;
-    return profile.role === 'admin' ? 'admin' : profile.role === 'athlete' ? 'athlete' : null;
+    const participantRoles: UserRole[] = ['athlete', 'high_school_athlete', 'family_friend'];
+    if (profile.role === 'admin') return 'admin';
+    if (participantRoles.includes(profile.role as UserRole)) return profile.role as UserRole;
+    return null;
   }, [profile]);
 
   // Load initial count and subscribe
