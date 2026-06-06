@@ -22,6 +22,8 @@ import CollegeMap from '@/components/admin/CollegeMap';
 import { GeocodingPanel } from '@/components/admin/GeocodingPanel';
 import { AthleteFilters } from '@/components/admin/AthleteFilters';
 import { ContactFilters } from '@/components/admin/ContactFilters';
+import { HsAthleteFiltersComponent } from '@/components/admin/HsAthleteFilters';
+import { FamilyFriendFiltersComponent } from '@/components/admin/FamilyFriendFilters';
 import { AthletePagination } from '@/components/admin/AthletePagination';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -158,8 +160,11 @@ const AdminDashboard: React.FC = () => {
     isError: hsAthletesError,
     error: hsAthletesErrorMsg,
     refetch: refetchHsAthletes,
-    search: hsSearch,
-    setSearch: setHsSearch,
+    filters: hsFilters,
+    updateFilters: updateHsFilters,
+    clearFilters: clearHsFilters,
+    uniqueSports: uniqueHsSports,
+    uniqueGrades: uniqueHsGrades,
   } = useHighSchoolAthletes();
 
   const {
@@ -169,8 +174,10 @@ const AdminDashboard: React.FC = () => {
     isError: familyFriendsError,
     error: familyFriendsErrorMsg,
     refetch: refetchFamilyFriends,
-    search: ffSearch,
-    setSearch: setFfSearch,
+    filters: ffFilters,
+    updateFilters: updateFfFilters,
+    clearFilters: clearFfFilters,
+    uniqueRelationshipTypes: uniqueFfRelationshipTypes,
   } = useFamilyFriends();
 
   // Realtime: refresh athletes list when student_athletes change (insert/update/delete)
@@ -714,7 +721,7 @@ const AdminDashboard: React.FC = () => {
                 <CardContent>
                   <div className="text-2xl font-bold">{hsAthletes.length.toLocaleString()}</div>
                   <p className="text-xs text-muted-foreground">
-                    {hsSearch ? 'Matching search' : 'All records'}
+                    {(hsFilters.search || (hsFilters.sports && hsFilters.sports.length > 0) || (hsFilters.grades && hsFilters.grades.length > 0) || hsFilters.sortBy || hsFilters.createdStart || hsFilters.createdEnd || hsFilters.createdInPastWeek) ? 'Matching filters' : 'All records'}
                   </p>
                 </CardContent>
               </Card>
@@ -741,7 +748,7 @@ const AdminDashboard: React.FC = () => {
                 <CardContent>
                   <div className="text-2xl font-bold">{familyFriends.length.toLocaleString()}</div>
                   <p className="text-xs text-muted-foreground">
-                    {ffSearch ? 'Matching search' : 'All records'}
+                    {(ffFilters.search || (ffFilters.relationshipTypes && ffFilters.relationshipTypes.length > 0) || ffFilters.sortBy || ffFilters.createdStart || ffFilters.createdEnd || ffFilters.createdInPastWeek) ? 'Matching filters' : 'All records'}
                   </p>
                 </CardContent>
               </Card>
@@ -1072,17 +1079,99 @@ const AdminDashboard: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="hs_athletes">
-            {/* Search */}
-            <div className="mb-6">
-              <div className="relative max-w-sm">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input
-                  className="pl-9"
-                  placeholder="Search by name, sport, or hometown..."
-                  value={hsSearch}
-                  onChange={(e) => setHsSearch(e.target.value)}
-                />
-              </div>
+            {/* HS Athlete Filters */}
+            <HsAthleteFiltersComponent
+              filters={hsFilters}
+              onFiltersChange={updateHsFilters}
+              onClearFilters={clearHsFilters}
+              uniqueSports={uniqueHsSports}
+              uniqueGrades={uniqueHsGrades}
+              totalResults={hsAthletes.length}
+              isLoading={hsAthletesLoading}
+            />
+
+            {/* Sort Results */}
+            <Card className="mb-6">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900">Sort Results</h3>
+                  {hsFilters.sortBy && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => updateHsFilters({ ...hsFilters, sortBy: undefined, sortDir: undefined })}
+                    >
+                      Clear Sorting
+                    </Button>
+                  )}
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-sm font-medium text-gray-700 mb-2">Sort By</div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        variant={hsFilters.sortBy === 'firstName' ? 'default' : 'outline'}
+                        onClick={() => {
+                          const isSame = hsFilters.sortBy === 'firstName';
+                          updateHsFilters({ ...hsFilters, sortBy: isSame ? undefined : 'firstName', sortDir: isSame ? undefined : (hsFilters.sortDir || 'asc') });
+                        }}
+                      >
+                        First Name
+                      </Button>
+                      <Button
+                        variant={hsFilters.sortBy === 'lastName' ? 'default' : 'outline'}
+                        onClick={() => {
+                          const isSame = hsFilters.sortBy === 'lastName';
+                          updateHsFilters({ ...hsFilters, sortBy: isSame ? undefined : 'lastName', sortDir: isSame ? undefined : (hsFilters.sortDir || 'asc') });
+                        }}
+                      >
+                        Last Name
+                      </Button>
+                      <Button
+                        variant={hsFilters.sortBy === 'createdAt' ? 'default' : 'outline'}
+                        onClick={() => {
+                          const isSame = hsFilters.sortBy === 'createdAt';
+                          updateHsFilters({ ...hsFilters, sortBy: isSame ? undefined : 'createdAt', sortDir: isSame ? undefined : (hsFilters.sortDir || 'asc') });
+                        }}
+                      >
+                        Account Created
+                      </Button>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-gray-700 mb-2">Direction</div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        variant={hsFilters.sortDir !== 'desc' ? 'default' : 'outline'}
+                        disabled={!hsFilters.sortBy}
+                        onClick={() => updateHsFilters({ ...hsFilters, sortDir: 'asc' })}
+                      >
+                        Ascending
+                      </Button>
+                      <Button
+                        variant={hsFilters.sortDir === 'desc' ? 'default' : 'outline'}
+                        disabled={!hsFilters.sortBy}
+                        onClick={() => updateHsFilters({ ...hsFilters, sortDir: 'desc' })}
+                      >
+                        Descending
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Created Past Week toggle */}
+            <div className="flex items-center gap-3 mb-6">
+              <Button
+                onClick={() => updateHsFilters({ ...hsFilters, createdInPastWeek: hsFilters.createdInPastWeek ? undefined : true })}
+                variant={hsFilters.createdInPastWeek ? 'default' : 'outline'}
+                className={hsFilters.createdInPastWeek ? 'bg-nil-orange hover:bg-nil-navy' : ''}
+                disabled={hsAthletesLoading}
+              >
+                {hsFilters.createdInPastWeek ? <CheckSquare className="w-4 h-4 mr-2" /> : <Square className="w-4 h-4 mr-2" />}
+                Created Past Week
+              </Button>
             </div>
 
             {hsAthletesLoading && (
@@ -1103,11 +1192,11 @@ const AdminDashboard: React.FC = () => {
                       No high school athletes found
                     </h3>
                     <p className="text-gray-600">
-                      {hsSearch ? 'Try adjusting your search.' : 'No high school athletes have registered yet.'}
+                      {Object.keys(hsFilters).length > 0 ? 'Try adjusting your filters to see more results.' : 'No high school athletes have registered yet.'}
                     </p>
-                    {hsSearch && (
-                      <Button onClick={() => setHsSearch('')} variant="outline" className="mt-4">
-                        Clear Search
+                    {Object.keys(hsFilters).length > 0 && (
+                      <Button onClick={clearHsFilters} variant="outline" className="mt-4">
+                        Clear All Filters
                       </Button>
                     )}
                   </CardContent>
@@ -1130,17 +1219,98 @@ const AdminDashboard: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="family_friends">
-            {/* Search */}
-            <div className="mb-6">
-              <div className="relative max-w-sm">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input
-                  className="pl-9"
-                  placeholder="Search by name, relationship, or hometown..."
-                  value={ffSearch}
-                  onChange={(e) => setFfSearch(e.target.value)}
-                />
-              </div>
+            {/* Family/Friend Filters */}
+            <FamilyFriendFiltersComponent
+              filters={ffFilters}
+              onFiltersChange={updateFfFilters}
+              onClearFilters={clearFfFilters}
+              uniqueRelationshipTypes={uniqueFfRelationshipTypes}
+              totalResults={familyFriends.length}
+              isLoading={familyFriendsLoading}
+            />
+
+            {/* Sort Results */}
+            <Card className="mb-6">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900">Sort Results</h3>
+                  {ffFilters.sortBy && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => updateFfFilters({ ...ffFilters, sortBy: undefined, sortDir: undefined })}
+                    >
+                      Clear Sorting
+                    </Button>
+                  )}
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-sm font-medium text-gray-700 mb-2">Sort By</div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        variant={ffFilters.sortBy === 'firstName' ? 'default' : 'outline'}
+                        onClick={() => {
+                          const isSame = ffFilters.sortBy === 'firstName';
+                          updateFfFilters({ ...ffFilters, sortBy: isSame ? undefined : 'firstName', sortDir: isSame ? undefined : (ffFilters.sortDir || 'asc') });
+                        }}
+                      >
+                        First Name
+                      </Button>
+                      <Button
+                        variant={ffFilters.sortBy === 'lastName' ? 'default' : 'outline'}
+                        onClick={() => {
+                          const isSame = ffFilters.sortBy === 'lastName';
+                          updateFfFilters({ ...ffFilters, sortBy: isSame ? undefined : 'lastName', sortDir: isSame ? undefined : (ffFilters.sortDir || 'asc') });
+                        }}
+                      >
+                        Last Name
+                      </Button>
+                      <Button
+                        variant={ffFilters.sortBy === 'createdAt' ? 'default' : 'outline'}
+                        onClick={() => {
+                          const isSame = ffFilters.sortBy === 'createdAt';
+                          updateFfFilters({ ...ffFilters, sortBy: isSame ? undefined : 'createdAt', sortDir: isSame ? undefined : (ffFilters.sortDir || 'asc') });
+                        }}
+                      >
+                        Account Created
+                      </Button>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-gray-700 mb-2">Direction</div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        variant={ffFilters.sortDir !== 'desc' ? 'default' : 'outline'}
+                        disabled={!ffFilters.sortBy}
+                        onClick={() => updateFfFilters({ ...ffFilters, sortDir: 'asc' })}
+                      >
+                        Ascending
+                      </Button>
+                      <Button
+                        variant={ffFilters.sortDir === 'desc' ? 'default' : 'outline'}
+                        disabled={!ffFilters.sortBy}
+                        onClick={() => updateFfFilters({ ...ffFilters, sortDir: 'desc' })}
+                      >
+                        Descending
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Created Past Week toggle */}
+            <div className="flex items-center gap-3 mb-6">
+              <Button
+                onClick={() => updateFfFilters({ ...ffFilters, createdInPastWeek: ffFilters.createdInPastWeek ? undefined : true })}
+                variant={ffFilters.createdInPastWeek ? 'default' : 'outline'}
+                className={ffFilters.createdInPastWeek ? 'bg-nil-orange hover:bg-nil-navy' : ''}
+                disabled={familyFriendsLoading}
+              >
+                {ffFilters.createdInPastWeek ? <CheckSquare className="w-4 h-4 mr-2" /> : <Square className="w-4 h-4 mr-2" />}
+                Created Past Week
+              </Button>
             </div>
 
             {familyFriendsLoading && (
@@ -1161,11 +1331,11 @@ const AdminDashboard: React.FC = () => {
                       No family/friends found
                     </h3>
                     <p className="text-gray-600">
-                      {ffSearch ? 'Try adjusting your search.' : 'No family/friend accounts have registered yet.'}
+                      {Object.keys(ffFilters).length > 0 ? 'Try adjusting your filters to see more results.' : 'No family/friend accounts have registered yet.'}
                     </p>
-                    {ffSearch && (
-                      <Button onClick={() => setFfSearch('')} variant="outline" className="mt-4">
-                        Clear Search
+                    {Object.keys(ffFilters).length > 0 && (
+                      <Button onClick={clearFfFilters} variant="outline" className="mt-4">
+                        Clear All Filters
                       </Button>
                     )}
                   </CardContent>
