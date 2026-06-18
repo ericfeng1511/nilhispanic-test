@@ -45,53 +45,6 @@ const PackagesPage = () => {
           </div>
         </section>
 
-        {/* ── CHISPA PILOT BANNER ── */}
-        <section className="py-12 bg-gradient-to-br from-nil-light-blue via-nil-orange/30 to-white bg-gradient-with-image">
-          <div className="container-custom">
-            <div className="bg-orange-50 border border-orange-200 border-l-4 border-l-nil-orange rounded-lg p-8 grid grid-cols-1 md:grid-cols-[auto_1fr_auto] gap-8 items-center relative overflow-hidden">
-              {/* Watermark */}
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-8xl font-black text-nil-orange/5 pointer-events-none select-none hidden md:block">CHISPA</span>
-
-              {/* Left */}
-              <div>
-                <span className="inline-block bg-nil-orange text-white text-xs font-bold uppercase tracking-widest px-3 py-1 rounded mb-3">Pilot · Entry Point</span>
-                <h2 className="text-4xl font-black uppercase tracking-wide text-nil-navy mb-1">Chispa</h2>
-                <p className="text-gray-500 text-sm font-light">Low-risk proof of concept. One market. Real athletes. Real results.</p>
-              </div>
-
-              {/* Middle — specs */}
-              <div className="flex flex-wrap gap-x-8 gap-y-4">
-                {[
-                  ["HSAs", "5 athletes"],
-                  ["Market", "1 city / DMA"],
-                  ["Content", "1 reel each"],
-                  ["Onsite", "4 hrs / HSA"],
-                  ["Duration", "3–4 weeks"],
-                  ["Includes", "IS™ · Analytics · Upgrade path"],
-                ].map(([label, val]) => (
-                  <div key={label}>
-                    <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-0.5">{label}</p>
-                    <p className="text-sm font-semibold text-nil-navy">{val}</p>
-                  </div>
-                ))}
-              </div>
-
-              {/* Right — price + CTA */}
-              <div className="flex flex-col items-start md:items-end gap-3 flex-shrink-0">
-                <div className="text-right">
-                  <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1">Total investment</p>
-                  <p className="text-5xl font-black text-nil-orange leading-none">$5,000</p>
-                </div>
-                <ContactDialog label="Start with a Pilot" description="Tell us about your brand and we'll get your Chispa pilot started.">
-                  <Button className="bg-nil-orange text-white hover:bg-nil-orange/90 font-semibold uppercase tracking-wide text-xs px-6 py-3 h-auto rounded whitespace-nowrap">
-                    Start with a Pilot
-                  </Button>
-                </ContactDialog>
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* ── 3 CANONICAL PACKAGES ── */}
         <section className="pb-0 pt-4 bg-gradient-to-br from-nil-light-blue via-nil-orange/30 to-white bg-gradient-with-image">
           <div className="container-custom">
@@ -291,12 +244,8 @@ const PackagesPage = () => {
                 </ul>
               </div>
 
-              {/* Right — floor + CTA */}
+              {/* Right — CTA */}
               <div className="flex flex-col items-center gap-3 flex-shrink-0">
-                <div className="text-center">
-                  <p className="text-xs font-semibold uppercase tracking-widest text-white/25 mb-1">Minimum engagement</p>
-                  <p className="text-3xl font-black text-nil-orange leading-none">$5,000</p>
-                </div>
                 <ContactDialog label="Build Your Package" description="Tell us your goals and we'll scope a custom campaign for your brand.">
                   <Button className="bg-nil-orange text-white hover:bg-nil-orange/90 uppercase tracking-widest text-xs font-semibold px-6 py-3 h-auto rounded whitespace-nowrap">
                     Build Your Package
