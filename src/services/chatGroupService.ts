@@ -297,7 +297,7 @@ export class ChatGroupService {
     role: 'owner' | 'admin' | 'member';
     full_name: string;
     photo?: string;
-    profile_role: 'admin' | 'athlete' | 'brand';
+    profile_role: 'admin' | 'athlete' | 'high_school_athlete' | 'family_friend' | 'brand';
   }>> {
     try {
       // Get participants with roles
@@ -483,18 +483,17 @@ export class ChatGroupService {
 
     // Load members with details to evaluate constraints
     const members = await this.getGroupParticipantsWithDetails(groupId);
-    const owner = members.find((m) => m.role === 'owner');
     const target = members.find((m) => m.user_id === targetUserId);
     if (!target) throw new Error('Member not found');
 
-    // Only allow removing student athletes via this method
-    if (target.profile_role !== 'athlete') {
-      throw new Error('Only student athletes can be removed');
+    // Cannot remove the group owner
+    if (target.role === 'owner') {
+      throw new Error('Cannot remove the group owner');
     }
 
-    // If only two members remain and they are owner (admin) and a single athlete, block removing the athlete
-    if (members.length === 2 && owner && target.profile_role === 'athlete') {
-      throw new Error('Cannot remove the last student athlete when only two members remain');
+    // Block removing the last non-owner member when only two members remain
+    if (members.length === 2) {
+      throw new Error('Cannot remove the last member when only two members remain');
     }
 
     // Proceed with removal
@@ -507,7 +506,7 @@ export class ChatGroupService {
 
     // Post a system message to notify removal (best-effort)
     try {
-      const systemText = `[system] ${target.full_name || 'A member'} was removed from the group`;
+      const systemText = `[system] ${target.full_name || 'A member'} was removed from the group.`;
       const { data: msg } = await supabase
         .from(GROUP_MESSAGES_TABLE)
         .insert({ group_id: groupId, sender_id: requesterId, content: systemText })

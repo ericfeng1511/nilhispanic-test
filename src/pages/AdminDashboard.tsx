@@ -267,6 +267,35 @@ const AdminDashboard: React.FC = () => {
     }
   }, [searchParams, profile?.id, profile?.role, setSearchParams]);
 
+  // Open a specific group chat if openGroupChat query param is present
+  useEffect(() => {
+    const groupId = searchParams.get('openGroupChat');
+    if (groupId && profile?.id && profile.role === 'admin') {
+      setIsChatOpen(true);
+      setMessagesMode('groups');
+      setChatConversationId(null);
+      const sp = new URLSearchParams(searchParams);
+      sp.delete('openGroupChat');
+      setSearchParams(sp, { replace: true });
+      (async () => {
+        try {
+          setGroupsLoading(true);
+          const gres = await ChatGroupService.listGroupsForUser(profile.id, 1, 50);
+          const grps = gres.data || [];
+          setGroups(grps);
+          const match = grps.find((g) => g.id === groupId);
+          setSelectedGroupId(groupId);
+          setSelectedGroupTitle(match?.title || 'Group');
+          ChatGroupService.markGroupRead(groupId, profile.id).catch(() => {});
+        } catch {
+          // non-fatal
+        } finally {
+          setGroupsLoading(false);
+        }
+      })();
+    }
+  }, [searchParams, profile?.id, profile?.role, setSearchParams]);
+
   const handleSelectAll = () => {
     const allCurrentAthleteIds = new Set(athletes.map(athlete => athlete.id));
     setSelectedAthleteIds(allCurrentAthleteIds);
@@ -1567,6 +1596,19 @@ const AdminDashboard: React.FC = () => {
                     <div key={u.id} className="p-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3 min-w-0">
+                          {newMessageMode === 'group' && (
+                            <input
+                              type="checkbox"
+                              className="h-4 w-4"
+                              aria-label="Select for group chat"
+                              checked={newGroupSelected.has(u.id)}
+                              onChange={(e) => {
+                                const next = new Set(newGroupSelected);
+                                if (e.currentTarget.checked) next.add(u.id); else next.delete(u.id);
+                                setNewGroupSelected(next);
+                              }}
+                            />
+                          )}
                           <div className="relative w-10 h-10 flex-shrink-0">
                             {u.photo ? (
                               <img src={u.photo} alt={u.full_name || 'User avatar'} className="w-10 h-10 rounded-full object-cover bg-gray-100" />
@@ -1580,7 +1622,7 @@ const AdminDashboard: React.FC = () => {
                             <div className="text-xs text-gray-600 truncate">{[u.sport, u.hometown].filter(Boolean).join(' • ')}</div>
                           </div>
                         </div>
-                        {newMessageMode === 'direct' && (
+                        {newMessageMode === 'direct' ? (
                           <Button
                             size="icon"
                             variant="ghost"
@@ -1609,6 +1651,10 @@ const AdminDashboard: React.FC = () => {
                           >
                             <Plus className={newMessageCreatingId === u.id ? 'w-4 h-4 opacity-50' : 'w-4 h-4'} />
                           </Button>
+                        ) : (
+                          <div className="text-xs text-gray-500 select-none">
+                            {newGroupSelected.has(u.id) ? 'Selected' : ''}
+                          </div>
                         )}
                       </div>
                     </div>
@@ -1622,6 +1668,19 @@ const AdminDashboard: React.FC = () => {
                     <div key={u.id} className="p-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3 min-w-0">
+                          {newMessageMode === 'group' && (
+                            <input
+                              type="checkbox"
+                              className="h-4 w-4"
+                              aria-label="Select for group chat"
+                              checked={newGroupSelected.has(u.id)}
+                              onChange={(e) => {
+                                const next = new Set(newGroupSelected);
+                                if (e.currentTarget.checked) next.add(u.id); else next.delete(u.id);
+                                setNewGroupSelected(next);
+                              }}
+                            />
+                          )}
                           <div className="relative w-10 h-10 flex-shrink-0">
                             {u.photo ? (
                               <img src={u.photo} alt={u.full_name || 'User avatar'} className="w-10 h-10 rounded-full object-cover bg-gray-100" />
@@ -1635,7 +1694,7 @@ const AdminDashboard: React.FC = () => {
                             <div className="text-xs text-gray-600 truncate">{[u.relationship_type, u.hometown].filter(Boolean).join(' • ')}</div>
                           </div>
                         </div>
-                        {newMessageMode === 'direct' && (
+                        {newMessageMode === 'direct' ? (
                           <Button
                             size="icon"
                             variant="ghost"
@@ -1664,6 +1723,10 @@ const AdminDashboard: React.FC = () => {
                           >
                             <Plus className={newMessageCreatingId === u.id ? 'w-4 h-4 opacity-50' : 'w-4 h-4'} />
                           </Button>
+                        ) : (
+                          <div className="text-xs text-gray-500 select-none">
+                            {newGroupSelected.has(u.id) ? 'Selected' : ''}
+                          </div>
                         )}
                       </div>
                     </div>
@@ -1706,9 +1769,13 @@ const AdminDashboard: React.FC = () => {
                           if (!title) {
                             const names: string[] = [];
                             for (const a of allAthletes) {
-                              if (a.profile_id && newGroupSelected.has(String(a.profile_id))) {
-                                if (a.name) names.push(a.name);
-                              }
+                              if (a.profile_id && newGroupSelected.has(String(a.profile_id)) && a.name) names.push(a.name);
+                            }
+                            for (const u of hsAthletes) {
+                              if (newGroupSelected.has(u.id) && u.full_name) names.push(u.full_name);
+                            }
+                            for (const u of familyFriends) {
+                              if (newGroupSelected.has(u.id) && u.full_name) names.push(u.full_name);
                             }
                             title = names.slice(0, 3).join(', ') + (names.length > 3 ? '…' : '');
                             if (!title) title = 'Group chat';

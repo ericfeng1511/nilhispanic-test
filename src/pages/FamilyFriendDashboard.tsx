@@ -16,9 +16,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import PhotoCropperModal from '@/components/PhotoCropperModal';
 import ChatWindow from '@/components/chat/ChatWindow';
+import GroupChatWindow from '@/components/chat/GroupChatWindow';
+import { GroupChatList } from '@/components/chat/GroupChatList';
 import { ChatService } from '@/services/chatService';
+import { ChatGroupService } from '@/services/chatGroupService';
 import { useToast } from '@/hooks/use-toast';
 import type { Conversation } from '@/types/chat';
+import type { GroupConversation } from '@/types/chatGroup';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 
 const CULTURAL_ROOT_OPTIONS = [
@@ -80,6 +84,13 @@ const FamilyFriendDashboard: React.FC = () => {
   const [convLoading, setConvLoading] = useState(false);
   const [chatConversationId, setChatConversationId] = useState<string | null>(null);
   const [unreadConvoIds, setUnreadConvoIds] = useState<Set<string>>(new Set());
+  const [messagesMode, setMessagesMode] = useState<'direct' | 'groups'>('direct');
+  const [groups, setGroups] = useState<GroupConversation[]>([]);
+  const [groupsLoading, setGroupsLoading] = useState(false);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const [selectedGroupTitle, setSelectedGroupTitle] = useState<string | null>(null);
+  const [groupLastReadMap, setGroupLastReadMap] = useState<Record<string, string | null | undefined>>({});
+  const [groupSearch, setGroupSearch] = useState('');
   const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
 
@@ -287,9 +298,40 @@ const FamilyFriendDashboard: React.FC = () => {
     }
   }, [searchParams, profile?.id, profile?.role]);
 
+  // Open a specific group chat if openGroupChat query param is present
+  useEffect(() => {
+    const groupId = searchParams.get('openGroupChat');
+    if (groupId && profile?.id && profile.role === 'family_friend') {
+      setIsChatOpen(true);
+      setMessagesMode('groups');
+      setChatConversationId(null);
+      const sp = new URLSearchParams(searchParams);
+      sp.delete('openGroupChat');
+      setSearchParams(sp, { replace: true });
+      (async () => {
+        try {
+          setGroupsLoading(true);
+          const gres = await ChatGroupService.listGroupsForUser(profile.id, 1, 50);
+          const grps = gres.data || [];
+          setGroups(grps);
+          const match = grps.find((g) => g.id === groupId);
+          setSelectedGroupId(groupId);
+          setSelectedGroupTitle(match?.title || 'Group');
+          ChatGroupService.markGroupRead(groupId, profile.id).catch(() => {});
+        } catch {
+          // non-fatal
+        } finally {
+          setGroupsLoading(false);
+        }
+      })();
+    }
+  }, [searchParams, profile?.id, profile?.role]);
+
   const handleOpenMessages = async () => {
     setIsChatOpen(true);
     setChatConversationId(null);
+    setSelectedGroupId(null);
+    setSelectedGroupTitle(null);
     setConvLoading(true);
     try {
       if (!profile?.id) return;
@@ -299,6 +341,15 @@ const FamilyFriendDashboard: React.FC = () => {
         const previews = await ChatService.getUnreadPreviewsForUser(profile.id, 'family_friend');
         setUnreadConvoIds(new Set(previews.map((p) => p.conversation_id)));
       } catch {}
+      try {
+        setGroupsLoading(true);
+        const gres = await ChatGroupService.listGroupsForUser(profile.id, 1, 50);
+        setGroups(gres.data || []);
+      } catch {
+        // non-fatal
+      } finally {
+        setGroupsLoading(false);
+      }
     } catch (e: any) {
       toast({ title: 'Failed to load messages', description: e?.message || 'Please try again.' } as any);
     } finally {
@@ -809,12 +860,20 @@ const FamilyFriendDashboard: React.FC = () => {
         {/* Chat Modal */}
         <Dialog open={isChatOpen} onOpenChange={(open) => {
           setIsChatOpen(open);
-          if (!open) setChatConversationId(null);
+          if (!open) {
+            setChatConversationId(null);
+            setSelectedGroupId(null);
+            setSelectedGroupTitle(null);
+          }
         }}>
           <DialogContent className="max-w-3xl w-full">
             <DialogHeader>
               <DialogTitle>
-                {chatConversationId ? 'Conversation' : 'Your Messages'}
+                {chatConversationId
+                  ? 'Conversation'
+                  : selectedGroupId
+                    ? `Group: ${selectedGroupTitle || 'Group'}`
+                    : 'Your Messages'}
               </DialogTitle>
             </DialogHeader>
             {chatConversationId && profile ? (
@@ -824,73 +883,143 @@ const FamilyFriendDashboard: React.FC = () => {
                 title="Admin"
                 onBack={() => setChatConversationId(null)}
               />
+            ) : selectedGroupId && profile ? (
+              <GroupChatWindow
+                groupId={selectedGroupId}
+                currentUserId={profile.id}
+                title={selectedGroupTitle || 'Group'}
+                onTitleChange={(newTitle) => setSelectedGroupTitle(newTitle)}
+                onBack={() => {
+                  setSelectedGroupId(null);
+                  setSelectedGroupTitle(null);
+                }}
+              />
             ) : (
-              <div className="space-y-3">
-                {convLoading ? (
-                  <div className="py-6 text-center text-gray-500">Loading conversations...</div>
-                ) : conversations.length === 0 ? (
-                  <div className="py-6 text-center text-gray-500">No conversations yet.</div>
+              <div className="space-y-4">
+                <div className="inline-flex rounded-md border overflow-hidden">
+                  <button
+                    className={`px-3 py-1.5 text-sm ${messagesMode === 'direct' ? 'bg-nil-orange text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                    onClick={() => setMessagesMode('direct')}
+                  >
+                    Direct
+                  </button>
+                  <button
+                    className={`px-3 py-1.5 text-sm border-l ${messagesMode === 'groups' ? 'bg-nil-orange text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                    onClick={async () => {
+                      setMessagesMode('groups');
+                      if (profile?.id && groups.length === 0) {
+                        try {
+                          setGroupsLoading(true);
+                          const gres = await ChatGroupService.listGroupsForUser(profile.id, 1, 50);
+                          setGroups(gres.data || []);
+                          const groupIds = (gres.data || []).map((g) => g.id);
+                          if (groupIds.length > 0) {
+                            const { data: parts } = await supabase
+                              .from('group_participants')
+                              .select('group_id, last_read_at')
+                              .eq('user_id', profile.id)
+                              .in('group_id', groupIds);
+                            const map: Record<string, string | null> = {};
+                            for (const row of (parts as any[]) || []) map[String((row as any).group_id)] = (row as any).last_read_at || null;
+                            setGroupLastReadMap(map);
+                          }
+                        } catch {} finally { setGroupsLoading(false); }
+                      }
+                    }}
+                  >
+                    Groups
+                  </button>
+                </div>
+                {messagesMode === 'direct' ? (
+                  <div className="space-y-3">
+                    {convLoading ? (
+                      <div className="py-6 text-center text-gray-500">Loading conversations...</div>
+                    ) : conversations.length === 0 ? (
+                      <div className="py-6 text-center text-gray-500">No conversations yet.</div>
+                    ) : (
+                      <div className="max-h-[50vh] overflow-y-auto">
+                        <div className="divide-y rounded-md border">
+                          {conversations.map((c) => (
+                            <button
+                              key={c.id}
+                              className="w-full text-left px-4 py-3 hover:bg-gray-50 focus:outline-none"
+                              onClick={async () => {
+                                setChatConversationId(c.id);
+                                if (profile?.id) {
+                                  try { await ChatService.markConversationRead(c.id, profile.id); } catch {}
+                                  setUnreadConvoIds((prev) => {
+                                    const next = new Set(prev);
+                                    next.delete(c.id);
+                                    return next;
+                                  });
+                                }
+                              }}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3 min-w-0">
+                                  {unreadConvoIds.has(c.id) ? (
+                                    <span className="inline-block w-2.5 h-2.5 rounded-full bg-red-600 flex-shrink-0" aria-label="Unread messages" />
+                                  ) : null}
+                                  <div className="font-medium truncate">Chat with Admin</div>
+                                </div>
+                                <div className="flex items-center gap-2 ml-3 flex-shrink-0">
+                                  <div className="text-xs text-gray-500">
+                                    {c.last_message_at ? new Date(c.last_message_at).toLocaleString() : '—'}
+                                  </div>
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <button
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="p-1 rounded hover:bg-gray-100 focus:outline-none"
+                                        aria-label="Conversation options"
+                                      >
+                                        <MoreHorizontal className="w-5 h-5 text-gray-500" />
+                                      </button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                                      <DropdownMenuItem
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          setUnreadConvoIds((prev) => {
+                                            const next = new Set(prev);
+                                            next.add(c.id);
+                                            return next;
+                                          });
+                                        }}
+                                      >
+                                        Mark as Unread
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </div>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 ) : (
                   <div className="max-h-[50vh] overflow-y-auto">
-                    <div className="divide-y rounded-md border">
-                      {conversations.map((c) => (
-                        <button
-                          key={c.id}
-                          className="w-full text-left px-4 py-3 hover:bg-gray-50 focus:outline-none"
-                          onClick={async () => {
-                            setChatConversationId(c.id);
-                            if (profile?.id) {
-                              try { await ChatService.markConversationRead(c.id, profile.id); } catch {}
-                              setUnreadConvoIds((prev) => {
-                                const next = new Set(prev);
-                                next.delete(c.id);
-                                return next;
-                              });
-                            }
-                          }}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3 min-w-0">
-                              {unreadConvoIds.has(c.id) ? (
-                                <span className="inline-block w-2.5 h-2.5 rounded-full bg-red-600 flex-shrink-0" aria-label="Unread messages" />
-                              ) : null}
-                              <div className="font-medium truncate">Chat with Admin</div>
-                            </div>
-                            <div className="flex items-center gap-2 ml-3 flex-shrink-0">
-                              <div className="text-xs text-gray-500">
-                                {c.last_message_at ? new Date(c.last_message_at).toLocaleString() : '—'}
-                              </div>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <button
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="p-1 rounded hover:bg-gray-100 focus:outline-none"
-                                    aria-label="Conversation options"
-                                  >
-                                    <MoreHorizontal className="w-5 h-5 text-gray-500" />
-                                  </button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                                  <DropdownMenuItem
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      e.stopPropagation();
-                                      setUnreadConvoIds((prev) => {
-                                        const next = new Set(prev);
-                                        next.add(c.id);
-                                        return next;
-                                      });
-                                    }}
-                                  >
-                                    Mark as Unread
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </div>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
+                    <GroupChatList
+                      groups={groups.filter((g) => {
+                        const title = String(g.title || 'Group').toLowerCase();
+                        return groupSearch.trim() === '' || title.includes(groupSearch.toLowerCase());
+                      })}
+                      lastReadMap={groupLastReadMap}
+                      loading={groupsLoading}
+                      onOpen={async (g) => {
+                        setSelectedGroupId(g.id);
+                        setSelectedGroupTitle(g.title);
+                        if (profile?.id) {
+                          try { await ChatGroupService.markGroupRead(g.id, profile.id); } catch {}
+                          setGroupLastReadMap((prev) => ({ ...prev, [g.id]: new Date().toISOString() }));
+                        }
+                      }}
+                      currentUserId={profile?.id}
+                      isAdmin={false}
+                    />
                   </div>
                 )}
               </div>

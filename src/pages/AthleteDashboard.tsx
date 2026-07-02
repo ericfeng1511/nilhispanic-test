@@ -367,7 +367,36 @@ const AthleteDashboard: React.FC = () => {
       setSearchParams(sp, { replace: true });
     }
   }, [searchParams, profile?.id, profile?.role]);
-  
+
+  // Open a specific group chat if openGroupChat query param is present
+  useEffect(() => {
+    const groupId = searchParams.get('openGroupChat');
+    if (groupId && profile?.id && profile.role === 'athlete') {
+      setIsChatOpen(true);
+      setMessagesMode('groups');
+      setChatConversationId(null);
+      const sp = new URLSearchParams(searchParams);
+      sp.delete('openGroupChat');
+      setSearchParams(sp, { replace: true });
+      (async () => {
+        try {
+          setGroupsLoading(true);
+          const gres = await ChatGroupService.listGroupsForUser(profile.id, 1, 50);
+          const grps = gres.data || [];
+          setGroups(grps);
+          const match = grps.find((g) => g.id === groupId);
+          setSelectedGroupId(groupId);
+          setSelectedGroupTitle(match?.title || 'Group');
+          ChatGroupService.markGroupRead(groupId, profile.id).catch(() => {});
+        } catch {
+          // non-fatal
+        } finally {
+          setGroupsLoading(false);
+        }
+      })();
+    }
+  }, [searchParams, profile?.id, profile?.role]);
+
   const getFilteredCollegeSuggestions = (input: string) => {
     return collegeSuggestions.filter(college => 
       college && college.toLowerCase().includes(input.toLowerCase())
