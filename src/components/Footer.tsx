@@ -19,7 +19,8 @@ const Footer = () => {
               <li><Link to="/" className="text-gray-300 hover:text-nil-orange">About</Link></li>
               <li><Link to="/for-brands" className="text-gray-300 hover:text-nil-orange">For Brands</Link></li>
               <li><Link to="/for-athletes" className="text-gray-300 hover:text-nil-orange">For Athletes</Link></li>
-              <li><Link to="/packages" className="text-gray-300 hover:text-nil-orange">Packages</Link></li>
+              {/* Packages tab hidden - keep for future use */}
+              {/* <li><Link to="/packages" className="text-gray-300 hover:text-nil-orange">Packages</Link></li> */}
               <li><Link to="/initiatives" className="text-gray-300 hover:text-nil-orange">Initiatives</Link></li>
               <li><Link to="/work-with-us" className="text-gray-300 hover:text-nil-orange">Work With Us</Link></li>
             </ul>
@@ -40,6 +41,22 @@ const Footer = () => {
             <div className="mt-4">
               <span className="block text-gray-300 mb-2">Follow Us:</span>
               <div className="flex items-center space-x-4">
+                <a href="https://www.facebook.com/nilhispanic" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-nil-orange">
+                  <span className="sr-only">Facebook</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+                  </svg>
+                </a>
                 <a href="https://www.instagram.com/NILHISPANIC" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-nil-orange">
                   <span className="sr-only">Instagram</span>
                   <svg 

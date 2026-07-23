@@ -135,7 +135,8 @@ const Header = () => {
                     <Link to="/" className="text-nil-navy hover:text-nil-orange transition-colors">About</Link>
           <Link to="/for-brands" className="text-nil-navy hover:text-nil-orange transition-colors">For Brands</Link>
           <Link to="/for-athletes" className="text-nil-navy hover:text-nil-orange transition-colors">For Athletes</Link>
-          <Link to="/packages" className="text-nil-navy hover:text-nil-orange transition-colors">Packages</Link>
+          {/* Packages tab hidden - keep for future use */}
+          {/* <Link to="/packages" className="text-nil-navy hover:text-nil-orange transition-colors">Packages</Link> */}
           <HoverCard openDelay={200} closeDelay={100}>
             <HoverCardTrigger asChild>
               <Link to="/initiatives" className="flex items-center text-nil-navy hover:text-nil-orange transition-colors">
@@ -434,7 +435,8 @@ const Header = () => {
             <Link to="/" className="px-8 py-3 hover:bg-nil-light-gray">About</Link>
             <Link to="/for-brands" className="px-8 py-3 hover:bg-nil-light-gray">For Brands</Link>
             <Link to="/for-athletes" className="px-8 py-3 hover:bg-nil-light-gray">For Athletes</Link>
-            <Link to="/packages" className="px-8 py-3 hover:bg-nil-light-gray">Packages</Link>
+            {/* Packages tab hidden - keep for future use */}
+            {/* <Link to="/packages" className="px-8 py-3 hover:bg-nil-light-gray">Packages</Link> */}
             <Link to="/initiatives" className="px-8 py-3 hover:bg-nil-light-gray">Initiatives</Link>
             <Link to="/initiatives/hola-houses" className="pl-12 pr-8 py-3 hover:bg-nil-light-gray text-sm">HOLA Houses</Link>
             <Link to="/initiatives/soccer" className="pl-12 pr-8 py-3 hover:bg-nil-light-gray text-sm">ÑILH Soccer</Link>

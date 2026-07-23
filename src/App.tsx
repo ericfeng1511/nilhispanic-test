@@ -41,7 +41,8 @@ const App = () => (
           
           <Route path="/for-brands" element={<ForBrandsPage />} />
           <Route path="/for-athletes" element={<ForAthletesPage />} />
-          <Route path="/packages" element={<PackagesPage />} />
+          {/* Packages tab hidden - route disabled, keep for future use */}
+          {/* <Route path="/packages" element={<PackagesPage />} /> */}
           <Route path="/initiatives" element={<InitiativesPage />} />
           {/* <Route path="/initiatives/collective" element={<CollectivePage />} /> */}
           <Route path="/initiatives/hola-houses" element={<HolaHousesPage />} />
