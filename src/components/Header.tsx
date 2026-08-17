@@ -13,7 +13,7 @@ import { AuthModal } from "./AuthModal";
 import ResetPasswordModal from "./ResetPasswordModal";
 import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'react-router-dom';
-import { Menu, ChevronDown, LogOut, User, Shield, Trophy, Building2, Bell, Users, GraduationCap } from 'lucide-react';
+import { Menu, ChevronDown, LogOut, User, Shield, Trophy, Building2, Bell, Users, GraduationCap, Award } from 'lucide-react';
 import {
   HoverCard,
   HoverCardContent,
@@ -37,6 +37,7 @@ const roleLabel = (role: string) => {
     case 'athlete': return 'Student Athlete';
     case 'high_school_athlete': return 'High School Athlete';
     case 'family_friend': return 'Family/Friends';
+    case 'alumni': return 'Alumni';
     case 'brand': return 'Brand Representative';
     default: return role;
   }
@@ -53,7 +54,7 @@ const Header = () => {
   const [loadingPreviews, setLoadingPreviews] = useState(false);
   const [previews, setPreviews] = useState<Array<{ conversation_id: string; latest_message: any; unread_count: number }>>([]);
 
-  const PARTICIPANT_ROLES = ['admin', 'athlete', 'high_school_athlete', 'family_friend'];
+  const PARTICIPANT_ROLES = ['admin', 'athlete', 'high_school_athlete', 'family_friend', 'alumni'];
 
   const dashboardPath = (role: string | undefined) => {
     switch (role) {
@@ -61,6 +62,7 @@ const Header = () => {
       case 'athlete': return '/athlete/dashboard';
       case 'high_school_athlete': return '/highschool/dashboard';
       case 'family_friend': return '/family/dashboard';
+      case 'alumni': return '/alumni/dashboard';
       default: return '/';
     }
   };
@@ -284,6 +286,12 @@ const Header = () => {
                       <span>Dashboard</span>
                     </Link>
                   )}
+                  {profile?.role === 'alumni' && (
+                    <Link to="/alumni/dashboard" className="flex items-center space-x-2 w-full px-2 py-2 text-sm rounded-sm hover:bg-gray-100">
+                      <Award size={16} />
+                      <span>Dashboard</span>
+                    </Link>
+                  )}
                   <div className="border-t border-gray-200 my-1" />
                   {/* Logout */}
                   <button onClick={handleLogout} className="flex items-center space-x-2 w-full px-2 py-2 text-sm rounded-sm hover:bg-gray-100 text-red-600">
@@ -391,6 +399,11 @@ const Header = () => {
                 {profile?.role === 'high_school_athlete' && (
                   <DropdownMenuItem asChild>
                     <Link to="/highschool/dashboard">Dashboard</Link>
+                  </DropdownMenuItem>
+                )}
+                {profile?.role === 'alumni' && (
+                  <DropdownMenuItem asChild>
+                    <Link to="/alumni/dashboard">Dashboard</Link>
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
@@ -545,6 +558,16 @@ const Header = () => {
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       <GraduationCap size={16} />
+                      <span>Dashboard</span>
+                    </Link>
+                  )}
+                  {profile?.role === 'alumni' && (
+                    <Link
+                      to="/alumni/dashboard"
+                      className="w-full text-left px-3 py-3 text-sm hover:bg-nil-light-gray flex items-center space-x-2 rounded-md"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <Award size={16} />
                       <span>Dashboard</span>
                     </Link>
                   )}

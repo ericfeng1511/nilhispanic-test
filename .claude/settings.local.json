@@ -9,7 +9,10 @@
       "Bash(npx tsc *)",
       "Bash(npm run *)",
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\ericf\\\\documents\\\\nilhispanic-test\" -Recurse -Filter \"*.ts\" -o \"*.tsx\")",
-      "Bash(Select-Object -First 50)"
+      "Bash(Select-Object -First 50)",
+      "Bash(supabase --version)",
+      "Bash(supabase db *)",
+      "Bash(xargs grep -lE \"admin.*athlete.*high_school_athlete|high_school_athlete.*family_friend|'admin' \\\\| 'athlete'\")"
     ]
   }
 }

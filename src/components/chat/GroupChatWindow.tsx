@@ -585,7 +585,7 @@ const GroupSettings: React.FC<GroupSettingsProps> = ({ groupId, title, currentUs
     role: 'owner' | 'admin' | 'member';
     full_name: string;
     photo?: string;
-    profile_role: 'admin' | 'athlete' | 'brand';
+    profile_role: 'admin' | 'athlete' | 'brand' | 'alumni';
   }>>([]);
   const [loadingMembers, setLoadingMembers] = useState(true);
   const [removingId, setRemovingId] = useState<string | null>(null);

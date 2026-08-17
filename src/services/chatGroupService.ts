@@ -297,7 +297,7 @@ export class ChatGroupService {
     role: 'owner' | 'admin' | 'member';
     full_name: string;
     photo?: string;
-    profile_role: 'admin' | 'athlete' | 'high_school_athlete' | 'family_friend' | 'brand';
+    profile_role: 'admin' | 'athlete' | 'high_school_athlete' | 'family_friend' | 'brand' | 'alumni';
   }>> {
     try {
       // Get participants with roles

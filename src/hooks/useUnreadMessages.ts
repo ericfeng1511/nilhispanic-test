@@ -16,7 +16,7 @@ export function useUnreadMessages() {
 
   const role = useMemo<UserRole | null>(() => {
     if (!profile) return null;
-    const participantRoles: UserRole[] = ['athlete', 'high_school_athlete', 'family_friend'];
+    const participantRoles: UserRole[] = ['athlete', 'high_school_athlete', 'family_friend', 'alumni'];
     if (profile.role === 'admin') return 'admin';
     if (participantRoles.includes(profile.role as UserRole)) return profile.role as UserRole;
     return null;

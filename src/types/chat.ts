@@ -2,8 +2,8 @@
 // These interfaces are intentionally conservative to avoid tight coupling
 // with any single migration. Optional fields accommodate schema evolution.
 
-export type UserRole = 'admin' | 'athlete' | 'high_school_athlete' | 'family_friend';
-export type ParticipantType = 'athlete' | 'high_school_athlete' | 'family_friend';
+export type UserRole = 'admin' | 'athlete' | 'high_school_athlete' | 'family_friend' | 'alumni';
+export type ParticipantType = 'athlete' | 'high_school_athlete' | 'family_friend' | 'alumni';
 
 export interface Conversation {
   id: string; // uuid

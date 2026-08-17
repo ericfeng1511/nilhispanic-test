@@ -33,7 +33,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     password: '',
     fullName: '',
     confirmPassword: '',
-    role: 'athlete' as 'athlete' | 'brand' | 'high_school_athlete' | 'family_friend'
+    role: 'athlete' as 'athlete' | 'brand' | 'high_school_athlete' | 'family_friend' | 'alumni'
   });
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
@@ -93,7 +93,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         // Success - close modal and hard refresh page
         console.log('Auth successful, refreshing page...');
         onClose();
-        setFormData({ email: '', password: '', fullName: '', confirmPassword: '', role: 'athlete' as 'athlete' | 'brand' | 'high_school_athlete' | 'family_friend' });
+        setFormData({ email: '', password: '', fullName: '', confirmPassword: '', role: 'athlete' as 'athlete' | 'brand' | 'high_school_athlete' | 'family_friend' | 'alumni' });
         setTermsAccepted(false);
         setError(null);
         setVerificationSent(false);
@@ -118,7 +118,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   };
 
   const resetForm = () => {
-    setFormData({ email: '', password: '', fullName: '', confirmPassword: '', role: 'athlete' as 'athlete' | 'brand' | 'high_school_athlete' | 'family_friend' });
+    setFormData({ email: '', password: '', fullName: '', confirmPassword: '', role: 'athlete' as 'athlete' | 'brand' | 'high_school_athlete' | 'family_friend' | 'alumni' });
     setTermsAccepted(false);
     setError(null);
     setShowPassword(false);
@@ -319,7 +319,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               <Select
                 value={formData.role}
                 onValueChange={(v) =>
-                  setFormData((prev) => ({ ...prev, role: v as 'athlete' | 'brand' | 'high_school_athlete' | 'family_friend' }))
+                  setFormData((prev) => ({ ...prev, role: v as 'athlete' | 'brand' | 'high_school_athlete' | 'family_friend' | 'alumni' }))
                 }
               >
                 <SelectTrigger id="role" className="h-12 text-base">
@@ -329,6 +329,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                   <SelectItem value="athlete">Student Athlete</SelectItem>
                   <SelectItem value="high_school_athlete">High School Athlete</SelectItem>
                   <SelectItem value="family_friend">Family &amp; Friends</SelectItem>
+                  <SelectItem value="alumni">Alumni</SelectItem>
                   <SelectItem value="brand">Brand Representative</SelectItem>
                 </SelectContent>
               </Select>

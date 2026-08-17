@@ -6,6 +6,7 @@ const ROLE_TO_PATH: Record<string, string> = {
   athlete: '/athlete/dashboard',
   high_school_athlete: '/highschool/dashboard',
   family_friend: '/family/dashboard',
+  alumni: '/alumni/dashboard',
 };
 
 Deno.serve(async (req: Request) => {

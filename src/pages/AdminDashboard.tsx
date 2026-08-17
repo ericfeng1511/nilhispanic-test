@@ -6,10 +6,12 @@ import { useSchoolContacts } from '@/hooks/useSchoolContacts';
 import { useColleges } from '@/hooks/useColleges';
 import { useHighSchoolAthletes } from '@/hooks/useHighSchoolAthletes';
 import { useFamilyFriends } from '@/hooks/useFamilyFriends';
+import { useAlumni } from '@/hooks/useAlumni';
 import { StudentAthlete } from '@/types/studentAthlete';
 import { SchoolContact } from '@/types/schoolContact';
 import { HighSchoolAthleteUser } from '@/services/highSchoolAthleteService';
 import { FamilyFriendUser } from '@/services/familyFriendService';
+import { AlumniUser } from '@/services/alumniService';
 import { AthleteCard } from '@/components/admin/AthleteCard';
 import { ContactCard } from '@/components/admin/ContactCard';
 import { AthleteDetailModal } from '@/components/admin/AthleteDetailModal';
@@ -17,6 +19,8 @@ import { HsAthleteCard } from '@/components/admin/HsAthleteCard';
 import { HsAthleteDetailModal } from '@/components/admin/HsAthleteDetailModal';
 import { FamilyFriendCard } from '@/components/admin/FamilyFriendCard';
 import { FamilyFriendDetailModal } from '@/components/admin/FamilyFriendDetailModal';
+import { AlumniCard } from '@/components/admin/AlumniCard';
+import { AlumniDetailModal } from '@/components/admin/AlumniDetailModal';
 import { SelectedStatsModal } from '@/components/admin/SelectedStatsModal';
 import CollegeMap from '@/components/admin/CollegeMap';
 import { GeocodingPanel } from '@/components/admin/GeocodingPanel';
@@ -24,12 +28,13 @@ import { AthleteFilters } from '@/components/admin/AthleteFilters';
 import { ContactFilters } from '@/components/admin/ContactFilters';
 import { HsAthleteFiltersComponent } from '@/components/admin/HsAthleteFilters';
 import { FamilyFriendFiltersComponent } from '@/components/admin/FamilyFriendFilters';
+import { AlumniFiltersComponent } from '@/components/admin/AlumniFilters';
 import { AthletePagination } from '@/components/admin/AthletePagination';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Users, Database, RefreshCw, AlertCircle, Shield, GraduationCap, Building2, ArrowLeft, CheckSquare, Square, BarChart3, MessageSquare, User, Plus, MoreHorizontal, School, Heart, Search, Instagram } from 'lucide-react';
+import { Loader2, Users, RefreshCw, AlertCircle, Shield, Building2, ArrowLeft, CheckSquare, Square, BarChart3, MessageSquare, User, Plus, MoreHorizontal, School, Heart, Instagram, Award } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
@@ -48,7 +53,7 @@ import { FamilyFriendService } from '@/services/familyFriendService';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabaseClient';
 
-type TabType = 'athletes' | 'contacts' | 'colleges' | 'hs_athletes' | 'family_friends';
+type TabType = 'athletes' | 'contacts' | 'colleges' | 'hs_athletes' | 'family_friends' | 'alumni';
 
 const AdminDashboard: React.FC = () => {
   const { profile, loading: authLoading } = useAuth();
@@ -62,6 +67,8 @@ const AdminDashboard: React.FC = () => {
   const [isHsAthleteModalOpen, setIsHsAthleteModalOpen] = useState(false);
   const [selectedFamilyFriend, setSelectedFamilyFriend] = useState<FamilyFriendUser | null>(null);
   const [isFamilyFriendModalOpen, setIsFamilyFriendModalOpen] = useState(false);
+  const [selectedAlumni, setSelectedAlumni] = useState<AlumniUser | null>(null);
+  const [isAlumniModalOpen, setIsAlumniModalOpen] = useState(false);
   const [selectedAthleteIds, setSelectedAthleteIds] = useState<Set<string>>(new Set());
   const [selectionMode, setSelectionMode] = useState(false);
   const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
@@ -91,7 +98,7 @@ const AdminDashboard: React.FC = () => {
   // New Message dialog state
   const [isNewMessageOpen, setIsNewMessageOpen] = useState(false);
   const [newMessageMode, setNewMessageMode] = useState<'direct' | 'group'>('direct');
-  const [newMessageUserType, setNewMessageUserType] = useState<'athlete' | 'high_school_athlete' | 'family_friend'>('athlete');
+  const [newMessageUserType, setNewMessageUserType] = useState<'athlete' | 'high_school_athlete' | 'family_friend' | 'alumni'>('athlete');
   const [newMessageCreatingId, setNewMessageCreatingId] = useState<string | null>(null);
   const [newGroupSelected, setNewGroupSelected] = useState<Set<string>>(new Set());
   const [newGroupTitleInput, setNewGroupTitleInput] = useState('');
@@ -179,6 +186,18 @@ const AdminDashboard: React.FC = () => {
     clearFilters: clearFfFilters,
     uniqueRelationshipTypes: uniqueFfRelationshipTypes,
   } = useFamilyFriends();
+
+  const {
+    users: alumniUsers,
+    total: totalAlumni,
+    isLoading: alumniLoading,
+    isError: alumniError,
+    error: alumniErrorMsg,
+    refetch: refetchAlumni,
+    filters: alumniFilters,
+    updateFilters: updateAlumniFilters,
+    clearFilters: clearAlumniFilters,
+  } = useAlumni();
 
   // Realtime: refresh athletes list when student_athletes change (insert/update/delete)
   useEffect(() => {
@@ -577,26 +596,24 @@ const AdminDashboard: React.FC = () => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as TabType)} className="mb-8">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="athletes" className="flex items-center gap-1.5 text-xs sm:text-sm">
-              <GraduationCap className="w-4 h-4 flex-shrink-0" />
               <span className="hidden sm:inline">Student </span>Athletes
             </TabsTrigger>
             <TabsTrigger value="contacts" className="flex items-center gap-1.5 text-xs sm:text-sm">
-              <Building2 className="w-4 h-4 flex-shrink-0" />
               <span className="hidden sm:inline">School </span>Contacts
             </TabsTrigger>
             <TabsTrigger value="colleges" className="flex items-center gap-1.5 text-xs sm:text-sm">
-              <GraduationCap className="w-4 h-4 flex-shrink-0" />
               Colleges
             </TabsTrigger>
             <TabsTrigger value="hs_athletes" className="flex items-center gap-1.5 text-xs sm:text-sm">
-              <School className="w-4 h-4 flex-shrink-0" />
               <span className="hidden sm:inline">HS </span>Athletes
             </TabsTrigger>
             <TabsTrigger value="family_friends" className="flex items-center gap-1.5 text-xs sm:text-sm">
-              <Heart className="w-4 h-4 flex-shrink-0" />
               <span className="hidden sm:inline">Family/</span>Friends
+            </TabsTrigger>
+            <TabsTrigger value="alumni" className="flex items-center gap-1.5 text-xs sm:text-sm">
+              Alumni
             </TabsTrigger>
           </TabsList>
 
@@ -606,7 +623,6 @@ const AdminDashboard: React.FC = () => {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Male</CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
@@ -621,7 +637,6 @@ const AdminDashboard: React.FC = () => {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Female</CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
@@ -636,7 +651,6 @@ const AdminDashboard: React.FC = () => {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Database Total</CardTitle>
-                  <Database className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
@@ -651,7 +665,6 @@ const AdminDashboard: React.FC = () => {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total SM Followers</CardTitle>
-                  <Shield className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
@@ -666,7 +679,6 @@ const AdminDashboard: React.FC = () => {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Colleges</CardTitle>
-                  <GraduationCap className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
@@ -686,7 +698,6 @@ const AdminDashboard: React.FC = () => {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Contacts</CardTitle>
-                  <Building2 className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
@@ -701,7 +712,6 @@ const AdminDashboard: React.FC = () => {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Database Total</CardTitle>
-                  <Database className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
@@ -716,7 +726,6 @@ const AdminDashboard: React.FC = () => {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Unique Schools</CardTitle>
-                  <GraduationCap className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
@@ -735,7 +744,6 @@ const AdminDashboard: React.FC = () => {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total HS Athletes</CardTitle>
-                  <School className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{totalHsAthletes.toLocaleString()}</div>
@@ -745,7 +753,6 @@ const AdminDashboard: React.FC = () => {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Showing</CardTitle>
-                  <Search className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{hsAthletes.length.toLocaleString()}</div>
@@ -762,7 +769,6 @@ const AdminDashboard: React.FC = () => {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Family/Friends</CardTitle>
-                  <Heart className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{totalFamilyFriends.toLocaleString()}</div>
@@ -772,12 +778,36 @@ const AdminDashboard: React.FC = () => {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Showing</CardTitle>
-                  <Search className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{familyFriends.length.toLocaleString()}</div>
                   <p className="text-xs text-muted-foreground">
                     {(ffFilters.search || (ffFilters.relationshipTypes && ffFilters.relationshipTypes.length > 0) || ffFilters.sortBy || ffFilters.createdStart || ffFilters.createdEnd || ffFilters.createdInPastWeek) ? 'Matching filters' : 'All records'}
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="alumni" className="mt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Alumni</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{totalAlumni.toLocaleString()}</div>
+                  <p className="text-xs text-muted-foreground">Registered accounts</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Showing</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{alumniUsers.length.toLocaleString()}</div>
+                  <p className="text-xs text-muted-foreground">
+                    {(alumniFilters.search || alumniFilters.sortBy || alumniFilters.createdStart || alumniFilters.createdEnd || alumniFilters.createdInPastWeek) ? 'Matching filters' : 'All records'}
                   </p>
                 </CardContent>
               </Card>
@@ -1385,6 +1415,144 @@ const AdminDashboard: React.FC = () => {
               )
             )}
           </TabsContent>
+
+          <TabsContent value="alumni">
+            {/* Alumni Filters */}
+            <AlumniFiltersComponent
+              filters={alumniFilters}
+              onFiltersChange={updateAlumniFilters}
+              onClearFilters={clearAlumniFilters}
+              totalResults={alumniUsers.length}
+              isLoading={alumniLoading}
+            />
+
+            {/* Sort Results */}
+            <Card className="mb-6">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900">Sort Results</h3>
+                  {alumniFilters.sortBy && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => updateAlumniFilters({ ...alumniFilters, sortBy: undefined, sortDir: undefined })}
+                    >
+                      Clear Sorting
+                    </Button>
+                  )}
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-sm font-medium text-gray-700 mb-2">Sort By</div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        variant={alumniFilters.sortBy === 'firstName' ? 'default' : 'outline'}
+                        onClick={() => {
+                          const isSame = alumniFilters.sortBy === 'firstName';
+                          updateAlumniFilters({ ...alumniFilters, sortBy: isSame ? undefined : 'firstName', sortDir: isSame ? undefined : (alumniFilters.sortDir || 'asc') });
+                        }}
+                      >
+                        First Name
+                      </Button>
+                      <Button
+                        variant={alumniFilters.sortBy === 'lastName' ? 'default' : 'outline'}
+                        onClick={() => {
+                          const isSame = alumniFilters.sortBy === 'lastName';
+                          updateAlumniFilters({ ...alumniFilters, sortBy: isSame ? undefined : 'lastName', sortDir: isSame ? undefined : (alumniFilters.sortDir || 'asc') });
+                        }}
+                      >
+                        Last Name
+                      </Button>
+                      <Button
+                        variant={alumniFilters.sortBy === 'createdAt' ? 'default' : 'outline'}
+                        onClick={() => {
+                          const isSame = alumniFilters.sortBy === 'createdAt';
+                          updateAlumniFilters({ ...alumniFilters, sortBy: isSame ? undefined : 'createdAt', sortDir: isSame ? undefined : (alumniFilters.sortDir || 'asc') });
+                        }}
+                      >
+                        Account Created
+                      </Button>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-gray-700 mb-2">Direction</div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        variant={alumniFilters.sortDir !== 'desc' ? 'default' : 'outline'}
+                        disabled={!alumniFilters.sortBy}
+                        onClick={() => updateAlumniFilters({ ...alumniFilters, sortDir: 'asc' })}
+                      >
+                        Ascending
+                      </Button>
+                      <Button
+                        variant={alumniFilters.sortDir === 'desc' ? 'default' : 'outline'}
+                        disabled={!alumniFilters.sortBy}
+                        onClick={() => updateAlumniFilters({ ...alumniFilters, sortDir: 'desc' })}
+                      >
+                        Descending
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Created Past Week toggle */}
+            <div className="flex items-center gap-3 mb-6">
+              <Button
+                onClick={() => updateAlumniFilters({ ...alumniFilters, createdInPastWeek: alumniFilters.createdInPastWeek ? undefined : true })}
+                variant={alumniFilters.createdInPastWeek ? 'default' : 'outline'}
+                className={alumniFilters.createdInPastWeek ? 'bg-nil-orange hover:bg-nil-navy' : ''}
+                disabled={alumniLoading}
+              >
+                {alumniFilters.createdInPastWeek ? <CheckSquare className="w-4 h-4 mr-2" /> : <Square className="w-4 h-4 mr-2" />}
+                Created Past Week
+              </Button>
+            </div>
+
+            {alumniLoading && (
+              <div className="flex items-center justify-center py-12">
+                <div className="flex items-center gap-2 text-gray-600">
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                  <span>Loading alumni...</span>
+                </div>
+              </div>
+            )}
+
+            {!alumniLoading && (
+              alumniUsers.length === 0 ? (
+                <Card>
+                  <CardContent className="p-12 text-center">
+                    <Award className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      No alumni found
+                    </h3>
+                    <p className="text-gray-600">
+                      {Object.keys(alumniFilters).length > 0 ? 'Try adjusting your filters to see more results.' : 'No alumni accounts have registered yet.'}
+                    </p>
+                    {Object.keys(alumniFilters).length > 0 && (
+                      <Button onClick={clearAlumniFilters} variant="outline" className="mt-4">
+                        Clear All Filters
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-6">
+                  {alumniUsers.map((u) => (
+                    <AlumniCard
+                      key={u.id}
+                      user={u}
+                      onClick={() => {
+                        setSelectedAlumni(u);
+                        setIsAlumniModalOpen(true);
+                      }}
+                    />
+                  ))}
+                </div>
+              )
+            )}
+          </TabsContent>
         </Tabs>
       </div>
 
@@ -1415,6 +1583,16 @@ const AdminDashboard: React.FC = () => {
         onClose={() => {
           setIsFamilyFriendModalOpen(false);
           setSelectedFamilyFriend(null);
+        }}
+      />
+
+      {/* Alumni Detail Modal */}
+      <AlumniDetailModal
+        user={selectedAlumni}
+        isOpen={isAlumniModalOpen}
+        onClose={() => {
+          setIsAlumniModalOpen(false);
+          setSelectedAlumni(null);
         }}
       />
 
@@ -1499,6 +1677,12 @@ const AdminDashboard: React.FC = () => {
                 onClick={() => setNewMessageUserType('family_friend')}
               >
                 Family/Friends
+              </button>
+              <button
+                className={`px-3 py-1.5 border-l ${newMessageUserType === 'alumni' ? 'bg-nil-navy text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+                onClick={() => setNewMessageUserType('alumni')}
+              >
+                Alumni
               </button>
             </div>
             <div className="max-h-96 overflow-y-auto divide-y rounded-md border">
@@ -1660,7 +1844,7 @@ const AdminDashboard: React.FC = () => {
                     </div>
                   ))
                 )
-              ) : (
+              ) : newMessageUserType === 'family_friend' ? (
                 familyFriends.filter(u => !!u.id).length === 0 ? (
                   <div className="p-4 text-gray-600">No family/friend users available.</div>
                 ) : (
@@ -1712,6 +1896,78 @@ const AdminDashboard: React.FC = () => {
                                 setIsNewMessageOpen(false);
                                 setChatConversationId(conv.id);
                                 setChatTitle(u.full_name || 'Family/Friend');
+                                setChatTarget(null);
+                                try { await ChatService.markConversationRead(conv.id, profile.id); } catch {}
+                              } catch (e: any) {
+                                toast({ title: 'Failed to start chat', description: e?.message || 'Please try again.', variant: 'destructive' } as any);
+                              } finally {
+                                setNewMessageCreatingId(null);
+                              }
+                            }}
+                          >
+                            <Plus className={newMessageCreatingId === u.id ? 'w-4 h-4 opacity-50' : 'w-4 h-4'} />
+                          </Button>
+                        ) : (
+                          <div className="text-xs text-gray-500 select-none">
+                            {newGroupSelected.has(u.id) ? 'Selected' : ''}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )
+              ) : (
+                alumniUsers.filter(u => !!u.id).length === 0 ? (
+                  <div className="p-4 text-gray-600">No alumni users available.</div>
+                ) : (
+                  alumniUsers.map((u) => (
+                    <div key={u.id} className="p-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3 min-w-0">
+                          {newMessageMode === 'group' && (
+                            <input
+                              type="checkbox"
+                              className="h-4 w-4"
+                              aria-label="Select for group chat"
+                              checked={newGroupSelected.has(u.id)}
+                              onChange={(e) => {
+                                const next = new Set(newGroupSelected);
+                                if (e.currentTarget.checked) next.add(u.id); else next.delete(u.id);
+                                setNewGroupSelected(next);
+                              }}
+                            />
+                          )}
+                          <div className="relative w-10 h-10 flex-shrink-0">
+                            {u.photo ? (
+                              <img src={u.photo} alt={u.full_name || 'User avatar'} className="w-10 h-10 rounded-full object-cover bg-gray-100" />
+                            ) : null}
+                            <div className={u.photo ? 'hidden absolute inset-0 flex items-center justify-center rounded-full bg-gradient-to-br from-nil-light-blue to-nil-navy' : 'absolute inset-0 flex items-center justify-center rounded-full bg-gradient-to-br from-nil-light-blue to-nil-navy'}>
+                              <User className="w-5 h-5 text-white opacity-70" />
+                            </div>
+                          </div>
+                          <div className="min-w-0">
+                            <div className="font-medium text-gray-900 truncate">{u.full_name || 'Unnamed'}</div>
+                            <div className="text-xs text-gray-600 truncate">{u.hometown || ''}</div>
+                          </div>
+                        </div>
+                        {newMessageMode === 'direct' ? (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            aria-label="Start new message"
+                            disabled={!profile?.id || newMessageCreatingId === u.id}
+                            onClick={async () => {
+                              if (!profile?.id) return;
+                              try {
+                                setNewMessageCreatingId(u.id);
+                                const conv = await ChatService.getOrCreateConversation({
+                                  admin_id: profile.id,
+                                  participant_id: u.id,
+                                  participant_type: 'alumni',
+                                });
+                                setIsNewMessageOpen(false);
+                                setChatConversationId(conv.id);
+                                setChatTitle(u.full_name || 'Alumni');
                                 setChatTarget(null);
                                 try { await ChatService.markConversationRead(conv.id, profile.id); } catch {}
                               } catch (e: any) {

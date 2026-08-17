@@ -13,7 +13,7 @@ interface Profile {
   id: string;
   email: string;
   full_name: string | null;
-  role: 'admin' | 'athlete' | 'high_school_athlete' | 'family_friend' | 'brand';
+  role: 'admin' | 'athlete' | 'high_school_athlete' | 'family_friend' | 'brand' | 'alumni';
   created_at: string;
   updated_at: string;
 }
@@ -23,7 +23,7 @@ interface AuthContextType {
   profile: Profile | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, fullName: string, role?: 'athlete' | 'high_school_athlete' | 'family_friend' | 'brand' | 'admin') => Promise<{ error: any; needsVerification?: boolean }>;
+  signUp: (email: string, password: string, fullName: string, role?: 'athlete' | 'high_school_athlete' | 'family_friend' | 'brand' | 'alumni' | 'admin') => Promise<{ error: any; needsVerification?: boolean }>;
   signIn: (email: string, password: string) => Promise<{ error: any; needsVerification?: boolean }>;
   signOut: () => Promise<void>;
   updateProfile: (updates: Partial<Profile>) => Promise<{ error: any }>;
@@ -213,7 +213,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  const signUp = async (email: string, password: string, fullName: string, role: 'athlete' | 'high_school_athlete' | 'family_friend' | 'brand' | 'admin' = 'athlete') => {
+  const signUp = async (email: string, password: string, fullName: string, role: 'athlete' | 'high_school_athlete' | 'family_friend' | 'brand' | 'alumni' | 'admin' = 'athlete') => {
     try {
       console.log('Attempting signup for:', email, 'with role:', role);
 
@@ -431,7 +431,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
 
-      if (data.user && !['athlete', 'brand', 'high_school_athlete', 'family_friend'].includes(role)) {
+      // Alumni: create stub row
+      if (data.user && role === 'alumni') {
+        try {
+          const { error: alumniError } = await supabase
+            .from('alumni')
+            .insert({ profile_id: data.user.id, name: fullName });
+          if (alumniError) {
+            console.error('Error creating alumni entry:', alumniError);
+          } else {
+            console.log('Alumni entry created successfully!');
+          }
+        } catch (e) {
+          console.error('Exception creating alumni entry:', e);
+        }
+      }
+
+      if (data.user && !['athlete', 'brand', 'high_school_athlete', 'family_friend', 'alumni'].includes(role)) {
         console.log('Skipping automatic table entry creation:');
         console.log('- User created:', !!data.user);
         console.log('- Role:', role, '(not a role with a linked table)');

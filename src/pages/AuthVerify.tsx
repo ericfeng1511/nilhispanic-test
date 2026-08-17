@@ -7,6 +7,7 @@ const ROLE_DASHBOARDS: Record<string, string> = {
   athlete: '/athlete/dashboard',
   high_school_athlete: '/highschool/dashboard',
   family_friend: '/family/dashboard',
+  alumni: '/alumni/dashboard',
   brand: '/brand/dashboard',
   admin: '/admin/dashboard',
 };
