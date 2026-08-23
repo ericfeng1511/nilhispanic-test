@@ -1,7 +1,22 @@
 
+import { useState, lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
+// Lazy-load the HTML-first viewer (falls back to PDF) to keep main bundle light
+const TermsContentViewer = lazy(() => import('./TermsContentViewer'));
 
 const Footer = () => {
+  const [showTerms, setShowTerms] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
+  const [showGuidelines, setShowGuidelines] = useState(false);
+
   return (
     <footer className="bg-nil-navy text-white pt-12 pb-6">
       <div className="container-custom">
@@ -116,12 +131,79 @@ const Footer = () => {
               © {new Date().getFullYear()} ÑIL Hispanic™. All rights reserved.
             </p>
             <div className="flex space-x-6">
-              <a href="#" className="text-gray-400 text-sm hover:text-nil-orange">Privacy Policy</a>
-              <a href="#" className="text-gray-400 text-sm hover:text-nil-orange">Terms of Service</a>
+              <button
+                type="button"
+                onClick={() => setShowPrivacy(true)}
+                className="text-gray-400 text-sm hover:text-nil-orange"
+              >
+                Privacy Policy
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowTerms(true)}
+                className="text-gray-400 text-sm hover:text-nil-orange"
+              >
+                Terms and Conditions
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowGuidelines(true)}
+                className="text-gray-400 text-sm hover:text-nil-orange"
+              >
+                Community Guidelines
+              </button>
             </div>
           </div>
         </div>
       </div>
+
+      <Dialog open={showTerms} onOpenChange={setShowTerms}>
+        <DialogContent className="sm:max-w-[560px] mx-4">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-nil-navy">Terms and Conditions</DialogTitle>
+            <DialogDescription>
+              View the full Terms and Conditions below.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="w-full h-[70vh] max-h-[70vh]">
+            <Suspense fallback={<div className="p-4 text-sm text-gray-600">Loading terms...</div>}>
+              <TermsContentViewer htmlUrl="/terms/terms.html" pdfUrl="/terms/terms.pdf" />
+            </Suspense>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showPrivacy} onOpenChange={setShowPrivacy}>
+        <DialogContent className="sm:max-w-[560px] mx-4">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-nil-navy">Privacy Policy</DialogTitle>
+            <DialogDescription>
+              View the full Privacy Policy below.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="w-full h-[70vh] max-h-[70vh]">
+            <Suspense fallback={<div className="p-4 text-sm text-gray-600">Loading privacy policy...</div>}>
+              <TermsContentViewer htmlUrl="/terms/privacypolicy.html" pdfUrl="/terms/terms.pdf" />
+            </Suspense>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showGuidelines} onOpenChange={setShowGuidelines}>
+        <DialogContent className="sm:max-w-[560px] mx-4">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-nil-navy">Community Guidelines</DialogTitle>
+            <DialogDescription>
+              View the full Community Guidelines below.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="w-full h-[70vh] max-h-[70vh]">
+            <Suspense fallback={<div className="p-4 text-sm text-gray-600">Loading community guidelines...</div>}>
+              <TermsContentViewer htmlUrl="/terms/guidelines.html" pdfUrl="/terms/terms.pdf" />
+            </Suspense>
+          </div>
+        </DialogContent>
+      </Dialog>
     </footer>
   );
 };

@@ -37,6 +37,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   });
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
 
   const { signIn, signUp, resendVerification } = useAuth();
 
@@ -354,6 +355,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                   >
                     Terms and Conditions
                   </button>
+                  <span className="mx-1">and</span>
+                  <button
+                    type="button"
+                    onClick={() => setShowPrivacy(true)}
+                    className="text-nil-navy hover:text-nil-orange underline underline-offset-2 font-medium"
+                  >
+                    Privacy Policy
+                  </button>
                 </div>
               </div>
             </div>
@@ -440,6 +449,25 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         <div className="w-full h-[70vh] max-h-[70vh]">
           <Suspense fallback={<div className="p-4 text-sm text-gray-600">Loading terms...</div>}>
             <TermsContentViewer htmlUrl="/terms/terms.html" pdfUrl="/terms/terms.pdf" />
+          </Suspense>
+        </div>
+      </DialogContent>
+    </Dialog>
+
+    {/* Privacy Policy Modal
+        To use: place your PDF at public/terms/privacypolicy.pdf
+      */}
+    <Dialog open={showPrivacy} onOpenChange={setShowPrivacy}>
+      <DialogContent className="sm:max-w-[560px] mx-4">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-bold text-nil-navy">Privacy Policy</DialogTitle>
+          <DialogDescription>
+            View the full Privacy Policy below.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="w-full h-[70vh] max-h-[70vh]">
+          <Suspense fallback={<div className="p-4 text-sm text-gray-600">Loading privacy policy...</div>}>
+            <TermsContentViewer htmlUrl="/terms/privacypolicy.html" pdfUrl="/terms/terms.pdf" />
           </Suspense>
         </div>
       </DialogContent>
